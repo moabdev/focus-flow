@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   ambient_volume: 0.5,
   auto_start_breaks: false,
   auto_start_pomodoros: false,
+  strict_focus_mode: false,
 };
 
 export const DEFAULT_PROJECTS: Project[] = [

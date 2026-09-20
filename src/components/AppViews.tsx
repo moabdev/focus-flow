@@ -216,6 +216,7 @@ export const AppViews: React.FC<AppViewsProps> = ({
           activeSubtaskId={activeSubtaskId}
           onSelectActiveSubtask={setActiveSubtaskId}
           onBack={onBackFromProjectDetail}
+          onDeleteProject={deleteProject}
           onCreateSubtask={onCreateSubtask}
           onUpdateSubtask={onUpdateSubtask}
           onDeleteSubtask={onDeleteSubtask}

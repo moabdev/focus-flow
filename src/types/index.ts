@@ -85,6 +85,7 @@ export interface UserSettings {
   ambient_volume: number; // 0 to 1
   auto_start_breaks: boolean;
   auto_start_pomodoros: boolean;
+  strict_focus_mode?: boolean;
   supabase_url?: string;
   supabase_anon_key?: string;
 }
@@ -129,6 +130,7 @@ export interface StudyGroup {
   code: string;
   member_count: number;
   created_at: string;
+  created_by?: string;
 }
 
 export interface GroupMember {
@@ -163,4 +165,21 @@ export interface LeaderboardUser {
   pomodoros_completed: number;
   streak_days: number;
   is_current_user?: boolean;
+}
+
+// Sistema de Gamificação & Conquistas (Badges)
+export type BadgeTier = 'bronze' | 'prata' | 'ouro' | 'diamante';
+
+export interface AchievementBadge {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  tier: BadgeTier;
+  unlocked: boolean;
+  unlocked_at?: string;
+  progress: number; // 0 a 100
+  current_value: number;
+  target_value: number;
+  unit: string;
 }

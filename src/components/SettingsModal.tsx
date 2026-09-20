@@ -3,6 +3,7 @@ import { X, Clock, Palette, Volume2, Cloud, Database } from 'lucide-react';
 import { UserSettings, AlarmSound, SupabaseProfile } from '../types';
 import { supabaseService } from '../services/supabase';
 import { storageService } from '../services/storage';
+import { useToast } from '../context/ToastContext';
 import { SettingsTimerTab } from './settings/SettingsTimerTab';
 import { SettingsThemeTab } from './settings/SettingsThemeTab';
 import { SettingsSoundsTab } from './settings/SettingsSoundsTab';
@@ -34,6 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     initialTab || 'timer'
   );
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (initialTab) {
@@ -44,18 +46,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleGoogleLogin = async () => {
     const { error } = await supabaseService.signInWithGoogle();
     if (error) {
-      alert(`Erro no login: ${error.message}`);
+      toast.error(`Erro no login: ${error.message}`, 'Falha de Autenticação');
     }
   };
 
   const handleSignOut = async () => {
     await supabaseService.signOut();
+    toast.info('Sessão encerrada com sucesso.', 'Logout');
   };
 
   const handleSyncToCloud = async () => {
     setSyncStatus('Sincronizando tarefas locais com a nuvem...');
     const result = await storageService.syncLocalToCloud();
     setSyncStatus(`${result.count} registros sincronizados no seu PostgreSQL!`);
+    toast.success(`${result.count} registros sincronizados no PostgreSQL!`, 'Sincronização Concluída');
     onRefreshTasks();
     setTimeout(() => setSyncStatus(null), 3500);
   };
@@ -65,10 +69,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (file) {
       const ok = await storageService.importBackupJSON(file);
       if (ok) {
-        alert('Backup restaurado com sucesso! Recarregando...');
-        window.location.reload();
+        toast.success('Backup restaurado com sucesso! Atualizando...', 'Backup Restaurado');
+        setTimeout(() => window.location.reload(), 1200);
       } else {
-        alert('Arquivo de backup inválido.');
+        toast.error('Arquivo de backup inválido ou corrompido.', 'Erro no Backup');
       }
     }
   };

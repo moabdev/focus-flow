@@ -9,6 +9,8 @@ import { useTimer } from './hooks/useTimer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
+import { badgeService } from './services/badgeService';
+import { useToast } from './context/ToastContext';
 import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode } from './types';
 
 import { Header } from './components/Header';
@@ -21,6 +23,7 @@ export const App: React.FC = () => {
   const { ambient, setAmbient, ambientVolume, setAmbientVolume, playAlarm, playClick } = useAudio();
   const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
   const [userProfile, setUserProfile] = useState<SupabaseProfile | null>(null);
+  const toast = useToast();
 
   // Visões e Detalhes de Projeto
   const [currentView, setCurrentView] = useState<AppViewMode>('timer');
@@ -101,8 +104,20 @@ export const App: React.FC = () => {
       const discipline = activeSubtask?.discipline || 'Geral';
       addCompletedSession(discipline, durationMinutes);
       if (activeSubtaskId) incrementPomodoro(activeSubtaskId);
+
+      // Verificação de Conquistas Desbloqueadas (Gamificação)
+      const completedCount = subtasks.filter((t) => t.is_completed).length;
+      setTimeout(() => {
+        const newBadges = badgeService.checkAndClaimNewBadges(metrics, completedCount);
+        newBadges.forEach((badge) => {
+          toast.success(
+            `Parabéns! Você desbloqueou "${badge.title}" (${badge.icon})`,
+            '🏆 Nova Conquista!'
+          );
+        });
+      }, 500);
     },
-    [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro]
+    [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro, subtasks, metrics, toast]
   );
 
   const timer = useTimer({
@@ -111,6 +126,7 @@ export const App: React.FC = () => {
     playAlarm,
     setIsTimerRunningTheme: setIsTimerRunning,
     onTickSecond: handleTickSecond,
+    activeTaskTitle: activeSubtask?.title,
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -118,6 +134,7 @@ export const App: React.FC = () => {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isZenModeOpen, setIsZenModeOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = supabaseService.onAuthChange((profile) => setUserProfile(profile));
@@ -133,12 +150,13 @@ export const App: React.FC = () => {
   const handleGoogleLogin = async () => {
     playClick();
     const { error } = await supabaseService.signInWithGoogle();
-    if (error) alert(`Erro ao iniciar login Google: ${error.message}`);
+    if (error) toast.error(`Erro ao iniciar login Google: ${error.message}`, 'Falha de Autenticação');
   };
 
   const handleSignOut = async () => {
     playClick();
     await supabaseService.signOut();
+    toast.info('Sessão encerrada com sucesso.', 'Logout');
   };
 
   useKeyboardShortcuts({
@@ -146,11 +164,13 @@ export const App: React.FC = () => {
     onSkipTimer: () => timer.skip(),
     onResetTimer: () => timer.reset(),
     onToggleZenMode: () => setIsZenModeOpen((prev) => !prev),
+    onToggleCommandPalette: () => setIsCommandPaletteOpen((prev) => !prev),
     onCloseModals: () => {
       setIsZenModeOpen(false);
       setIsSettingsOpen(false);
       setIsStatsOpen(false);
       setIsScratchpadOpen(false);
+      setIsCommandPaletteOpen(false);
     },
     playClick,
   });
@@ -206,6 +226,7 @@ export const App: React.FC = () => {
           onSignOut={handleSignOut}
           onOpenSettings={handleOpenSettings}
           onOpenStats={() => setIsStatsOpen(true)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           currentView={currentView}
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           isTimerRunning={timer.isRunning}
@@ -257,25 +278,24 @@ export const App: React.FC = () => {
       </div>
 
       <AppModals
-        isScratchpadOpen={isScratchpadOpen}
-        onCloseScratchpad={() => setIsScratchpadOpen(false)}
-        isStatsOpen={isStatsOpen}
-        onCloseStats={() => setIsStatsOpen(false)}
+        isScratchpadOpen={isScratchpadOpen} onCloseScratchpad={() => setIsScratchpadOpen(false)}
+        isStatsOpen={isStatsOpen} onCloseStats={() => setIsStatsOpen(false)}
         metrics={metrics}
-        isSettingsOpen={isSettingsOpen}
-        onCloseSettings={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
+        isSettingsOpen={isSettingsOpen} onCloseSettings={() => setIsSettingsOpen(false)}
+        settings={settings} onUpdateSettings={handleUpdateSettings}
         onPlayAlarm={playAlarm}
         userProfile={userProfile}
         settingsTab={settingsTab}
-        isZenModeOpen={isZenModeOpen}
-        onCloseZenMode={() => setIsZenModeOpen(false)}
+        isZenModeOpen={isZenModeOpen} onCloseZenMode={() => setIsZenModeOpen(false)}
         timer={timer}
         activeSubtask={activeSubtask}
         activeQuote={activeQuote}
-        ambient={ambient}
-        onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}
+        ambient={ambient} onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}
+        isCommandPaletteOpen={isCommandPaletteOpen} onCloseCommandPalette={() => setIsCommandPaletteOpen(false)}
+        onNavigate={setCurrentView} onOpenProjectDetail={handleOpenProjectDetail}
+        onOpenGroup={() => setCurrentView('groups')} onOpenZenMode={() => setIsZenModeOpen(true)}
+        onOpenSettings={handleOpenSettings} onOpenStats={() => setIsStatsOpen(true)}
+        onToggleTheme={toggleColorMode} projects={projects} subtasks={subtasks}
       />
     </div>
   );
