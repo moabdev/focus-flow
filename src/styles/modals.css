@@ -65,7 +65,7 @@
 .modal-tab-btn.active {
   color: var(--accent-primary);
   border-bottom-color: var(--accent-primary);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--overlay-subtle);
 }
 
 .modal-content {
@@ -112,7 +112,7 @@
 .switch-slider {
   position: absolute;
   inset: 0;
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--overlay-hover);
   border-radius: var(--radius-full);
   transition: 0.3s;
 }
@@ -226,7 +226,7 @@ input:checked + .switch-slider:before {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   border-radius: var(--radius-sm);
   padding: 0.25rem 0.6rem;
@@ -262,7 +262,7 @@ input:checked + .switch-slider:before {
   align-items: center;
   gap: 0.4rem;
   padding: 0.35rem 0.65rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
@@ -339,7 +339,7 @@ input:checked + .switch-slider:before {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   border-radius: var(--radius-sm);
   padding: 0.25rem 0.5rem;
@@ -545,7 +545,7 @@ input:checked + .switch-slider:before {
 }
 
 .export-report-card:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--overlay-hover);
   border-color: var(--border-glass);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -573,7 +573,7 @@ input:checked + .switch-slider:before {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   display: flex;
   align-items: center;
@@ -653,7 +653,7 @@ input:checked + .switch-slider:before {
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 60px var(--shadow-ambient), 0 0 0 1px var(--border-glass-subtle);
   padding: 1.75rem;
   display: flex;
   flex-direction: column;
@@ -679,7 +679,7 @@ input:checked + .switch-slider:before {
 
 .confirm-modal-close-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--overlay-subtle);
   border-color: var(--border-glass-subtle);
   transform: scale(1.05);
 }

@@ -48,7 +48,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({
           right: '2rem',
           width: '44px',
           height: '44px',
-          background: 'rgba(255, 255, 255, 0.08)',
+          background: 'var(--overlay-subtle)',
         }}
       >
         <Minimize2 size={20} />
@@ -126,7 +126,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          background: 'rgba(255, 255, 255, 0.05)',
+          background: 'var(--overlay-subtle)',
           padding: '0.5rem 1rem',
           borderRadius: 'var(--radius-full)',
           fontSize: '0.85rem',

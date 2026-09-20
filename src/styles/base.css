@@ -94,19 +94,19 @@ input, select, textarea {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-subtle);
   color: var(--text-primary);
   border-color: var(--border-glass-subtle);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--overlay-hover);
   border-color: var(--border-glass);
 }
 
 .btn-featured {
   background: linear-gradient(135deg, var(--accent-primary), #7928ca);
-  color: #ffffff;
+  color: #ffffff; /* Featured is always dark colored gradient */
   border: none;
   box-shadow: 0 4px 16px rgba(121, 40, 202, 0.35);
 }

@@ -117,7 +117,7 @@
   justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -309,8 +309,8 @@
   font-weight: 700;
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.15);
-  color: inherit;
+  background: var(--overlay-subtle);
+  color: var(--text-primary);
 }
 
 .collapsed-mini-badge {
@@ -344,7 +344,7 @@
   letter-spacing: 0.01em;
   padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15));
+  border: 1px solid var(--border-glass);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
   white-space: nowrap;
   pointer-events: none;

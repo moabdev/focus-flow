@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Plus, Minus, Maximize2, RotateCcw, PanelRight, X } from 'lucide-react';
 import { MindMap, MindMapNode } from '../../types';
 import { NodeDetailsDrawer } from './NodeDetailsDrawer';
@@ -151,7 +151,7 @@ export const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
           style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
           onMouseDown={onMD} onMouseMove={onMM} onMouseUp={onMU} onMouseLeave={onMU} onWheel={onWheel}>
 
-          <div style={{ position: 'absolute', top: '0.75rem', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.65)', fontSize: '0.68rem', padding: '0.2rem 0.65rem', borderRadius: '999px', pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', top: '0.75rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--overlay-active)', color: 'var(--text-secondary)', fontSize: '0.68rem', padding: '0.2rem 0.65rem', borderRadius: '999px', pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap' }}>
             Arraste para mover · Scroll para zoom · Duplo-clique para editar
           </div>
 

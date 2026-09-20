@@ -26,7 +26,7 @@
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-glass);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 16px 36px var(--shadow-ambient), 0 0 0 1px var(--border-glass-subtle);
   pointer-events: auto;
   overflow: hidden;
   animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -89,7 +89,7 @@
 
 .toast-close-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--overlay-hover);
 }
 
 .toast-progress-bar {
@@ -98,7 +98,7 @@
   left: 0;
   right: 0;
   height: 2.5px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--overlay-active);
   transform-origin: left;
   animation: toastProgress linear forwards;
 }

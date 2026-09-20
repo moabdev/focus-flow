@@ -136,8 +136,8 @@
 /* Estado Concluído */
 .subtask-item.completed {
   opacity: 0.6;
-  background: rgba(255, 255, 255, 0.015);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
+  border-color: var(--border-glass-subtle);
 }
 
 .subtask-item.completed:hover {
@@ -158,7 +158,7 @@
   min-height: 22px;
   border-radius: 6px;
   border: 2px solid var(--border-glass);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,7 +250,7 @@
   font-size: 0.72rem;
   padding: 0.15rem 0.48rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   color: var(--text-muted);
   font-weight: 500;
@@ -259,7 +259,7 @@
 }
 
 .subtask-meta-chip:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--overlay-hover);
   color: var(--text-secondary);
 }
 
@@ -366,7 +366,7 @@
   gap: 0.3rem;
   padding: 0.32rem 0.6rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   color: var(--text-secondary);
   font-size: 0.74rem;
@@ -407,7 +407,7 @@
   font-weight: 600;
   padding: 0.32rem 0.6rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-subtle);
   border: 1px solid var(--border-glass-subtle);
   color: var(--text-secondary);
   cursor: pointer;

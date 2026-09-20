@@ -4,6 +4,15 @@
    Inclui Scrollbars Customizadas com Thumb e Track Dinâmicos por Tema
    ========================================================================== */
 
+/* Overlays Semânticos Globais (Padrão = Dark Mode) */
+:root {
+  --overlay-hover: var(--white-alpha-10);
+  --overlay-active: var(--white-alpha-20);
+  --overlay-subtle: var(--white-alpha-05);
+  --text-inverse: #000000;
+}
+
+
 /* 1. TEMA RUBY FOCUS (Carmim & Rosa Moderno) */
 :root[data-theme='ruby'][data-color-mode='dark'],
 :root[data-theme='ruby']:not([data-color-mode='light']) {
@@ -125,6 +134,10 @@
   --text-secondary: #334155;
   --text-muted: #64748b;
   --border-glass-subtle: rgba(0, 0, 0, 0.08);
+  --overlay-hover: var(--black-alpha-05);
+  --overlay-active: var(--black-alpha-10);
+  --overlay-subtle: var(--black-alpha-05);
+  --text-inverse: #ffffff;
 }
 
 :root[data-theme='ruby'][data-color-mode='light'] {
