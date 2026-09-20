@@ -12,18 +12,26 @@ import {
   Eye,
   Edit3,
   Columns,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 
 interface NotionToolbarProps {
   onInsertText: (prefix: string, suffix?: string, placeholder?: string) => void;
   viewMode: 'edit' | 'preview' | 'split';
   setViewMode: (mode: 'edit' | 'preview' | 'split') => void;
+  isListening?: boolean;
+  onToggleSpeech?: () => void;
+  isSpeechSupported?: boolean;
 }
 
 export const NotionToolbar: React.FC<NotionToolbarProps> = ({
   onInsertText,
   viewMode,
   setViewMode,
+  isListening = false,
+  onToggleSpeech,
+  isSpeechSupported = true,
 }) => {
   return (
     <div className="notion-toolbar">
@@ -91,6 +99,25 @@ export const NotionToolbar: React.FC<NotionToolbarProps> = ({
         >
           <Italic size={16} />
         </button>
+
+        {/* Ditado por Voz / Transcrição */}
+        {onToggleSpeech && (
+          <button
+            type="button"
+            className={`notion-tool-btn notion-mic-btn ${isListening ? 'listening' : ''}`}
+            title={
+              !isSpeechSupported
+                ? 'Ditado por voz não suportado neste navegador'
+                : isListening
+                ? 'Parar Gravação (Gravando...)'
+                : 'Ditado por Voz / Transcrever Notas (Alt+D)'
+            }
+            onClick={onToggleSpeech}
+            aria-label="Ditado por voz"
+          >
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+          </button>
+        )}
       </div>
 
       {/* Alternador de Visualização */}
