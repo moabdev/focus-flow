@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="app-header">
       <div className="brand-section">
         <div className="brand-logo">
-          <div className="brand-logo-icon">F</div>
+          <img src="/logo.png" alt="FocusFlow" className="brand-logo-img" />
           <span>FocusFlow</span>
         </div>
 
