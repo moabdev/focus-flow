@@ -165,4 +165,72 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
       );
     });
   });
+
+  describe('5. Envio via Brevo (300 e-mails/dia = 9.000/mês grátis)', () => {
+    it('deve despachar para /api/send-invite com provedor brevo quando configurado', async () => {
+      emailService.saveConfig({
+        provider: 'brevo',
+        brevoApiKey: 'xkeysib-test-12345',
+        brevoSenderEmail: 'admin@estudos.com',
+        brevoSenderName: 'FocusFlow Estudos',
+      });
+
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ success: true, messageId: '<msg-123@brevo>' }),
+      } as any);
+
+      const result = await emailService.sendGroupInvite({
+        toEmail: 'novoaluno@gmail.com',
+        group: mockGroup,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.mode).toBe('brevo');
+      expect(result.message).toContain('300/dia');
+      expect(fetchSpy).toHaveBeenCalledWith(
+        '/api/send-invite',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"provider":"brevo"'),
+        })
+      );
+    });
+  });
+
+  describe('6. Gestão de Cota Diária (300 no Brevo / 100 no Resend)', () => {
+    it('deve calcular cota restante de 300 para Brevo', () => {
+      emailService.saveConfig({ provider: 'brevo' });
+      const usage = emailService.getDailyUsage();
+      expect(usage.limit).toBe(300);
+      expect(usage.remaining).toBe(300);
+      expect(usage.count).toBe(0);
+    });
+
+    it('deve bloquear envio quando a cota diária for atingida', async () => {
+      emailService.saveConfig({ provider: 'brevo' });
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Simula 300 envios registrados hoje
+      const fakeHistory = Array.from({ length: 300 }, (_, i) => ({
+        email: `aluno${i}@gmail.com`,
+        groupId: mockGroup.id,
+        groupCode: mockGroup.code,
+        sentAt: `${todayStr}T10:00:00.000Z`,
+      }));
+      localStorage.setItem('focusflow_sent_invites', JSON.stringify(fakeHistory));
+
+      const usage = emailService.getDailyUsage();
+      expect(usage.count).toBe(300);
+      expect(usage.remaining).toBe(0);
+
+      const result = await emailService.sendGroupInvite({
+        toEmail: 'extra@gmail.com',
+        group: mockGroup,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Limite diário de 300 e-mails atingido hoje');
+    });
+  });
 });
