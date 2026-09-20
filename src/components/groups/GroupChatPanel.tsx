@@ -11,6 +11,7 @@ import {
   BookOpen,
   Mail,
   Edit3,
+  Info,
 } from 'lucide-react';
 import { StudyGroup, GroupMessage, GroupMember } from '../../types';
 import { useToast } from '../../context/ToastContext';
@@ -18,6 +19,7 @@ import { ConfirmModal } from '../common/ConfirmModal';
 import { GroupRulesModal } from './GroupRulesModal';
 import { InviteEmailModal } from './InviteEmailModal';
 import { EditGroupModal } from './EditGroupModal';
+import { GroupInfoModal } from './GroupInfoModal';
 
 interface GroupChatPanelProps {
   group: StudyGroup;
@@ -66,6 +68,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isEmailInviteModalOpen, setIsEmailInviteModalOpen] = useState(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const isAdmin = propIsAdmin ?? isCreator;
@@ -109,26 +112,36 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
 
   return (
     <div className="group-chat-panel glass-panel">
-      {/* Topo do Chat Compacto & Funcional */}
+      {/* Topo do Chat Compacto & Sem Sobreposição */}
       <div className="group-chat-header">
         <div className="group-chat-identity">
-          <div className="group-chat-icon-wrap">
+          <div
+            className="group-chat-icon-wrap"
+            onClick={() => setIsInfoModalOpen(true)}
+            title="Clique para ver informações completas da sala"
+          >
             <span className="group-chat-icon">{group.avatar_icon}</span>
           </div>
-          <div className="group-chat-titles">
-            <div className="group-chat-name-row">
-              <h3 className="group-chat-name">{group.name}</h3>
-              <span className="group-category-badge">{group.category}</span>
-              <span className="group-code-pill" title={`Código de Convite: ${group.code}`}>
-                {group.code}
-              </span>
-            </div>
-            {group.description && (
-              <p className="group-chat-desc" title={group.description}>
-                {group.description}
-              </p>
-            )}
+          <div
+            className="group-chat-titles"
+            onClick={() => setIsInfoModalOpen(true)}
+            title="Clique para ver informações completas da sala"
+          >
+            <h3 className="group-chat-name">{group.name}</h3>
+            <span className="group-chat-subinfo">
+              {group.category} • {group.code}
+            </span>
           </div>
+
+          <button
+            type="button"
+            className="group-info-pill-btn"
+            onClick={() => setIsInfoModalOpen(true)}
+            title="Ver detalhes da sala, descrição completa e código"
+          >
+            <Info size={13} />
+            <span>Info</span>
+          </button>
         </div>
 
         {/* Toolbar Unificada de Ações do Chat */}
@@ -383,6 +396,19 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           onLeaveGroup(group.id);
         }}
         onCancel={() => setIsLeaveModalOpen(false)}
+      />
+
+      {/* Modal de Informações da Sala (Sobre o Grupo) */}
+      <GroupInfoModal
+        isOpen={isInfoModalOpen}
+        group={group}
+        members={members}
+        isAdmin={isAdmin}
+        isCreator={isCreator}
+        onClose={() => setIsInfoModalOpen(false)}
+        onOpenRules={() => setIsRulesModalOpen(true)}
+        onOpenEmailInvite={() => setIsEmailInviteModalOpen(true)}
+        onOpenEdit={() => setIsEditGroupModalOpen(true)}
       />
 
       {/* Modal de Visualização de Regras */}
