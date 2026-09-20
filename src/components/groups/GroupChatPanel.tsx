@@ -20,6 +20,7 @@ import { GroupRulesModal } from './GroupRulesModal';
 import { InviteEmailModal } from './InviteEmailModal';
 import { EditGroupModal } from './EditGroupModal';
 import { GroupInfoModal } from './GroupInfoModal';
+import { GroupMembersModal } from './GroupMembersModal';
 
 interface GroupChatPanelProps {
   group: StudyGroup;
@@ -33,6 +34,8 @@ interface GroupChatPanelProps {
   onLeaveGroup: (groupId: string) => void;
   onDeleteGroup: (groupId: string) => void;
   onUpdateGroup?: (groupId: string, data: Partial<StudyGroup>) => void;
+  onOpenMembersModal?: () => void;
+  onRemoveMember?: (member: GroupMember) => void;
   showMembersPanel?: boolean;
   onToggleMembersPanel?: () => void;
 }
@@ -58,6 +61,8 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   onLeaveGroup,
   onDeleteGroup,
   onUpdateGroup,
+  onOpenMembersModal,
+  onRemoveMember,
   showMembersPanel,
   onToggleMembersPanel,
 }) => {
@@ -69,6 +74,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   const [isEmailInviteModalOpen, setIsEmailInviteModalOpen] = useState(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const isAdmin = propIsAdmin ?? isCreator;
@@ -147,6 +153,32 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         {/* Toolbar Unificada de Ações do Chat */}
         <div className="group-chat-toolbar">
           <div className="group-chat-pills-row">
+            {/* Botão de Membros da Sala (Abre modal de membros e status ao vivo) */}
+            <button
+              className="group-members-btn"
+              onClick={() => {
+                if (onOpenMembersModal) {
+                  onOpenMembersModal();
+                } else if (onToggleMembersPanel) {
+                  onToggleMembersPanel();
+                } else {
+                  setIsMembersModalOpen(true);
+                }
+              }}
+              title={`Ver ${group.member_count} membros da sala e status ao vivo`}
+              type="button"
+            >
+              <Users size={13} />
+              <span>Membros</span>
+              <span className="members-count-pill">{group.member_count}</span>
+              {activeFocusingMembers.length > 0 && (
+                <span
+                  className="live-dot-mini"
+                  title={`${activeFocusingMembers.length} em foco`}
+                />
+              )}
+            </button>
+
             {/* Botão de Regras */}
             <button
               className="group-rules-btn"
@@ -185,23 +217,6 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           </div>
 
           <div className="group-header-actions">
-            {onToggleMembersPanel ? (
-              <button
-                type="button"
-                className={`group-members-toggle-btn ${showMembersPanel ? 'active' : ''}`}
-                onClick={onToggleMembersPanel}
-                title={showMembersPanel ? 'Ocultar membros' : 'Exibir membros'}
-              >
-                <Users size={14} />
-                <span>{group.member_count}</span>
-              </button>
-            ) : (
-              <div className="group-members-count-indicator">
-                <Users size={14} />
-                <span>{group.member_count}</span>
-              </div>
-            )}
-
             {/* Botão Editar Grupo (Apenas Administrador) */}
             {isAdmin && onUpdateGroup && (
               <button
@@ -434,6 +449,19 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           group={group}
           onClose={() => setIsEditGroupModalOpen(false)}
           onUpdateGroup={onUpdateGroup}
+        />
+      )}
+
+      {/* Modal de Membros da Sala (para visualização direta no painel) */}
+      {!onOpenMembersModal && (
+        <GroupMembersModal
+          isOpen={isMembersModalOpen}
+          group={group}
+          members={members}
+          isAdmin={isAdmin}
+          isCreator={isCreator}
+          onClose={() => setIsMembersModalOpen(false)}
+          onRemoveMember={onRemoveMember}
         />
       )}
     </div>

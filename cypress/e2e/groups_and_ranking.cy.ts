@@ -21,10 +21,10 @@ describe('Grupos de Estudo, Ranking Semanal e Página Individual de Projetos', (
   it('deve alternar para a visualização de Grupos de Estudo e enviar uma mensagem no chat', () => {
     cy.contains('nav.sidebar-nav button', 'Grupos').click();
 
-    // Deve exibir a interface de grupos e chat
+    // Deve exibir a interface de grupos e chat expandido
     cy.get('.study-groups-container').should('be.visible');
     cy.get('.group-chat-panel').should('be.visible');
-    cy.get('.group-members-panel').should('be.visible');
+    cy.get('.group-members-btn').should('be.visible');
 
     // Digita e envia uma mensagem no chat
     const testMsg = 'Testando chat de estudos em tempo real no Cypress!';

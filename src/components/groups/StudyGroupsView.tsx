@@ -5,6 +5,7 @@ import { storageGroups, isSameUser, isGroupCreator } from '../../services/storag
 import { GroupChatPanel } from './GroupChatPanel';
 import { CreateGroupModal } from './CreateGroupModal';
 import { JoinGroupModal } from './JoinGroupModal';
+import { GroupMembersModal } from './GroupMembersModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 
@@ -24,6 +25,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
   const toast = useToast();
 
@@ -134,8 +136,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   };
 
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
-  const [showMembersPanel, setShowMembersPanel] = useState<boolean>(true);
-  const [mobileTab, setMobileTab] = useState<'groups' | 'chat' | 'members'>('chat');
+  const [mobileTab, setMobileTab] = useState<'groups' | 'chat'>('chat');
 
   const categories = ['Todas', ...Array.from(new Set(groups.map((g) => g.category)))];
 
@@ -150,66 +151,6 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   const getGroupFocusCount = (groupId: string) => {
     const gMembers = storageGroups.getMembers(groupId);
     return gMembers.filter((m) => m.current_status === 'focusing').length;
-  };
-
-  const formatSeconds = (sec: number) => {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    return `${h}h ${m}m`;
-  };
-
-  const focusingMembers = members.filter((m) => m.current_status === 'focusing');
-  const breakMembers = members.filter((m) => m.current_status === 'break');
-  const idleMembers = members.filter((m) => m.current_status === 'idle');
-
-  const renderMemberRow = (m: GroupMember, statusClass: string = '') => {
-    const isItemAdmin = m.role === 'admin' || (activeGroup && isSameUser(m.user_name, activeGroup.created_by));
-    const canRemove = isCreator && !isItemAdmin && !isSameUser(m.user_name, currentUserName);
-
-    return (
-      <div key={m.id} className={`member-item-row ${statusClass}`}>
-        <div className="member-avatar-wrap">
-          <div className="member-avatar-circle">
-            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
-          </div>
-          <span
-            className={`member-status-indicator ${m.current_status}`}
-            title={
-              m.current_status === 'focusing'
-                ? 'Em foco no Pomodoro'
-                : m.current_status === 'break'
-                ? 'Em pausa rápida'
-                : 'Disponível'
-            }
-          />
-        </div>
-        <div className="member-info">
-          <div className="member-name-row">
-            <span className="member-name">{m.user_name}</span>
-            {isItemAdmin && <span className="member-role-badge admin" title="Administrador do Grupo">👑 Admin</span>}
-          </div>
-          {m.current_task_title && (
-            <div className="member-task-sub" title={m.current_task_title}>
-              🎯 {m.current_task_title}
-            </div>
-          )}
-          <div className="member-weekly-time">
-            {m.current_status === 'break' ? '☕ Pausa • ' : ''}
-            ⏱️ {formatSeconds(m.weekly_seconds)} esta semana
-          </div>
-        </div>
-        {canRemove && (
-          <button
-            type="button"
-            className="member-remove-btn"
-            title={`Remover ${m.user_name} do grupo`}
-            onClick={() => setMemberToRemove(m)}
-          >
-            <UserMinus size={14} />
-          </button>
-        )}
-      </div>
-    );
   };
 
   return (
@@ -274,16 +215,16 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
         </button>
         <button
           type="button"
-          className={`mobile-tab-btn ${mobileTab === 'members' ? 'active' : ''}`}
-          onClick={() => setMobileTab('members')}
+          className="mobile-tab-btn"
+          onClick={() => setIsMembersModalOpen(true)}
           title={`Membros (${members.length})`}
         >
           <span className="mobile-tab-label">Membros ({members.length})</span>
         </button>
       </div>
 
-      {/* Layout Fluido de Alta Amplitude (3 Colunas) */}
-      <div className={`groups-layout ${!showMembersPanel ? 'hide-members' : ''} mobile-${mobileTab}`}>
+      {/* Layout Fluido Expansivo (2 Colunas Widescreen) */}
+      <div className={`groups-layout mobile-${mobileTab}`}>
         {/* Coluna 1: Lista de Grupos & Canais */}
         <div className="groups-sidebar-panel glass-panel">
           {/* Caixa de Busca */}
@@ -378,7 +319,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
           </div>
         </div>
 
-        {/* Coluna 2: Feed e Painel do Chat */}
+        {/* Coluna 2: Feed e Painel do Chat (Ocupa toda a amplitude horizontal) */}
         {activeGroup ? (
           <GroupChatPanel
             group={activeGroup}
@@ -392,8 +333,8 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
             onLeaveGroup={handleLeaveGroup}
             onDeleteGroup={handleDeleteGroup}
             onUpdateGroup={handleUpdateGroup}
-            showMembersPanel={showMembersPanel}
-            onToggleMembersPanel={() => setShowMembersPanel((prev) => !prev)}
+            onOpenMembersModal={() => setIsMembersModalOpen(true)}
+            onRemoveMember={(m) => setMemberToRemove(m)}
           />
         ) : (
           <div className="group-chat-panel glass-panel empty-selection">
@@ -402,62 +343,21 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
             <p>Escolha uma sala ao lado ou crie uma nova para estudar em comunidade.</p>
           </div>
         )}
-
-        {/* Coluna 3: Membros do Grupo e Status ao Vivo */}
-        {showMembersPanel && (
-          <div className="group-members-panel glass-panel">
-            <div className="group-members-header">
-              <div className="group-members-title">
-                <Users size={15} />
-                <span>Membros ({members.length})</span>
-              </div>
-              {focusingMembers.length > 0 && (
-                <span className="members-focusing-badge">
-                  <span className="live-dot-mini" /> {focusingMembers.length} em foco
-                </span>
-              )}
-            </div>
-
-            <div className="members-scroll-area">
-              {/* Seção 1: Focando Agora */}
-              {focusingMembers.length > 0 && (
-                <div className="members-group-section">
-                  <div className="members-section-label focusing">
-                    <span>Focando Agora — {focusingMembers.length}</span>
-                  </div>
-                  {focusingMembers.map((m) => renderMemberRow(m, 'focusing'))}
-                </div>
-              )}
-
-              {/* Seção 2: Em Pausa */}
-              {breakMembers.length > 0 && (
-                <div className="members-group-section">
-                  <div className="members-section-label break">
-                    <span>Em Pausa — {breakMembers.length}</span>
-                  </div>
-                  {breakMembers.map((m) => renderMemberRow(m))}
-                </div>
-              )}
-
-              {/* Seção 3: Disponíveis */}
-              {idleMembers.length > 0 && (
-                <div className="members-group-section">
-                  <div className="members-section-label idle">
-                    <span>Disponíveis — {idleMembers.length}</span>
-                  </div>
-                  {idleMembers.map((m) => renderMemberRow(m))}
-                </div>
-              )}
-
-              {members.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                  Nenhum membro nesta sala ainda.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Modal de Membros da Sala (Aberto via botão de Membros) */}
+      {activeGroup && (
+        <GroupMembersModal
+          isOpen={isMembersModalOpen}
+          group={activeGroup}
+          members={members}
+          currentUserName={currentUserName}
+          isAdmin={isCreator}
+          isCreator={isCreator}
+          onClose={() => setIsMembersModalOpen(false)}
+          onRemoveMember={(m) => setMemberToRemove(m)}
+        />
+      )}
 
       {/* Modal de Criação de Grupo */}
       <CreateGroupModal
