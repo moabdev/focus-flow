@@ -32,7 +32,6 @@ export function useProjects() {
       setProjects(loadedProjects);
       setSubtasks(loadedSubtasks);
 
-      // Define subtask ativa inicial
       const firstPending = loadedSubtasks.find((s) => !s.is_completed);
       if (firstPending) {
         setActiveSubtaskId(firstPending.id);
@@ -52,7 +51,6 @@ export function useProjects() {
     [projects, activeSubtask]
   );
 
-  // Lista de disciplinas únicas
   const disciplines = useMemo(() => {
     const set = new Set<string>();
     subtasks.forEach((s) => {
@@ -61,7 +59,7 @@ export function useProjects() {
     return Array.from(set);
   }, [subtasks]);
 
-  // --- Operações com Projetos ---
+  // Operações com Projetos
   const createProject = useCallback(
     async (data: {
       title: string;
@@ -82,7 +80,6 @@ export function useProjects() {
         total_elapsed_seconds: 0,
         created_at: new Date().toISOString(),
       };
-
       const updated = [newProject, ...projects];
       setProjects(updated);
       await storageService.saveProject(newProject);
@@ -95,7 +92,6 @@ export function useProjects() {
     async (id: string, updates: Partial<Project>) => {
       const index = projects.findIndex((p) => p.id === id);
       if (index === -1) return;
-
       const updatedProject = { ...projects[index], ...updates };
       const updatedList = [...projects];
       updatedList[index] = updatedProject;
@@ -112,20 +108,17 @@ export function useProjects() {
       setProjects(updatedProjects);
       setSubtasks(updatedSubtasks);
 
-      if (selectedProjectId === id) {
-        setSelectedProjectId('todos');
-      }
+      if (selectedProjectId === id) setSelectedProjectId('todos');
       if (activeSubtask && activeSubtask.project_id === id) {
         const next = updatedSubtasks.find((s) => !s.is_completed) || updatedSubtasks[0] || null;
         setActiveSubtaskId(next ? next.id : null);
       }
-
       await storageService.deleteProject(id);
     },
     [projects, subtasks, selectedProjectId, activeSubtask]
   );
 
-  // --- Operações com Subtasks ---
+  // Operações com Subtasks
   const createSubtask = useCallback(
     async (
       projectId: string,
@@ -137,7 +130,6 @@ export function useProjects() {
       due_date?: string
     ) => {
       if (!title.trim()) return null;
-
       const newSubtask: Subtask = {
         id: `sub-${Date.now()}`,
         project_id: projectId,
@@ -152,14 +144,9 @@ export function useProjects() {
         due_date,
         created_at: new Date().toISOString(),
       };
-
       const updated = [newSubtask, ...subtasks];
       setSubtasks(updated);
-
-      if (!activeSubtaskId) {
-        setActiveSubtaskId(newSubtask.id);
-      }
-
+      if (!activeSubtaskId) setActiveSubtaskId(newSubtask.id);
       await storageService.saveSubtask(newSubtask);
       return newSubtask;
     },
@@ -170,7 +157,6 @@ export function useProjects() {
     async (id: string, updates: Partial<Subtask>) => {
       const index = subtasks.findIndex((s) => s.id === id);
       if (index === -1) return;
-
       const updatedSubtask = { ...subtasks[index], ...updates };
       const updatedList = [...subtasks];
       updatedList[index] = updatedSubtask;
@@ -184,12 +170,10 @@ export function useProjects() {
     async (id: string) => {
       const updated = subtasks.filter((s) => s.id !== id);
       setSubtasks(updated);
-
       if (activeSubtaskId === id) {
         const next = updated.find((s) => !s.is_completed) || updated[0] || null;
         setActiveSubtaskId(next ? next.id : null);
       }
-
       await storageService.deleteSubtask(id);
     },
     [subtasks, activeSubtaskId]
@@ -199,17 +183,12 @@ export function useProjects() {
     async (id: string) => {
       const target = subtasks.find((s) => s.id === id);
       if (!target) return;
-
       const nextCompleted = !target.is_completed;
       const updatedSubtask: Subtask = { ...target, is_completed: nextCompleted };
 
       if (nextCompleted) {
         try {
-          confetti({
-            particleCount: 55,
-            spread: 60,
-            origin: { y: 0.7 },
-          });
+          confetti({ particleCount: 55, spread: 60, origin: { y: 0.7 } });
         } catch {
           // ignora caso não suporte canvas
         }
@@ -222,37 +201,28 @@ export function useProjects() {
     [subtasks]
   );
 
-  // Incrementa tempo decorrido na subtask e no projeto
   const addTimeSpent = useCallback(
     async (subtaskId: string, seconds: number) => {
       if (seconds <= 0) return;
-
       const result = await storageService.addTimeSpent(subtaskId, seconds);
       if (result.subtask) {
-        setSubtasks((prev) =>
-          prev.map((s) => (s.id === subtaskId ? result.subtask! : s))
-        );
+        setSubtasks((prev) => prev.map((s) => (s.id === subtaskId ? result.subtask! : s)));
       }
       if (result.project) {
-        setProjects((prev) =>
-          prev.map((p) => (p.id === result.project!.id ? result.project! : p))
-        );
+        setProjects((prev) => prev.map((p) => (p.id === result.project!.id ? result.project! : p)));
       }
     },
     []
   );
 
-  // Incrementa contagem de pomodoros concluídos
   const incrementPomodoro = useCallback(
     async (subtaskId: string) => {
       const target = subtasks.find((s) => s.id === subtaskId);
       if (!target) return;
-
       const updatedSubtask: Subtask = {
         ...target,
         pomodoros_completed: target.pomodoros_completed + 1,
       };
-
       const updatedList = subtasks.map((s) => (s.id === subtaskId ? updatedSubtask : s));
       setSubtasks(updatedList);
       await storageService.saveSubtask(updatedSubtask);
@@ -260,20 +230,13 @@ export function useProjects() {
     [subtasks]
   );
 
-  // Subtasks filtradas por projeto selecionado, status e busca
   const filteredSubtasks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return subtasks.filter((sub) => {
-      if (selectedProjectId !== 'todos' && sub.project_id !== selectedProjectId) {
-        return false;
-      }
-      if (filterStatus === 'pendentes' && sub.is_completed) {
-        return false;
-      }
-      if (filterStatus === 'concluidas' && !sub.is_completed) {
-        return false;
-      }
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
+      if (selectedProjectId !== 'todos' && sub.project_id !== selectedProjectId) return false;
+      if (filterStatus === 'pendentes' && sub.is_completed) return false;
+      if (filterStatus === 'concluidas' && !sub.is_completed) return false;
+      if (query) {
         const matchesTitle = sub.title.toLowerCase().includes(query);
         const matchesNotes = (sub.notes || '').toLowerCase().includes(query);
         const matchesDiscipline = (sub.discipline || '').toLowerCase().includes(query);
