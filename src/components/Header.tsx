@@ -74,6 +74,12 @@ export const Header: React.FC<HeaderProps> = ({
           <span>FocusFlow</span>
         </div>
 
+        <div className="header-view-title" aria-current="page">
+          {currentView === 'timer' && 'Foco & Pomodoro'}
+          {currentView === 'projects' && 'Projetos & Tarefas'}
+          {currentView === 'calendar' && 'Calendário & Time-Blocking'}
+        </div>
+
         <button
           className="streak-badge"
           onClick={onOpenStats}

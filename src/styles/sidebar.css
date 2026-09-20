@@ -23,25 +23,33 @@
   position: sticky;
   top: 0;
   z-index: 150;
-  padding: 1.25rem 0.85rem;
-  transition: width var(--transition-smooth), padding var(--transition-smooth);
+  padding: 0;
+  transition: width var(--transition-smooth);
   overflow-x: hidden;
   box-shadow: 4px 0 24px var(--shadow-ambient);
 }
 
 .app-sidebar.collapsed {
   width: 74px;
-  padding: 1.25rem 0.5rem;
+  padding: 0;
 }
 
-/* Topo da Sidebar */
+/* Topo da Sidebar - Alinhado a 64px com o Header Topbar */
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
-  min-height: 38px;
+  height: 64px;
+  min-height: 64px;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border-glass-subtle);
   gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+.app-sidebar.collapsed .sidebar-header {
+  padding: 0 0.5rem;
+  justify-content: center;
 }
 
 .sidebar-brand {
@@ -98,7 +106,11 @@
 
 /* Badge de Ofensiva / Streak */
 .sidebar-streak-wrap {
-  margin-bottom: 1rem;
+  padding: 1rem 0.85rem 0.25rem;
+}
+
+.app-sidebar.collapsed .sidebar-streak-wrap {
+  padding: 1rem 0.5rem 0.25rem;
 }
 
 .sidebar-streak-badge {
@@ -154,6 +166,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  padding: 0.5rem 0.85rem 0;
+}
+
+.app-sidebar.collapsed .sidebar-nav {
+  padding: 0.5rem 0.5rem 0;
 }
 
 .sidebar-nav-section-title {

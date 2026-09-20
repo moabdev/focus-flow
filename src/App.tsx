@@ -205,27 +205,27 @@ export const App: React.FC = () => {
       />
 
       <div className={`app-main-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <div className="app-container">
-          <Header
-            streakDays={metrics.streak.currentStreak}
-            colorMode={colorMode}
-            onToggleColorMode={toggleColorMode}
-            ambientSound={ambient}
-            ambientVolume={ambientVolume}
-            onSelectAmbient={setAmbient}
-            onSetAmbientVolume={setAmbientVolume}
-            userProfile={userProfile}
-            onGoogleLogin={handleGoogleLogin}
-            onSignOut={handleSignOut}
-            onOpenSettings={handleOpenSettings}
-            onOpenStats={() => setIsStatsOpen(true)}
-            onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
-            onEnterZenMode={() => setIsZenModeOpen(true)}
-            currentView={currentView}
-            onChangeView={setCurrentView}
-            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-          />
+        <Header
+          streakDays={metrics.streak.currentStreak}
+          colorMode={colorMode}
+          onToggleColorMode={toggleColorMode}
+          ambientSound={ambient}
+          ambientVolume={ambientVolume}
+          onSelectAmbient={setAmbient}
+          onSetAmbientVolume={setAmbientVolume}
+          userProfile={userProfile}
+          onGoogleLogin={handleGoogleLogin}
+          onSignOut={handleSignOut}
+          onOpenSettings={handleOpenSettings}
+          onOpenStats={() => setIsStatsOpen(true)}
+          onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
+          onEnterZenMode={() => setIsZenModeOpen(true)}
+          currentView={currentView}
+          onChangeView={setCurrentView}
+          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+        />
 
+        <main className="app-container">
           <AppViews
             currentView={currentView}
             setCurrentView={setCurrentView}
@@ -258,7 +258,7 @@ export const App: React.FC = () => {
             deleteEvent={deleteEvent}
             toggleEventCompleted={toggleEventCompleted}
           />
-        </div>
+        </main>
       </div>
 
       <AppModals
