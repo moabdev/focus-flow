@@ -175,40 +175,6 @@ Vamos focar juntos e bater nossas metas de estudo!`;
           </div>
         ) : (
           <form onSubmit={handleSendOneClick} className="modal-form" style={{ padding: '1.25rem 1.5rem', gap: '1rem' }}>
-            {(() => {
-              const quota = emailService.getDailyUsage();
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: quota.remaining > 10 ? 'rgba(252, 0, 56, 0.05)' : 'rgba(239, 68, 68, 0.1)',
-                    borderRadius: '6px',
-                    border: `1px solid ${quota.remaining > 10 ? 'rgba(252, 0, 56, 0.15)' : 'rgba(239, 68, 68, 0.3)'}`,
-                    fontSize: '0.8rem',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <span>⚡</span>
-                    <span>
-                      Cota diária Brevo: <strong>{quota.count}/{quota.limit}</strong> envios hoje
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      color: quota.remaining > 20 ? '#10b981' : quota.remaining > 0 ? '#f59e0b' : '#ef4444',
-                    }}
-                  >
-                    {quota.remaining > 0 ? `${quota.remaining} disponíveis` : `Cota de ${quota.limit}/dia atingida`}
-                  </span>
-                </div>
-              );
-            })()}
-
             <div className="form-group">
               <label className="form-label" htmlFor="recipient-email">
                 E-mail do Destinatário *

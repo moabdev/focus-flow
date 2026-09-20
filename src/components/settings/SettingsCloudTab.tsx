@@ -1,7 +1,6 @@
 import React from 'react';
-import { LogOut, Mail } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { SupabaseProfile } from '../../types';
-import { emailService } from '../../services/emailService';
 
 interface SettingsCloudTabProps {
   userProfile: SupabaseProfile | null;
@@ -18,9 +17,6 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
   onSyncToCloud,
   syncStatus,
 }) => {
-  const usage = emailService.getDailyUsage();
-  const isConfigured = emailService.isConfigured();
-
   return (
     <>
       <div className="cloud-info-card">
@@ -132,41 +128,6 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
           {syncStatus}
         </div>
       )}
-
-      {/* Status do Serviço de E-mail (Configuração via .env) */}
-      <div
-        className="glass-card"
-        style={{
-          marginTop: '1.25rem',
-          padding: '1rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <Mail size={18} color="var(--accent-primary)" />
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Envio de Convites (Brevo)</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {isConfigured ? 'Ativo via .env' : 'Configurado via .env'} • Cota: {usage.count}/300 hoje ({usage.remaining} restantes)
-            </div>
-          </div>
-        </div>
-        <span
-          style={{
-            fontSize: '0.75rem',
-            padding: '0.25rem 0.65rem',
-            borderRadius: '999px',
-            fontWeight: 700,
-            backgroundColor: isConfigured ? 'rgba(16, 185, 129, 0.12)' : 'rgba(252, 0, 56, 0.08)',
-            color: isConfigured ? '#10b981' : 'var(--accent-primary)',
-            border: `1px solid ${isConfigured ? 'rgba(16, 185, 129, 0.25)' : 'rgba(252, 0, 56, 0.2)'}`,
-          }}
-        >
-          {isConfigured ? '300/dia Ativo' : '300/dia'}
-        </span>
-      </div>
     </>
   );
 };
