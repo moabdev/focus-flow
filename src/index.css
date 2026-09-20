@@ -23,6 +23,8 @@
 @import './styles/groups-chat.css';
 @import './styles/ranking.css';
 @import './styles/drafts.css';
+@import './styles/flashcards.css';
+@import './styles/mindmaps.css';
 @import './styles/custom-select.css';
 @import './styles/toasts.css';
 @import './styles/command-palette.css';

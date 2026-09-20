@@ -11,6 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Layers,
+  GitFork,
 } from 'lucide-react';
 import { Project, AmbientSound, ColorMode, SupabaseProfile, AppViewMode } from '../types';
 import { SidebarProjectsList } from './sidebar/SidebarProjectsList';
@@ -239,6 +241,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Edit3 size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Rascunhos</span>}
+          </button>
+
+          <div className="sidebar-nav-section-title" style={{ marginTop: '0.75rem' }}>{!isCollapsed ? 'APRENDIZADO' : '•'}</div>
+
+          <button
+            className={`sidebar-nav-item ${currentView === 'flashcards' ? 'active' : ''}`}
+            onClick={() => handleNavClick('flashcards')}
+            title="Flashcards & Repetição Espaçada"
+            data-tooltip="Flashcards"
+          >
+            <Layers size={18} className="nav-icon" />
+            {!isCollapsed && <span className="nav-label">Flashcards</span>}
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${currentView === 'mindmaps' ? 'active' : ''}`}
+            onClick={() => handleNavClick('mindmaps')}
+            title="Mapas Mentais Interativos"
+            data-tooltip="Mapas Mentais"
+          >
+            <GitFork size={18} className="nav-icon" />
+            {!isCollapsed && <span className="nav-label">Mapas Mentais</span>}
           </button>
         </nav>
 

@@ -7,6 +7,8 @@ import { ProjectDetailView } from './projects/ProjectDetailView';
 import { StudyGroupsView } from './groups/StudyGroupsView';
 import { WeeklyLeaderboardView } from './ranking/WeeklyLeaderboardView';
 import { DraftsView } from './drafts/DraftsView';
+import { FlashcardsView } from './flashcards/FlashcardsView';
+import { MindMapsView } from './mindmaps/MindMapsView';
 import type {
   Quote,
   TimerMode,
@@ -267,6 +269,22 @@ export const AppViews: React.FC<AppViewsProps> = ({
         <DraftsView
           projects={projects}
           subtasks={subtasks}
+          onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
+
+      {/* Visão 8: Flashcards & Repetição Espaçada */}
+      {currentView === 'flashcards' && (
+        <FlashcardsView
+          projects={projects}
+          onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
+
+      {/* Visão 9: Mapas Mentais Interativos */}
+      {currentView === 'mindmaps' && (
+        <MindMapsView
+          projects={projects}
           onOpenTimerTab={() => setCurrentView('timer')}
         />
       )}
