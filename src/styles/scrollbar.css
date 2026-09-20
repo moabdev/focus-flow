@@ -1,0 +1,72 @@
+/* ==============================================================================
+   FocusFlow - Barras de Rolagem Customizadas (Custom Scrollbars)
+   Alinhadas perfeitamente ao tema ativo (Ruby, Ocean, Matcha, OLED, Sunset)
+   Padrão W3C (scrollbar-color & scrollbar-width) + WebKit/Blink
+   ============================================================================== */
+
+/* 1. PADRÃO MODERNO W3C (Baseline) */
+html,
+body,
+* {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+/* 2. CUSTOMIZAÇÃO PARA CHROME, SAFARI, EDGE, OPERA & WEBKIT */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent-primary);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 3. CONTAINERS ESPECÍFICOS COM SCROLL SUAVE E SLIM */
+.command-palette-list,
+.group-chat-messages,
+.group-members-list,
+.project-subtasks-list,
+.heatmap-scroll-area,
+.modal-content,
+.modal-box,
+.notion-modal-body,
+.notion-content-area,
+.scratchpad-content,
+.sidebar-projects-list {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbars super slim para listas compactas */
+.command-palette-list::-webkit-scrollbar,
+.heatmap-scroll-area::-webkit-scrollbar,
+.group-chat-messages::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}

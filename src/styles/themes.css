@@ -1,6 +1,7 @@
 /* ==========================================================================
    FocusFlow - Paletas Temáticas (Dark Mode & Light Mode)
    1. Ruby Focus  2. Deep Ocean  3. Matcha Zen  4. Midnight OLED  5. Sunset Glow
+   Inclui Scrollbars Customizadas com Thumb e Track Dinâmicos por Tema
    ========================================================================== */
 
 /* 1. TEMA RUBY FOCUS (Carmim & Rosa Moderno) */
@@ -21,6 +22,9 @@
   --shadow-ambient: rgba(0, 0, 0, 0.6);
   --ring-bg: rgba(255, 42, 95, 0.12);
   --ring-stroke: #ff2a5f;
+  --scrollbar-track: rgba(28, 18, 24, 0.4);
+  --scrollbar-thumb: rgba(255, 42, 95, 0.35);
+  --scrollbar-thumb-hover: #ff2a5f;
 }
 
 /* 2. TEMA DEEP OCEAN (Azul Safira & Ciano) */
@@ -40,6 +44,9 @@
   --shadow-ambient: rgba(0, 0, 0, 0.6);
   --ring-bg: rgba(14, 165, 233, 0.12);
   --ring-stroke: #0ea5e9;
+  --scrollbar-track: rgba(12, 28, 48, 0.4);
+  --scrollbar-thumb: rgba(14, 165, 233, 0.35);
+  --scrollbar-thumb-hover: #0ea5e9;
 }
 
 /* 3. TEMA MATCHA ZEN (Verde Sálvia & Esmeralda) */
@@ -59,6 +66,9 @@
   --shadow-ambient: rgba(0, 0, 0, 0.6);
   --ring-bg: rgba(16, 185, 129, 0.12);
   --ring-stroke: #10b981;
+  --scrollbar-track: rgba(15, 36, 26, 0.4);
+  --scrollbar-thumb: rgba(16, 185, 129, 0.35);
+  --scrollbar-thumb-hover: #10b981;
 }
 
 /* 4. TEMA MIDNIGHT OLED (Preto Absoluto & Neon Roxo) */
@@ -78,6 +88,9 @@
   --shadow-ambient: rgba(0, 0, 0, 0.8);
   --ring-bg: rgba(168, 85, 247, 0.12);
   --ring-stroke: #a855f7;
+  --scrollbar-track: rgba(18, 14, 24, 0.55);
+  --scrollbar-thumb: rgba(168, 85, 247, 0.35);
+  --scrollbar-thumb-hover: #a855f7;
 }
 
 /* 5. TEMA SUNSET GLOW (Âmbar & Laranja Quente) */
@@ -97,6 +110,9 @@
   --shadow-ambient: rgba(0, 0, 0, 0.6);
   --ring-bg: rgba(249, 115, 22, 0.12);
   --ring-stroke: #f97316;
+  --scrollbar-track: rgba(38, 20, 10, 0.4);
+  --scrollbar-thumb: rgba(249, 115, 22, 0.35);
+  --scrollbar-thumb-hover: #f97316;
 }
 
 /* ==========================================================================
@@ -122,6 +138,9 @@
   --accent-hover: #be123c;
   --ring-bg: rgba(225, 29, 72, 0.08);
   --ring-stroke: #e11d48;
+  --scrollbar-track: rgba(244, 63, 94, 0.06);
+  --scrollbar-thumb: rgba(225, 29, 72, 0.32);
+  --scrollbar-thumb-hover: #e11d48;
 }
 
 :root[data-theme='ocean'][data-color-mode='light'] {
@@ -135,19 +154,25 @@
   --accent-hover: #0369a1;
   --ring-bg: rgba(2, 132, 199, 0.08);
   --ring-stroke: #0284c7;
+  --scrollbar-track: rgba(14, 165, 233, 0.06);
+  --scrollbar-thumb: rgba(2, 132, 199, 0.32);
+  --scrollbar-thumb-hover: #0284c7;
 }
 
 :root[data-theme='matcha'][data-color-mode='light'] {
   --bg-gradient: radial-gradient(circle at 50% 15%, #f0fdf4 0%, #f6fcf8 60%, #eaf7ee 100%);
   --surface-glass: rgba(255, 255, 255, 0.75);
   --surface-glass-hover: rgba(255, 255, 255, 0.9);
-  --border-glass: rgba(16, 185, 129, 0.25);
+  --border-glass: rgba(168, 85, 247, 0.25);
   --accent-primary: #059669;
   --accent-secondary: #10b981;
   --accent-glow: rgba(5, 150, 105, 0.25);
   --accent-hover: #047857;
   --ring-bg: rgba(5, 150, 105, 0.08);
   --ring-stroke: #059669;
+  --scrollbar-track: rgba(16, 185, 129, 0.06);
+  --scrollbar-thumb: rgba(5, 150, 105, 0.32);
+  --scrollbar-thumb-hover: #059669;
 }
 
 :root[data-theme='oled'][data-color-mode='light'] {
@@ -161,6 +186,9 @@
   --accent-hover: #7e22ce;
   --ring-bg: rgba(147, 51, 234, 0.08);
   --ring-stroke: #9333ea;
+  --scrollbar-track: rgba(147, 51, 234, 0.06);
+  --scrollbar-thumb: rgba(147, 51, 234, 0.32);
+  --scrollbar-thumb-hover: #9333ea;
 }
 
 :root[data-theme='sunset'][data-color-mode='light'] {
@@ -174,4 +202,7 @@
   --accent-hover: #c2410c;
   --ring-bg: rgba(234, 88, 12, 0.08);
   --ring-stroke: #ea580c;
+  --scrollbar-track: rgba(234, 88, 12, 0.06);
+  --scrollbar-thumb: rgba(234, 88, 12, 0.32);
+  --scrollbar-thumb-hover: #ea580c;
 }
