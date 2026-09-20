@@ -481,6 +481,14 @@ export const storageGroups = {
 
     return this.joinGroup(targetGroup.id, userName);
   },
+
+  resetGroupsData(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.GROUPS);
+      localStorage.removeItem(STORAGE_KEYS.MEMBERS);
+      localStorage.removeItem(STORAGE_KEYS.MESSAGES);
+    } catch {}
+  },
 };
 
 export const storageGroupsService = storageGroups;

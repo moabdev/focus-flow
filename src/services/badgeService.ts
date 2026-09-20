@@ -234,6 +234,12 @@ class BadgeService {
 
     return newlyUnlocked;
   }
+
+  public clearBadges(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.UNLOCKED_BADGES);
+    } catch {}
+  }
 }
 
 export const badgeService = new BadgeService();

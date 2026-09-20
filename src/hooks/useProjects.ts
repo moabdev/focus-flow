@@ -252,6 +252,12 @@ export function useProjects() {
     });
   }, [subtasks, selectedProjectId, filterStatus, searchQuery]);
 
+  const clearProjects = useCallback(() => {
+    setProjects([]);
+    setSubtasks([]);
+    setActiveSubtaskId(null);
+  }, []);
+
   return {
     projects,
     subtasks,
@@ -276,5 +282,6 @@ export function useProjects() {
     toggleSubtaskCompleted,
     addTimeSpent,
     incrementPomodoro,
+    clearProjects,
   };
 }

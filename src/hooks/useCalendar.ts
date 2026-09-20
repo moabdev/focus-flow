@@ -80,6 +80,10 @@ export function useCalendar() {
     return events.filter((e) => e.start_time.startsWith(selectedDate));
   }, [events, selectedDate]);
 
+  const clearEvents = useCallback(() => {
+    setEvents([]);
+  }, []);
+
   return {
     events,
     selectedDate,
@@ -91,5 +95,6 @@ export function useCalendar() {
     updateEvent,
     deleteEvent,
     toggleEventCompleted,
+    clearEvents,
   };
 }

@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
 import { badgeService } from './services/badgeService';
+import { storageGroupsService } from './services/storageGroups';
 import { useToast } from './context/ToastContext';
 import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode } from './types';
 
@@ -74,6 +75,7 @@ export const App: React.FC = () => {
     toggleSubtaskCompleted,
     addTimeSpent,
     incrementPomodoro,
+    clearProjects,
   } = useProjects();
 
   const {
@@ -86,10 +88,11 @@ export const App: React.FC = () => {
     updateEvent,
     deleteEvent,
     toggleEventCompleted,
+    clearEvents,
   } = useCalendar();
 
-  const { activeQuote, getRandomQuote, addMantra, isRotating } = useQuotes();
-  const { metrics, addCompletedSession } = useStats();
+  const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
+  const { metrics, addCompletedSession, clearStats } = useStats();
 
   // Rastreamento de tempo Pomodoro
   const handleTickSecond = useCallback(
@@ -156,7 +159,30 @@ export const App: React.FC = () => {
   const handleSignOut = async () => {
     playClick();
     await supabaseService.signOut();
-    toast.info('Sessão encerrada com sucesso.', 'Logout');
+
+    // Limpar armazenamento do navegador (localStorage, sessionStorage, tokens de autenticação)
+    storageService.clearAllUserData();
+    badgeService.clearBadges();
+    storageGroupsService.resetGroupsData();
+
+    // Limpar estados da UI imediatamente
+    clearProjects();
+    clearEvents();
+    clearStats();
+    clearMantras();
+    setUserProfile(null);
+    setSelectedProjectDetailId(null);
+    setCurrentView('timer');
+    timer.reset();
+
+    // Fechar modais abertos
+    setIsSettingsOpen(false);
+    setIsStatsOpen(false);
+    setIsScratchpadOpen(false);
+    setIsZenModeOpen(false);
+    setIsCommandPaletteOpen(false);
+
+    toast.info('Sessão encerrada e todos os dados pessoais foram excluídos do navegador.', 'Logout');
   };
 
   useKeyboardShortcuts({

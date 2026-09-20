@@ -260,9 +260,9 @@ export class StorageService {
   public getQuickNotes(): QuickNote[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.QUICK_NOTES);
-      if (data) {
+      if (data !== null) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -452,6 +452,62 @@ export class StorageService {
 
   public importBackupJSON(file: File): Promise<boolean> {
     return this.backupService.importBackupJSON(file);
+  }
+
+  /**
+   * Remove e zera todos os dados pessoais do usuário no navegador (LocalStorage e SessionStorage).
+   * Garante privacidade absoluta ao realizar logout.
+   */
+  public clearAllUserData(): void {
+    const keysToRemove = [
+      STORAGE_KEYS.PROJECTS,
+      STORAGE_KEYS.SUBTASKS,
+      STORAGE_KEYS.TASKS,
+      STORAGE_KEYS.CALENDAR,
+      STORAGE_KEYS.SESSIONS,
+      STORAGE_KEYS.SCRATCHPAD,
+      STORAGE_KEYS.QUICK_NOTES,
+      STORAGE_KEYS.MANTRAS,
+      'focusflow_unlocked_badges',
+      'focusflow_study_groups',
+      'focusflow_group_members',
+      'focusflow_group_messages',
+    ];
+
+    keysToRemove.forEach((key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+    });
+
+    // Define listas vazias explícitas e mantém INITIALIZED = true para evitar repovoamento com mocks
+    try {
+      localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
+      localStorage.setItem(STORAGE_KEYS.PROJECTS, '[]');
+      localStorage.setItem(STORAGE_KEYS.SUBTASKS, '[]');
+      localStorage.setItem(STORAGE_KEYS.TASKS, '[]');
+      localStorage.setItem(STORAGE_KEYS.CALENDAR, '[]');
+      localStorage.setItem(STORAGE_KEYS.SESSIONS, '[]');
+      localStorage.setItem(STORAGE_KEYS.QUICK_NOTES, '[]');
+      localStorage.setItem(STORAGE_KEYS.SCRATCHPAD, '');
+      localStorage.setItem(STORAGE_KEYS.MANTRAS, '[]');
+    } catch {}
+
+    // Limpa tokens de autenticação do Supabase residuais no localStorage
+    try {
+      const keysToPurge: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase.auth.token'))) {
+          keysToPurge.push(key);
+        }
+      }
+      keysToPurge.forEach((k) => localStorage.removeItem(k));
+    } catch {}
+
+    try {
+      sessionStorage.clear();
+    } catch {}
   }
 }
 

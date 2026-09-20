@@ -106,4 +106,58 @@ describe('StorageService (Persistência Offline LocalStorage)', () => {
     await storageService.saveScratchpad('Minhas anotações de foco');
     expect(storageService.getScratchpad()).toBe('Minhas anotações de foco');
   });
+
+  describe('Exclusão de Dados Pessoais no Logout (clearAllUserData)', () => {
+    it('deve purgar todos os dados pessoais do navegador sem repovoar com mocks no refresh', async () => {
+      // 1. Simula dados do usuário no localStorage
+      await storageService.saveProject({
+        id: 'user-proj-1',
+        title: 'Meu Projeto Pessoal',
+        color: '#ff5500',
+        icon: '🚀',
+        total_elapsed_seconds: 120,
+        created_at: new Date().toISOString(),
+      });
+      await storageService.saveSubtask({
+        id: 'user-sub-1',
+        project_id: 'user-proj-1',
+        title: 'Minha Subtarefa',
+        pomodoros_estimated: 2,
+        pomodoros_completed: 1,
+        elapsed_seconds: 60,
+        is_completed: false,
+        priority: 'alta',
+      });
+      await storageService.recordSession({
+        id: 'sess-1',
+        discipline: 'Cálculo',
+        duration_minutes: 25,
+        completed_at: new Date().toISOString(),
+      });
+      await storageService.saveScratchpad('Rascunho ultra secreto');
+      storageService.createQuickNote({ title: 'Nota rápida', content: 'Info privada' });
+      storageService.saveMantras(['Persistência é a chave']);
+      localStorage.setItem('sb-123-auth-token', JSON.stringify({ access_token: 'fake-jwt' }));
+
+      // 2. Executa a limpeza completa
+      storageService.clearAllUserData();
+
+      // 3. Verifica se todos os dados pessoais foram purgados
+      expect(storageService.getLocalProjects()).toEqual([]);
+      expect(storageService.getLocalSubtasks()).toEqual([]);
+      expect(storageService.getLocalTasks()).toEqual([]);
+      expect(storageService.getLocalCalendarEvents()).toEqual([]);
+      expect(storageService.getLocalSessions()).toEqual([]);
+      expect(storageService.getScratchpad()).toBe('');
+      expect(storageService.getQuickNotes()).toEqual([]);
+      expect(storageService.getMantras()).toEqual([]);
+      expect(localStorage.getItem('sb-123-auth-token')).toBeNull();
+
+      // 4. Garante que INITIALIZED está setado como 'true' para que initDefaults() NÃO repovoe projetos com mock
+      expect(storageService.isInitialized()).toBe(true);
+      storageService.initDefaults();
+      expect(storageService.getLocalProjects()).toEqual([]);
+      expect(storageService.getLocalSubtasks()).toEqual([]);
+    });
+  });
 });

@@ -131,9 +131,14 @@ export function useStats() {
     setSessions((prev) => [newSession, ...prev]);
   }, []);
 
+  const clearStats = useCallback(() => {
+    setSessions([]);
+  }, []);
+
   return {
     metrics: computeMetrics(),
     addCompletedSession,
     refreshStats: loadSessions,
+    clearStats,
   };
 }

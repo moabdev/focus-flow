@@ -58,12 +58,18 @@ export function useQuotes() {
     setActiveQuote(newMantra);
   };
 
+  const clearMantras = useCallback(() => {
+    setQuotes(INITIAL_QUOTES);
+    setActiveQuote(INITIAL_QUOTES[0]);
+  }, []);
+
   return {
     activeQuote,
     selectedCategory,
     setSelectedCategory,
     getRandomQuote,
     addMantra,
+    clearMantras,
     isRotating,
   };
 }
