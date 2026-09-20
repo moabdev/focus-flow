@@ -44,8 +44,8 @@
 /* Project Manager Container & Header */
 .project-manager-container {
   width: 100%;
-  max-width: 900px;
-  margin: 1.5rem auto 3rem;
+  max-width: 100%;
+  margin: 0 auto 3rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

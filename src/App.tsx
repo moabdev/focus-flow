@@ -236,7 +236,7 @@ export const App: React.FC = () => {
           onOpenTimerTab={() => setCurrentView('timer')}
         />
 
-        <main className="app-container">
+        <main className={`app-container view-${currentView}`}>
           <AppViews
             currentView={currentView}
             setCurrentView={setCurrentView}

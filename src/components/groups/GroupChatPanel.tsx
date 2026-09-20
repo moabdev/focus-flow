@@ -14,6 +14,8 @@ interface GroupChatPanelProps {
   onJoinGroup: (groupId: string) => void;
   onLeaveGroup: (groupId: string) => void;
   onDeleteGroup: (groupId: string) => void;
+  showMembersPanel?: boolean;
+  onToggleMembersPanel?: () => void;
 }
 
 const QUICK_CHEERS = [
@@ -22,23 +24,29 @@ const QUICK_CHEERS = [
   '👏 Parabéns pelo ciclo!',
   '⚡ Quase terminando a meta!',
   '☕ Pausa rápida de 5 min!',
+  '🎯 Meta diária alcançada!',
 ];
 
 export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   group,
   messages,
+  members,
   isMember,
   isCreator,
   onSendMessage,
   onJoinGroup,
   onLeaveGroup,
   onDeleteGroup,
+  showMembersPanel,
+  onToggleMembersPanel,
 }) => {
   const [inputText, setInputText] = useState('');
   const [copied, setCopied] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const activeFocusingMembers = members.filter((m) => m.current_status === 'focusing');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' });
@@ -81,10 +89,13 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
       {/* Topo do Chat */}
       <div className="group-chat-header">
         <div className="group-chat-title-group">
-          <span className="group-chat-icon">{group.avatar_icon}</span>
+          <div className="group-chat-icon-wrap">
+            <span className="group-chat-icon">{group.avatar_icon}</span>
+          </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <h3 className="group-chat-name">{group.name}</h3>
+              <span className="group-category-badge">{group.category}</span>
               <span className="group-code-pill" title="Código de Convite">{group.code}</span>
               <button
                 className="group-invite-btn"
@@ -101,16 +112,28 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         </div>
 
         <div className="group-header-actions">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem', marginRight: '0.35rem' }}>
-            <Users size={15} />
-            <span>{group.member_count}</span>
-          </div>
+          {onToggleMembersPanel ? (
+            <button
+              type="button"
+              className={`group-members-toggle-btn ${showMembersPanel ? 'active' : ''}`}
+              onClick={onToggleMembersPanel}
+              title={showMembersPanel ? 'Ocultar membros' : 'Exibir membros'}
+            >
+              <Users size={15} />
+              <span>{group.member_count}</span>
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem', marginRight: '0.35rem' }}>
+              <Users size={15} />
+              <span>{group.member_count}</span>
+            </div>
+          )}
 
           {isCreator ? (
             <button
               type="button"
               className="btn btn-danger"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem' }}
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
               onClick={() => setIsDeleteModalOpen(true)}
               title="Excluir este grupo de estudos (Apenas Criador)"
             >
@@ -121,7 +144,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
             <button
               type="button"
               className="btn btn-secondary"
-              style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem' }}
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
               onClick={() => setIsLeaveModalOpen(true)}
               title="Sair deste grupo"
             >
@@ -132,7 +155,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
             <button
               type="button"
               className="btn btn-primary"
-              style={{ padding: '0.35rem 0.85rem', fontSize: '0.78rem' }}
+              style={{ padding: '0.4rem 0.95rem', fontSize: '0.78rem' }}
               onClick={() => onJoinGroup(group.id)}
               title="Entrar neste grupo para participar"
             >
@@ -143,8 +166,33 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         </div>
       </div>
 
+      {/* Radar de Foco ao Vivo na Sala */}
+      {activeFocusingMembers.length > 0 && (
+        <div className="live-focus-radar-banner">
+          <div className="live-radar-pulse">
+            <span className="live-radar-dot" />
+          </div>
+          <div className="live-radar-info">
+            <span className="live-radar-count">
+              {activeFocusingMembers.length} {activeFocusingMembers.length === 1 ? 'colega em foco agora' : 'colegas em foco agora'}:
+            </span>
+            <span className="live-radar-names">
+              {activeFocusingMembers.map((m) => `⚡ ${m.user_name}${m.current_task_title ? ` (${m.current_task_title})` : ''}`).join(' • ')}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Feed de Mensagens */}
       <div className="group-messages-feed">
+        {messages.length === 0 && (
+          <div className="empty-chat-state">
+            <span className="empty-chat-icon">{group.avatar_icon}</span>
+            <h4>Bem-vindo(a) ao #{group.name}</h4>
+            <p>Seja o primeiro a enviar uma mensagem ou envie uma reação rápida abaixo para quebrar o gelo!</p>
+          </div>
+        )}
+
         {messages.map((msg) => {
           if (msg.type === 'system_focus') {
             return (

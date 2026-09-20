@@ -107,11 +107,24 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
     setMessages(storageGroups.getMessages(activeGroupId));
   };
 
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
+  const [showMembersPanel, setShowMembersPanel] = useState<boolean>(true);
+  const [mobileTab, setMobileTab] = useState<'groups' | 'chat' | 'members'>('chat');
+
+  const categories = ['Todas', ...Array.from(new Set(groups.map((g) => g.category)))];
+
   const filteredGroups = groups.filter((g) => {
+    const matchesCategory = selectedCategory === 'Todas' || g.category === selectedCategory;
+    if (!matchesCategory) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return g.name.toLowerCase().includes(q) || g.category.toLowerCase().includes(q);
   });
+
+  const getGroupFocusCount = (groupId: string) => {
+    const gMembers = storageGroups.getMembers(groupId);
+    return gMembers.filter((m) => m.current_status === 'focusing').length;
+  };
 
   const formatSeconds = (sec: number) => {
     const h = Math.floor(sec / 3600);
@@ -119,65 +132,134 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
     return `${h}h ${m}m`;
   };
 
+  const focusingMembers = members.filter((m) => m.current_status === 'focusing');
+  const breakMembers = members.filter((m) => m.current_status === 'break');
+  const idleMembers = members.filter((m) => m.current_status === 'idle');
+
   return (
     <div className="study-groups-container">
       {/* Topo da Visão de Grupos */}
       <div className="groups-header-bar">
         <div>
-          <h2 className="pm-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={24} color="var(--accent-primary)" />
-            Grupos de Estudo & Chat
-          </h2>
+          <div className="groups-title-row">
+            <div className="groups-title-icon-halo">
+              <Users size={22} color="var(--accent-primary)" />
+            </div>
+            <h2 className="pm-title">Grupos de Estudo & Chat ao Vivo</h2>
+            <span className="groups-live-pulse-badge">
+              <span className="live-radar-dot" />
+              {groups.reduce((acc, g) => acc + getGroupFocusCount(g.id), 0)} focando agora
+            </span>
+          </div>
           <p className="pm-subtitle">
             Estude em comunidade, compartilhe metas de foco e motive seus colegas em tempo real.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div className="groups-header-actions-top">
           <button
-            className="filter-chip"
+            className="filter-chip btn-enter-code"
             onClick={() => setIsJoinModalOpen(true)}
-            style={{ padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
           >
             <KeyRound size={15} /> Entrar com Código
           </button>
-          <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+          <button className="btn btn-primary btn-new-group" onClick={() => setIsCreateModalOpen(true)}>
             <Plus size={16} /> Novo Grupo
           </button>
         </div>
       </div>
 
-      {/* Grid Principal com 3 Colunas: Grupos, Chat, Membros */}
-      <div className="groups-layout">
+      {/* Seletor Mobile de Abas */}
+      <div className="groups-mobile-nav-bar">
+        <button
+          className={`mobile-tab-btn ${mobileTab === 'groups' ? 'active' : ''}`}
+          onClick={() => setMobileTab('groups')}
+        >
+          Salas ({groups.length})
+        </button>
+        <button
+          className={`mobile-tab-btn ${mobileTab === 'chat' ? 'active' : ''}`}
+          onClick={() => setMobileTab('chat')}
+        >
+          Chat #{activeGroup?.name || 'Geral'}
+        </button>
+        <button
+          className={`mobile-tab-btn ${mobileTab === 'members' ? 'active' : ''}`}
+          onClick={() => setMobileTab('members')}
+        >
+          Membros ({members.length})
+        </button>
+      </div>
+
+      {/* Grid Principal com 3 Colunas Fluidas */}
+      <div className={`groups-layout ${!showMembersPanel ? 'hide-members' : ''} mobile-${mobileTab}`}>
         {/* Coluna 1: Lista de Grupos */}
         <div className="groups-sidebar-panel glass-panel">
           <div className="groups-search-box">
             <Search size={15} />
             <input
               type="text"
-              placeholder="Buscar grupo..."
+              placeholder="Buscar por sala ou tema..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearchQuery('')}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {/* Filtros de Categoria */}
+          <div className="groups-category-filter-bar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className={`category-pill ${selectedCategory === cat ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
           <div className="groups-list">
             {filteredGroups.map((grp) => {
               const userIsCreator = grp.created_by && isSameUser(grp.created_by, currentUserName);
+              const groupFocusing = getGroupFocusCount(grp.id);
 
               return (
                 <button
                   key={grp.id}
                   className={`group-item-card ${grp.id === activeGroupId ? 'active' : ''}`}
-                  onClick={() => setActiveGroupId(grp.id)}
+                  onClick={() => {
+                    setActiveGroupId(grp.id);
+                    setMobileTab('chat');
+                  }}
                 >
-                  <span className="group-item-icon">{grp.avatar_icon}</span>
+                  <div className="group-item-icon-wrap">
+                    <span className="group-item-icon">{grp.avatar_icon}</span>
+                  </div>
                   <div className="group-item-info">
-                    <div className="group-item-name">{grp.name}</div>
-                    <div className="group-item-meta">
-                      {grp.category} • {grp.member_count} membros
+                    <div className="group-item-top-row">
+                      <span className="group-item-name">{grp.name}</span>
                       {userIsCreator && (
-                        <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}> • Criador</span>
+                        <span className="group-creator-mini-pill">Criador</span>
+                      )}
+                    </div>
+                    <div className="group-item-meta">
+                      <span className="group-category-tag">{grp.category}</span>
+                      <span>•</span>
+                      <span>{grp.member_count} membros</span>
+                      {groupFocusing > 0 && (
+                        <span className="group-focusing-indicator">
+                          <span className="live-dot-mini" /> {groupFocusing} em foco
+                        </span>
                       )}
                     </div>
                   </div>
@@ -186,8 +268,19 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
             })}
 
             {filteredGroups.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                Nenhum grupo encontrado.
+              <div className="empty-groups-filter">
+                <Sparkles size={24} color="var(--text-muted)" />
+                <p>Nenhuma sala encontrada para esta busca.</p>
+                {selectedCategory !== 'Todas' && (
+                  <button
+                    type="button"
+                    className="filter-chip"
+                    style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}
+                    onClick={() => setSelectedCategory('Todas')}
+                  >
+                    Ver todas as categorias
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -205,55 +298,139 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
             onJoinGroup={handleJoinDirect}
             onLeaveGroup={handleLeaveGroup}
             onDeleteGroup={handleDeleteGroup}
+            showMembersPanel={showMembersPanel}
+            onToggleMembersPanel={() => setShowMembersPanel((prev) => !prev)}
           />
         ) : (
-          <div className="group-chat-panel glass-panel" style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles size={32} color="var(--accent-primary)" />
-            <p>Selecione um grupo para começar a conversar.</p>
+          <div className="group-chat-panel glass-panel empty-selection">
+            <Sparkles size={36} color="var(--accent-primary)" />
+            <h3>Selecione um grupo de estudos</h3>
+            <p>Escolha uma sala ao lado ou crie uma nova para estudar em comunidade.</p>
           </div>
         )}
 
-        {/* Coluna 3: Membros do Grupo */}
-        <div className="group-members-panel glass-panel">
-          <div className="group-members-title">
-            <span>Membros ({members.length})</span>
-          </div>
+        {/* Coluna 3: Membros do Grupo e Status ao Vivo */}
+        {showMembersPanel && (
+          <div className="group-members-panel glass-panel">
+            <div className="group-members-header">
+              <div className="group-members-title">
+                <Users size={15} />
+                <span>Membros ({members.length})</span>
+              </div>
+              {focusingMembers.length > 0 && (
+                <span className="members-focusing-badge">
+                  <span className="live-dot-mini" /> {focusingMembers.length} em foco
+                </span>
+              )}
+            </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {members.map((m) => {
-              const isItemCreator = m.role === 'admin';
-
-              return (
-                <div key={m.id} className="member-item-row">
-                  <span
-                    className={`member-status-indicator ${m.current_status}`}
-                    title={
-                      m.current_status === 'focusing'
-                        ? 'Em Foco'
-                        : m.current_status === 'break'
-                        ? 'Em Pausa'
-                        : 'Disponível'
-                    }
-                  />
-                  <div className="member-info">
-                    <div className="member-name" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <span>{m.user_name}</span>
-                      {isItemCreator && <span className="member-role-badge">Criador</span>}
-                    </div>
-                    {m.current_task_title && (
-                      <div className="member-task-sub" title={m.current_task_title}>
-                        {m.current_task_title}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '0.68rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
-                      {formatSeconds(m.weekly_seconds)} semanais
-                    </div>
+            <div className="members-scroll-area">
+              {/* Seção 1: Focando Agora */}
+              {focusingMembers.length > 0 && (
+                <div className="members-group-section">
+                  <div className="members-section-label focusing">
+                    <span>Focando Agora — {focusingMembers.length}</span>
                   </div>
+                  {focusingMembers.map((m) => {
+                    const isItemCreator = m.role === 'admin';
+                    return (
+                      <div key={m.id} className="member-item-row focusing">
+                        <div className="member-avatar-wrap">
+                          <div className="member-avatar-circle">
+                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="member-status-indicator focusing" title="Em foco no Pomodoro" />
+                        </div>
+                        <div className="member-info">
+                          <div className="member-name-row">
+                            <span className="member-name">{m.user_name}</span>
+                            {isItemCreator && <span className="member-role-badge">Criador</span>}
+                          </div>
+                          {m.current_task_title && (
+                            <div className="member-task-sub" title={m.current_task_title}>
+                              🎯 {m.current_task_title}
+                            </div>
+                          )}
+                          <div className="member-weekly-time">
+                            ⏱️ {formatSeconds(m.weekly_seconds)} esta semana
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              )}
+
+              {/* Seção 2: Em Pausa */}
+              {breakMembers.length > 0 && (
+                <div className="members-group-section">
+                  <div className="members-section-label break">
+                    <span>Em Pausa — {breakMembers.length}</span>
+                  </div>
+                  {breakMembers.map((m) => {
+                    const isItemCreator = m.role === 'admin';
+                    return (
+                      <div key={m.id} className="member-item-row">
+                        <div className="member-avatar-wrap">
+                          <div className="member-avatar-circle">
+                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="member-status-indicator break" title="Em pausa rápida" />
+                        </div>
+                        <div className="member-info">
+                          <div className="member-name-row">
+                            <span className="member-name">{m.user_name}</span>
+                            {isItemCreator && <span className="member-role-badge">Criador</span>}
+                          </div>
+                          <div className="member-weekly-time">
+                            ☕ Pausa • {formatSeconds(m.weekly_seconds)} semanais
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Seção 3: Disponíveis */}
+              {idleMembers.length > 0 && (
+                <div className="members-group-section">
+                  <div className="members-section-label idle">
+                    <span>Disponíveis — {idleMembers.length}</span>
+                  </div>
+                  {idleMembers.map((m) => {
+                    const isItemCreator = m.role === 'admin';
+                    return (
+                      <div key={m.id} className="member-item-row">
+                        <div className="member-avatar-wrap">
+                          <div className="member-avatar-circle">
+                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="member-status-indicator idle" title="Disponível" />
+                        </div>
+                        <div className="member-info">
+                          <div className="member-name-row">
+                            <span className="member-name">{m.user_name}</span>
+                            {isItemCreator && <span className="member-role-badge">Criador</span>}
+                          </div>
+                          <div className="member-weekly-time">
+                            {formatSeconds(m.weekly_seconds)} semanais
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {members.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                  Nenhum membro nesta sala ainda.
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Modal de Criação de Grupo */}
