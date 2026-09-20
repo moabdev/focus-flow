@@ -36,8 +36,7 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-# Arquivos internos, protótipos e esquemas de banco
+# Arquivos internos e protótipos
 DOCUMENTO_DE_REQUISITOS.md
 PROTOTIPO_VISUAL.md
 assets/
-supabase-schema.sql

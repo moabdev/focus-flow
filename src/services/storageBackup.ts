@@ -13,6 +13,8 @@ export interface StorageContext {
   saveMantras: (m: string[]) => void;
   getLocalSessions: () => any[];
   saveLocalSessions: (s: any[]) => void;
+  getQuickNotes?: () => any[];
+  saveQuickNotes?: (notes: any[]) => void;
 }
 
 export class StorageBackupService {
@@ -29,6 +31,7 @@ export class StorageBackupService {
       sessions: this.ctx.getLocalSessions(),
       settings: this.ctx.getSettings(),
       scratchpad: this.ctx.getScratchpad(),
+      quickNotes: this.ctx.getQuickNotes ? this.ctx.getQuickNotes() : [],
       mantras: this.ctx.getMantras(),
     };
 
@@ -71,6 +74,9 @@ export class StorageBackupService {
           }
           if (typeof data.scratchpad === 'string') {
             this.ctx.saveScratchpad(data.scratchpad);
+          }
+          if (data.quickNotes && Array.isArray(data.quickNotes) && this.ctx.saveQuickNotes) {
+            this.ctx.saveQuickNotes(data.quickNotes);
           }
           if (data.mantras && Array.isArray(data.mantras)) {
             this.ctx.saveMantras(data.mantras);
@@ -161,6 +167,24 @@ export class StorageBackupService {
         is_completed: !!e.is_completed,
       });
       count++;
+    }
+
+    // Sincroniza anotações rápidas (quick_notes)
+    if (this.ctx.getQuickNotes) {
+      const localNotes = this.ctx.getQuickNotes();
+      for (const n of localNotes) {
+        await client.from('quick_notes').upsert({
+          id: n.id,
+          user_id: user.id,
+          title: n.title || 'Nova Anotação',
+          content: n.content || '',
+          project_id: n.project_id || null,
+          subtask_id: n.subtask_id || null,
+          created_at: n.created_at,
+          updated_at: n.updated_at,
+        });
+        count++;
+      }
     }
 
     return { count };

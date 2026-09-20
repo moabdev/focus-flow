@@ -31,6 +31,8 @@ export class StorageService {
       saveMantras: (m) => this.saveMantras(m),
       getLocalSessions: () => this.getLocalSessions(),
       saveLocalSessions: (s) => this.saveLocalSessions(s),
+      getQuickNotes: () => this.getQuickNotes(),
+      saveQuickNotes: (n) => this.saveQuickNotes(n),
     });
   }
 
@@ -289,6 +291,28 @@ export class StorageService {
 
     const updated = [newNote, ...notes];
     this.saveQuickNotes(updated);
+
+    const client = supabaseService.getClient();
+    (async () => {
+      try {
+        const user = await supabaseService.getUser();
+        if (client && user) {
+          await client.from('quick_notes').upsert({
+            id: newNote.id,
+            user_id: user.id,
+            title: newNote.title,
+            content: newNote.content,
+            project_id: newNote.project_id || null,
+            subtask_id: newNote.subtask_id || null,
+            created_at: newNote.created_at,
+            updated_at: newNote.updated_at,
+          });
+        }
+      } catch (err) {
+        console.warn('[FocusFlow] Erro ao sincronizar nota no Supabase:', err);
+      }
+    })();
+
     return newNote;
   }
 
@@ -305,6 +329,28 @@ export class StorageService {
 
     notes[index] = updatedNote;
     this.saveQuickNotes(notes);
+
+    const client = supabaseService.getClient();
+    (async () => {
+      try {
+        const user = await supabaseService.getUser();
+        if (client && user) {
+          await client.from('quick_notes').upsert({
+            id: updatedNote.id,
+            user_id: user.id,
+            title: updatedNote.title,
+            content: updatedNote.content,
+            project_id: updatedNote.project_id || null,
+            subtask_id: updatedNote.subtask_id || null,
+            created_at: updatedNote.created_at,
+            updated_at: updatedNote.updated_at,
+          });
+        }
+      } catch (err) {
+        console.warn('[FocusFlow] Erro ao atualizar nota no Supabase:', err);
+      }
+    })();
+
     return updatedNote;
   }
 
@@ -324,6 +370,50 @@ export class StorageService {
     } else {
       this.saveQuickNotes(notes);
     }
+
+    const client = supabaseService.getClient();
+    (async () => {
+      try {
+        const user = await supabaseService.getUser();
+        if (client && user) {
+          await client.from('quick_notes').delete().eq('id', id);
+        }
+      } catch (err) {
+        console.warn('[FocusFlow] Erro ao deletar nota no Supabase:', err);
+      }
+    })();
+  }
+
+  public async fetchQuickNotes(): Promise<QuickNote[]> {
+    const client = supabaseService.getClient();
+    const user = await supabaseService.getUser();
+    if (client && user) {
+      try {
+        const { data, error } = await client
+          .from('quick_notes')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const remoteNotes: QuickNote[] = data.map((d: any) => ({
+            id: d.id,
+            user_id: d.user_id,
+            title: d.title || 'Nova Anotação',
+            content: d.content || '',
+            project_id: d.project_id || null,
+            subtask_id: d.subtask_id || null,
+            created_at: d.created_at,
+            updated_at: d.updated_at,
+          }));
+          this.saveQuickNotes(remoteNotes);
+          return remoteNotes;
+        }
+      } catch (err) {
+        console.warn('[FocusFlow] Erro ao buscar notas do Supabase:', err);
+      }
+    }
+    return this.getQuickNotes();
   }
 
   public getMantras(): string[] {
