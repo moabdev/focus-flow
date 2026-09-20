@@ -11,6 +11,7 @@ import { storageService } from './services/storage';
 import type { SupabaseProfile, UserSettings, TimerMode } from './types';
 
 import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
 import { QuoteBanner } from './components/QuoteBanner';
 import { TimerCard } from './components/TimerCard';
 import { ProjectManager } from './components/ProjectManager';
@@ -44,6 +45,26 @@ export const App: React.FC = () => {
 
   // 2. Visão Ativa (Foco / Projetos / Calendário)
   const [currentView, setCurrentView] = useState<'timer' | 'projects' | 'calendar'>('timer');
+
+  // Estado da Barra Lateral (Sidebar)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('focusflow_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+
+  const handleToggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('focusflow_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // 3. Hooks de Negócio: Projetos, Subtasks e Calendário
   const {
@@ -195,10 +216,23 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="app-container">
-      {/* Barra de Navegação Superior com Abas */}
-      <Header
+    <div className="app-shell">
+      {/* Barra Lateral (Sidebar Moderna) */}
+      <Sidebar
+        currentView={currentView}
+        onChangeView={setCurrentView}
         streakDays={metrics.streak.currentStreak}
+        projects={projects}
+        selectedProjectId={activeProject?.id || 'todos'}
+        onSelectProject={(pId) => {
+          if (pId !== 'todos') {
+            const firstSub = subtasks.find((s) => s.project_id === pId);
+            if (firstSub) setActiveSubtaskId(firstSub.id);
+          }
+        }}
+        onCreateProject={() => {
+          setCurrentView('projects');
+        }}
         colorMode={colorMode}
         onToggleColorMode={toggleColorMode}
         ambientSound={ambient}
@@ -212,9 +246,34 @@ export const App: React.FC = () => {
         onOpenStats={() => setIsStatsOpen(true)}
         onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
         onEnterZenMode={() => setIsZenModeOpen(true)}
-        currentView={currentView}
-        onChangeView={setCurrentView}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebarCollapse}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
+
+      <div className={`app-main-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <div className="app-container">
+          {/* Barra de Navegação Superior com Abas e Toggle Mobile */}
+          <Header
+            streakDays={metrics.streak.currentStreak}
+            colorMode={colorMode}
+            onToggleColorMode={toggleColorMode}
+            ambientSound={ambient}
+            ambientVolume={ambientVolume}
+            onSelectAmbient={setAmbient}
+            onSetAmbientVolume={setAmbientVolume}
+            userProfile={userProfile}
+            onGoogleLogin={handleGoogleLogin}
+            onSignOut={handleSignOut}
+            onOpenSettings={handleOpenSettings}
+            onOpenStats={() => setIsStatsOpen(true)}
+            onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
+            onEnterZenMode={() => setIsZenModeOpen(true)}
+            currentView={currentView}
+            onChangeView={setCurrentView}
+            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          />
 
       {/* Visão 1: Timer & Foco */}
       {currentView === 'timer' && (
@@ -312,6 +371,8 @@ export const App: React.FC = () => {
           onOpenTimerTab={() => setCurrentView('timer')}
         />
       )}
+        </div>
+      </div>
 
       {/* Gaveta Lateral de Anotações (Scratchpad) */}
       <Scratchpad

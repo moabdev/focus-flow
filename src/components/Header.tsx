@@ -15,6 +15,7 @@ import {
   Timer,
   FolderKanban,
   Calendar,
+  Menu,
 } from 'lucide-react';
 import { AmbientSound, ColorMode, SupabaseProfile } from '../types';
 
@@ -35,6 +36,7 @@ interface HeaderProps {
   onEnterZenMode: () => void;
   currentView: 'timer' | 'projects' | 'calendar';
   onChangeView: (view: 'timer' | 'projects' | 'calendar') => void;
+  onOpenMobileSidebar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -54,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
   onEnterZenMode,
   currentView,
   onChangeView,
+  onOpenMobileSidebar,
 }) => {
   const [showAmbientMenu, setShowAmbientMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -86,6 +89,17 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="app-header">
       <div className="brand-section">
+        {onOpenMobileSidebar && (
+          <button
+            className="mobile-sidebar-toggle"
+            onClick={onOpenMobileSidebar}
+            title="Abrir menu lateral"
+            aria-label="Abrir menu lateral"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+
         <div className="brand-logo">
           <img src="/logo.png" alt="FocusFlow" className="brand-logo-img" />
           <span>FocusFlow</span>
