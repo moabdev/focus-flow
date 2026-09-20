@@ -6,6 +6,7 @@ import { CalendarView } from './CalendarView';
 import { ProjectDetailView } from './projects/ProjectDetailView';
 import { StudyGroupsView } from './groups/StudyGroupsView';
 import { WeeklyLeaderboardView } from './ranking/WeeklyLeaderboardView';
+import { DraftsView } from './drafts/DraftsView';
 import type {
   Quote,
   TimerMode,
@@ -258,6 +259,15 @@ export const AppViews: React.FC<AppViewsProps> = ({
         <WeeklyLeaderboardView
           currentUserMinutes={weekMinutes}
           userProfile={userProfile}
+        />
+      )}
+
+      {/* Visão 7: Rascunhos & Notas Rápidas */}
+      {currentView === 'drafts' && (
+        <DraftsView
+          projects={projects}
+          subtasks={subtasks}
+          onOpenTimerTab={() => setCurrentView('timer')}
         />
       )}
     </>

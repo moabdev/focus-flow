@@ -4,7 +4,7 @@ export type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
 export type PriorityLevel = 'baixa' | 'media' | 'alta';
 
-export type AppViewMode = 'timer' | 'projects' | 'project-detail' | 'calendar' | 'groups' | 'ranking';
+export type AppViewMode = 'timer' | 'projects' | 'project-detail' | 'calendar' | 'groups' | 'ranking' | 'drafts';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
 

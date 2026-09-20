@@ -232,16 +232,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            className="sidebar-nav-item"
-            onClick={() => {
-              onToggleScratchpad();
-              if (isMobileOpen) onCloseMobile();
-            }}
-            title="Bloco de Notas Rápidas (Scratchpad)"
-            data-tooltip="Rascunho"
+            className={`sidebar-nav-item ${currentView === 'drafts' ? 'active' : ''}`}
+            onClick={() => handleNavClick('drafts')}
+            title="Rascunhos & Notas Rápidas"
+            data-tooltip="Rascunhos"
           >
             <Edit3 size={18} className="nav-icon" />
-            {!isCollapsed && <span className="nav-label">Rascunho</span>}
+            {!isCollapsed && <span className="nav-label">Rascunhos</span>}
           </button>
         </nav>
 

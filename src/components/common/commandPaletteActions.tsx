@@ -173,6 +173,17 @@ export function buildCommandPaletteItems({
       },
     },
     {
+      id: 'cmd-nav-drafts',
+      category: 'Navegação',
+      title: 'Ir para Rascunhos & Notas',
+      icon: <Folder size={16} />,
+      shortcut: '6',
+      action: () => {
+        onNavigate('drafts');
+        onClose();
+      },
+    },
+    {
       id: 'cmd-open-stats',
       category: 'Navegação',
       title: 'Abrir Estatísticas & Métricas',

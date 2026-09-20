@@ -62,6 +62,8 @@ export const Header: React.FC<HeaderProps> = ({
         return 'Grupos de Estudo & Chat';
       case 'ranking':
         return 'Ranking Semanal de Estudos';
+      case 'drafts':
+        return 'Rascunhos & Notas Rápidas';
       default:
         return 'FocusFlow';
     }

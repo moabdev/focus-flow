@@ -61,7 +61,7 @@ describe('Sidebar Component & Modos Expandido e Colapsado', () => {
     expect(screen.getByText('Grupos')).toBeInTheDocument();
     expect(screen.getByText('Ranking')).toBeInTheDocument();
     expect(screen.getByText('Estatísticas')).toBeInTheDocument();
-    expect(screen.getByText('Rascunho')).toBeInTheDocument();
+    expect(screen.getByText('Rascunhos')).toBeInTheDocument();
 
     // Streak textual
     expect(screen.getByText(/5 Dias/i)).toBeInTheDocument();
@@ -70,6 +70,15 @@ describe('Sidebar Component & Modos Expandido e Colapsado', () => {
     // Botão de recolher com aria-label correspondente
     const collapseBtn = screen.getByRole('button', { name: /Recolher barra lateral/i });
     expect(collapseBtn).toBeInTheDocument();
+  });
+
+  it('deve disparar onChangeView com "drafts" ao clicar no botão Rascunhos', () => {
+    const onChangeView = vi.fn();
+    render(<Sidebar {...defaultProps} isCollapsed={false} onChangeView={onChangeView} />);
+
+    const draftsBtn = screen.getByText('Rascunhos').closest('button')!;
+    fireEvent.click(draftsBtn);
+    expect(onChangeView).toHaveBeenCalledWith('drafts');
   });
 
   it('deve alternar a sidebar ao clicar no botão de recolher', () => {
