@@ -217,12 +217,12 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
 
         {/* Call to Action para iniciar o Timer */}
         {onOpenTimerTab && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid var(--border-glass-subtle)', marginTop: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <Sparkles size={14} style={{ display: 'inline', marginRight: '6px', color: 'var(--accent-primary)' }} />
+          <div className="ranking-cta-box">
+            <span className="ranking-cta-text">
+              <Sparkles size={14} style={{ display: 'inline', marginRight: '6px', color: 'var(--accent-primary)', flexShrink: 0 }} />
               Deseja subir no ranking desta semana? Complete um ciclo de Pomodoro agora!
             </span>
-            <button className="main-start-btn" onClick={onOpenTimerTab}>
+            <button className="btn btn-primary ranking-cta-btn" onClick={onOpenTimerTab}>
               <Play size={14} /> Focar Agora
             </button>
           </div>

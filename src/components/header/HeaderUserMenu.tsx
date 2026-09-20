@@ -75,7 +75,7 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
         ) : (
           <Cloud size={16} />
         )}
-        <span>{userProfile.full_name ? userProfile.full_name.split(' ')[0] : 'Conta'}</span>
+        <span className="profile-user-name">{userProfile.full_name ? userProfile.full_name.split(' ')[0] : 'Conta'}</span>
       </button>
 
       {isOpen && (

@@ -127,7 +127,7 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+          <div className="event-modal-datetime-grid">
             <div>
               <label className="setting-label">Data</label>
               <input

@@ -6,6 +6,7 @@ import {
   Menu,
   Timer,
   ChevronRight,
+  Search,
 } from 'lucide-react';
 import { ColorMode, SupabaseProfile, AppViewMode } from '../types';
 import { HeaderUserMenu } from './header/HeaderUserMenu';
@@ -19,6 +20,7 @@ interface HeaderProps {
   onSignOut: () => void;
   onOpenSettings: (tab?: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup') => void;
   onOpenStats: () => void;
+  onOpenCommandPalette?: () => void;
   currentView: AppViewMode;
   activeProjectTitle?: string;
   isTimerRunning?: boolean;
@@ -37,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSignOut,
   onOpenSettings,
   onOpenStats,
+  onOpenCommandPalette,
   currentView,
   activeProjectTitle,
   isTimerRunning = false,
@@ -115,13 +118,27 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Direita: Ofensiva, Alternador Dark/Light e Perfil */}
       <div className="nav-actions">
+        {onOpenCommandPalette && (
+          <button
+            className="header-command-btn"
+            onClick={onOpenCommandPalette}
+            title="Abrir busca rápida e comandos (Ctrl+K)"
+            aria-label="Abrir busca rápida"
+          >
+            <Search size={14} />
+            <span className="header-command-btn-text">Buscar...</span>
+            <kbd className="header-command-kbd">Ctrl K</kbd>
+          </button>
+        )}
+
         <button
           className="streak-badge"
           onClick={onOpenStats}
           title="Ver estatísticas de estudo e ofensiva diária"
         >
           <Flame size={16} />
-          <span>{streakDays} {streakDays === 1 ? 'Dia' : 'Dias'}</span>
+          <span className="streak-badge-count">{streakDays}</span>
+          <span className="streak-badge-label">{streakDays === 1 ? 'Dia' : 'Dias'}</span>
         </button>
 
         {/* Alternador Dark / Light Mode */}

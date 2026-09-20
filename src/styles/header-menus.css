@@ -20,6 +20,18 @@
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
 }
 
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  max-width: calc(100vw - 2rem);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  z-index: 500;
+  animation: fadeInDown 0.15s ease-out;
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
