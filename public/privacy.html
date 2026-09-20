@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacidade | FocusFlow</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090a10;
+      --card-bg: rgba(22, 25, 38, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #ff2a5f;
+      --accent-gradient: linear-gradient(135deg, #ff2a5f, #a855f7);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background-image: 
+        radial-gradient(circle at 20% 15%, rgba(255, 42, 95, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 85%, rgba(168, 85, 247, 0.10) 0%, transparent 40%);
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 48px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent);
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    h3 {
+      font-size: 18px;
+      color: #fff;
+      margin: 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    p, ul {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    strong {
+      color: #f8fafc;
+    }
+    .contact-box {
+      background: rgba(255, 42, 95, 0.06);
+      border: 1px solid rgba(255, 42, 95, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 36px;
+    }
+    .contact-box p {
+      margin: 0;
+      color: #f1f5f9;
+    }
+    .contact-box a {
+      color: #ff4d79;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .contact-box a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 24px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="brand">
+        <img src="/logo.png" alt="FocusFlow Logo" />
+        <h1>FocusFlow</h1>
+      </a>
+      <a href="/" class="back-btn">← Voltar ao App</a>
+    </div>
+
+    <h2>Política de Privacidade</h2>
+    <p class="subtitle">Última atualização: 20 de setembro de 2026</p>
+
+    <p>
+      O <strong>FocusFlow</strong> ("nós", "nosso") valoriza a privacidade de seus usuários e tem o compromisso de proteger os dados pessoais coletados durante o uso de nossa plataforma web e aplicativo progressivo (PWA). Esta Política de Privacidade explica de forma transparente como coletamos, usamos, armazenamos e protegemos suas informações.
+    </p>
+
+    <h3>1. Informações que Coletamos</h3>
+    <p>Coletamos apenas as informações estritamente necessárias para proporcionar o funcionamento das ferramentas de produtividade:</p>
+    <ul>
+      <li><strong>Dados de Autenticação (Google OAuth):</strong> Quando você opta por fazer login com sua conta Google, recebemos do Google seu nome completo, endereço de e-mail e foto de perfil pública. Não temos acesso à sua senha ou a outros dados de sua conta Google.</li>
+      <li><strong>Dados de Produtividade e Estudos:</strong> Sessões de foco Pomodoro, projetos, subtarefas, anotações de estudo, eventos de calendário, conquistas e mensagens enviadas em grupos de estudo.</li>
+      <li><strong>Preferências de Configuração:</strong> Tempo padrão de ciclos Pomodoro, temas de cores, preferências de som e modo rigoroso.</li>
+      <li><strong>Dados de Armazenamento Local (Offline):</strong> Caso utilize o FocusFlow sem login, seus dados são gravados exclusivamente na memória local do seu navegador (<em>localStorage</em>) e nunca saem do seu dispositivo.</li>
+    </ul>
+
+    <h3>2. Como Usamos as Informações</h3>
+    <p>Seus dados são utilizados única e exclusivamente para:</p>
+    <ul>
+      <li>Autenticar sua conta e permitir acesso seguro aos seus dados em múltiplos dispositivos;</li>
+      <li>Sincronizar seu progresso, horas de estudo, histórico e projetos no banco de dados em nuvem;</li>
+      <li>Calcular estatísticas, gráficos de consistência (heatmap) e desbloqueio de medalhas de gamificação;</li>
+      <li>Permitir a interação em tempo real em salas e grupos de estudo colaborativos.</li>
+    </ul>
+    <p><strong>Não vendemos, não alugamos e não compartilhamos suas informações pessoais com terceiros ou anunciantes para fins publicitários.</strong></p>
+
+    <h3>3. Provedores de Serviço Terceirizados</h3>
+    <p>Para fornecer nossa infraestrutura de alta confiabilidade, utilizamos serviços consolidados:</p>
+    <ul>
+      <li><strong>Google Identity Services (OAuth 2.0):</strong> Para autenticação segura de contas.</li>
+      <li><strong>Supabase (PostgreSQL Cloud):</strong> Para armazenamento criptografado e seguro de dados, com políticas ativas de isolamento a nível de linha (<em>Row Level Security - RLS</em>), garantindo que apenas você acesse seus próprios dados.</li>
+      <li><strong>Vercel:</strong> Para hospedagem e distribuição global da aplicação web.</li>
+    </ul>
+
+    <h3>4. Armazenamento e Segurança dos Dados</h3>
+    <p>
+      Toda a comunicação entre seu navegador e nossos servidores é protegida por criptografia de ponta a ponta via protocolo seguro <strong>HTTPS/TLS</strong>. Implementamos medidas técnicas e organizacionais rígidas para evitar acessos não autorizados, perda ou alteração de dados.
+    </p>
+
+    <h3>5. Seus Direitos e Exclusão de Dados</h3>
+    <p>
+      Você possui total controle sobre seus dados. A qualquer momento, você pode:
+    </p>
+    <ul>
+      <li>Acessar e exportar seus relatórios e sessões de estudo em formato CSV diretamente pela interface;</li>
+      <li>Excluir projetos, tarefas, eventos e salas de estudo criadas;</li>
+      <li>Solicitar a exclusão definitiva e irreversível de sua conta e de todos os dados associados aos nossos bancos de dados.</li>
+    </ul>
+
+    <h3>6. Alterações nesta Política</h3>
+    <p>
+      Poderemos atualizar esta Política de Privacidade periodicamente para refletir melhorias em nossos recursos. Recomendamos a consulta regular desta página.
+    </p>
+
+    <div class="contact-box">
+      <p><strong>Dúvidas ou solicitações sobre seus dados?</strong></p>
+      <p>Entre em contato conosco pelo e-mail: <a href="mailto:macenamoab3@gmail.com">macenamoab3@gmail.com</a></p>
+    </div>
+  </div>
+</body>
+</html>

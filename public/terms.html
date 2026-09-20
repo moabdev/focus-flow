@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Termos de Serviço | FocusFlow</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090a10;
+      --card-bg: rgba(22, 25, 38, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #ff2a5f;
+      --accent-gradient: linear-gradient(135deg, #ff2a5f, #a855f7);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      background-image: 
+        radial-gradient(circle at 20% 15%, rgba(255, 42, 95, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 85%, rgba(168, 85, 247, 0.10) 0%, transparent 40%);
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 48px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent);
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    h3 {
+      font-size: 18px;
+      color: #fff;
+      margin: 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    p, ul {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    strong {
+      color: #f8fafc;
+    }
+    .contact-box {
+      background: rgba(255, 42, 95, 0.06);
+      border: 1px solid rgba(255, 42, 95, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 36px;
+    }
+    .contact-box p {
+      margin: 0;
+      color: #f1f5f9;
+    }
+    .contact-box a {
+      color: #ff4d79;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .contact-box a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 24px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="brand">
+        <img src="/logo.png" alt="FocusFlow Logo" />
+        <h1>FocusFlow</h1>
+      </a>
+      <a href="/" class="back-btn">← Voltar ao App</a>
+    </div>
+
+    <h2>Termos de Serviço</h2>
+    <p class="subtitle">Última atualização: 20 de setembro de 2026</p>
+
+    <p>
+      Bem-vindo ao <strong>FocusFlow</strong>. Ao acessar ou utilizar nossa plataforma web e aplicativo progressivo (PWA), você concorda expressamente em cumprir e vincular-se aos seguintes Termos de Serviço. Caso discorde de qualquer parte destes termos, você não deverá utilizar o serviço.
+    </p>
+
+    <h3>1. Descrição do Serviço</h3>
+    <p>
+      O FocusFlow é uma aplicação de produtividade focada em estudos, técnicas de Pomodoro, time-blocking, organização de metas, gerenciamento de projetos e salas de estudo colaborativas em tempo real.
+    </p>
+
+    <h3>2. Contas e Autenticação</h3>
+    <ul>
+      <li>Você pode utilizar a aplicação de maneira anônima (offline via <em>localStorage</em>) ou autenticar-se por meio de sua conta Google (OAuth 2.0).</li>
+      <li>Você é o único responsável pela guarda e segurança de seus dispositivos e contas utilizadas para acesso.</li>
+      <li>Você concorda em não utilizar a plataforma para qualquer finalidade ilícita, fraudulenta ou que viole direitos de terceiros.</li>
+    </ul>
+
+    <h3>3. Uso Aceitável e Conduta em Grupos de Estudo</h3>
+    <p>
+      Ao participar de salas e grupos de estudo colaborativos, você compromete-se a manter uma conduta respeitosa e ética. É estritamente proibido:
+    </p>
+    <ul>
+      <li>Enviar mensagens ofensivas, discriminatórias, ameaçadoras ou abusivas;</li>
+      <li>Distribuir spam, códigos maliciosos ou conteúdo não autorizado;</li>
+      <li>Fazer-se passar por outra pessoa ou distorcer sua afiliação com qualquer entidade.</li>
+    </ul>
+    <p>Reservamo-nos o direito de remover conteúdos indevidos ou suspender acessos que violem estas diretrizes.</p>
+
+    <h3>4. Propriedade Intelectual</h3>
+    <p>
+      Todo o código-fonte, design, logotipos, marcas e elementos gráficos pertencem aos criadores do FocusFlow e estão protegidos pelas leis de direitos autorais e propriedade intelectual aplicáveis, respeitada a licença de código aberto do projeto (Licença MIT).
+    </p>
+
+    <h3>5. Isenção e Limitação de Responsabilidade</h3>
+    <p>
+      O serviço é fornecido no estado em que se encontra ("como está" e "conforme disponível"), sem garantias de qualquer natureza, expressas ou implícitas. Embora façamos todo o possível para assegurar alta disponibilidade e persistência contínua dos dados, não nos responsabilizamos por perdas acidentais decorrentes de instabilidades de rede, falhas de terceiros ou manutenções de infraestrutura.
+    </p>
+
+    <h3>6. Modificações dos Termos</h3>
+    <p>
+      Reservamo-nos o direito de alterar estes Termos de Serviço a qualquer momento. Quaisquer modificações entrarão em vigor imediatamente após sua publicação nesta página.
+    </p>
+
+    <div class="contact-box">
+      <p><strong>Dúvidas sobre os Termos de Serviço?</strong></p>
+      <p>Entre em contato pelo e-mail: <a href="mailto:macenamoab3@gmail.com">macenamoab3@gmail.com</a></p>
+    </div>
+  </div>
+</body>
+</html>
