@@ -1,0 +1,177 @@
+/* ==========================================================================
+   FocusFlow - Paletas Temáticas (Dark Mode & Light Mode)
+   1. Ruby Focus  2. Deep Ocean  3. Matcha Zen  4. Midnight OLED  5. Sunset Glow
+   ========================================================================== */
+
+/* 1. TEMA RUBY FOCUS (Carmim & Rosa Moderno) */
+:root[data-theme='ruby'][data-color-mode='dark'],
+:root[data-theme='ruby']:not([data-color-mode='light']) {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #1f0b14 0%, #0c090c 70%, #050406 100%);
+  --surface-glass: rgba(28, 18, 24, 0.65);
+  --surface-glass-hover: rgba(38, 24, 32, 0.8);
+  --border-glass: rgba(255, 90, 130, 0.18);
+  --border-glass-subtle: rgba(255, 255, 255, 0.08);
+  --accent-primary: #ff2a5f;
+  --accent-secondary: #e63956;
+  --accent-glow: rgba(255, 42, 95, 0.45);
+  --accent-hover: #ff4777;
+  --text-primary: #ffffff;
+  --text-secondary: #e0d0d8;
+  --text-muted: #968690;
+  --shadow-ambient: rgba(0, 0, 0, 0.6);
+  --ring-bg: rgba(255, 42, 95, 0.12);
+  --ring-stroke: #ff2a5f;
+}
+
+/* 2. TEMA DEEP OCEAN (Azul Safira & Ciano) */
+:root[data-theme='ocean'][data-color-mode='dark'] {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #081a2e 0%, #060e18 70%, #03070d 100%);
+  --surface-glass: rgba(12, 28, 48, 0.65);
+  --surface-glass-hover: rgba(18, 40, 68, 0.8);
+  --border-glass: rgba(56, 189, 248, 0.2);
+  --border-glass-subtle: rgba(255, 255, 255, 0.08);
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #38bdf8;
+  --accent-glow: rgba(14, 165, 233, 0.45);
+  --accent-hover: #38bdf8;
+  --text-primary: #ffffff;
+  --text-secondary: #d0e2ec;
+  --text-muted: #8096a6;
+  --shadow-ambient: rgba(0, 0, 0, 0.6);
+  --ring-bg: rgba(14, 165, 233, 0.12);
+  --ring-stroke: #0ea5e9;
+}
+
+/* 3. TEMA MATCHA ZEN (Verde Sálvia & Esmeralda) */
+:root[data-theme='matcha'][data-color-mode='dark'] {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #0b2218 0%, #07140e 70%, #030805 100%);
+  --surface-glass: rgba(15, 36, 26, 0.65);
+  --surface-glass-hover: rgba(22, 50, 36, 0.8);
+  --border-glass: rgba(74, 222, 128, 0.2);
+  --border-glass-subtle: rgba(255, 255, 255, 0.08);
+  --accent-primary: #10b981;
+  --accent-secondary: #34d399;
+  --accent-glow: rgba(16, 185, 129, 0.45);
+  --accent-hover: #34d399;
+  --text-primary: #ffffff;
+  --text-secondary: #d2ede0;
+  --text-muted: #82a392;
+  --shadow-ambient: rgba(0, 0, 0, 0.6);
+  --ring-bg: rgba(16, 185, 129, 0.12);
+  --ring-stroke: #10b981;
+}
+
+/* 4. TEMA MIDNIGHT OLED (Preto Absoluto & Neon Roxo) */
+:root[data-theme='oled'][data-color-mode='dark'] {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #12091c 0%, #050208 70%, #000000 100%);
+  --surface-glass: rgba(18, 14, 24, 0.75);
+  --surface-glass-hover: rgba(28, 22, 38, 0.85);
+  --border-glass: rgba(168, 85, 247, 0.25);
+  --border-glass-subtle: rgba(255, 255, 255, 0.06);
+  --accent-primary: #a855f7;
+  --accent-secondary: #c084fc;
+  --accent-glow: rgba(168, 85, 247, 0.45);
+  --accent-hover: #c084fc;
+  --text-primary: #ffffff;
+  --text-secondary: #ded6ec;
+  --text-muted: #9284a6;
+  --shadow-ambient: rgba(0, 0, 0, 0.8);
+  --ring-bg: rgba(168, 85, 247, 0.12);
+  --ring-stroke: #a855f7;
+}
+
+/* 5. TEMA SUNSET GLOW (Âmbar & Laranja Quente) */
+:root[data-theme='sunset'][data-color-mode='dark'] {
+  --bg-gradient: radial-gradient(circle at 50% 20%, #291206 0%, #150903 70%, #080301 100%);
+  --surface-glass: rgba(38, 20, 10, 0.65);
+  --surface-glass-hover: rgba(52, 28, 14, 0.8);
+  --border-glass: rgba(251, 146, 60, 0.22);
+  --border-glass-subtle: rgba(255, 255, 255, 0.08);
+  --accent-primary: #f97316;
+  --accent-secondary: #fb923c;
+  --accent-glow: rgba(249, 115, 22, 0.45);
+  --accent-hover: #fb923c;
+  --text-primary: #ffffff;
+  --text-secondary: #f0ddd2;
+  --text-muted: #a3897b;
+  --shadow-ambient: rgba(0, 0, 0, 0.6);
+  --ring-bg: rgba(249, 115, 22, 0.12);
+  --ring-stroke: #f97316;
+}
+
+/* ==========================================================================
+   PALETAS TEMÁTICAS - MODO CLARO (LIGHT MODE)
+   ========================================================================== */
+
+:root[data-color-mode='light'] {
+  --shadow-ambient: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-glass-subtle: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='ruby'][data-color-mode='light'] {
+  --bg-gradient: radial-gradient(circle at 50% 15%, #fff1f4 0%, #fdf5f6 60%, #f6eaed 100%);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --border-glass: rgba(244, 63, 94, 0.25);
+  --accent-primary: #e11d48;
+  --accent-secondary: #f43f5e;
+  --accent-glow: rgba(225, 29, 72, 0.25);
+  --accent-hover: #be123c;
+  --ring-bg: rgba(225, 29, 72, 0.08);
+  --ring-stroke: #e11d48;
+}
+
+:root[data-theme='ocean'][data-color-mode='light'] {
+  --bg-gradient: radial-gradient(circle at 50% 15%, #f0f9ff 0%, #f5faff 60%, #e8f4fc 100%);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --border-glass: rgba(14, 165, 233, 0.25);
+  --accent-primary: #0284c7;
+  --accent-secondary: #0ea5e9;
+  --accent-glow: rgba(2, 132, 199, 0.25);
+  --accent-hover: #0369a1;
+  --ring-bg: rgba(2, 132, 199, 0.08);
+  --ring-stroke: #0284c7;
+}
+
+:root[data-theme='matcha'][data-color-mode='light'] {
+  --bg-gradient: radial-gradient(circle at 50% 15%, #f0fdf4 0%, #f6fcf8 60%, #eaf7ee 100%);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --border-glass: rgba(16, 185, 129, 0.25);
+  --accent-primary: #059669;
+  --accent-secondary: #10b981;
+  --accent-glow: rgba(5, 150, 105, 0.25);
+  --accent-hover: #047857;
+  --ring-bg: rgba(5, 150, 105, 0.08);
+  --ring-stroke: #059669;
+}
+
+:root[data-theme='oled'][data-color-mode='light'] {
+  --bg-gradient: radial-gradient(circle at 50% 15%, #faf5ff 0%, #f7f0fc 60%, #eee4f7 100%);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --border-glass: rgba(147, 51, 234, 0.25);
+  --accent-primary: #9333ea;
+  --accent-secondary: #a855f7;
+  --accent-glow: rgba(147, 51, 234, 0.25);
+  --accent-hover: #7e22ce;
+  --ring-bg: rgba(147, 51, 234, 0.08);
+  --ring-stroke: #9333ea;
+}
+
+:root[data-theme='sunset'][data-color-mode='light'] {
+  --bg-gradient: radial-gradient(circle at 50% 15%, #fff7ed 0%, #fdf6ec 60%, #f8ede0 100%);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-glass-hover: rgba(255, 255, 255, 0.9);
+  --border-glass: rgba(234, 88, 12, 0.25);
+  --accent-primary: #ea580c;
+  --accent-secondary: #f97316;
+  --accent-glow: rgba(234, 88, 12, 0.25);
+  --accent-hover: #c2410c;
+  --ring-bg: rgba(234, 88, 12, 0.08);
+  --ring-stroke: #ea580c;
+}

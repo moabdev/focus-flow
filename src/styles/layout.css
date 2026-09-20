@@ -1,0 +1,29 @@
+/* ==========================================================================
+   FocusFlow - Layout Principal & App Shell
+   ========================================================================== */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background: var(--bg-gradient);
+}
+
+.app-main-layout {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition-smooth);
+}
+
+.app-container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}

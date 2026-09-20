@@ -1,0 +1,215 @@
+/* ==========================================================================
+   FocusFlow - Editor de Notas Estilo Notion: Markdown, Split View & Callouts
+   ========================================================================== */
+
+.notion-editor-modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 !important;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.notion-editor-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-glass-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notion-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-glass-subtle);
+  background: rgba(0, 0, 0, 0.25);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.notion-tool-group {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.notion-tool-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notion-tool-btn:hover {
+  background: var(--surface-glass-hover);
+  color: var(--text-primary);
+  border-color: var(--border-glass-subtle);
+}
+
+.notion-view-selector {
+  display: flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+}
+
+.notion-view-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notion-view-btn.active {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+
+.notion-editor-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.notion-editor-body.view-split .notion-pane {
+  flex: 1;
+  width: 50%;
+  overflow-y: auto;
+}
+
+.notion-editor-body.view-edit .notion-pane.editor-pane {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.notion-editor-body.view-preview .notion-pane.preview-pane {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.notion-pane {
+  padding: 1.5rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.editor-pane {
+  border-right: 1px solid var(--border-glass-subtle);
+}
+
+.notion-textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  background: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.notion-preview-content {
+  line-height: 1.7;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.notion-h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0.75rem 0 0.5rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-glass-subtle);
+  padding-bottom: 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+.notion-h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0.6rem 0 0.4rem;
+  color: var(--text-primary);
+}
+
+.notion-h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0.3rem;
+  color: var(--text-primary);
+}
+
+.notion-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.notion-checklist-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notion-checklist-item.completed {
+  opacity: 0.65;
+}
+
+.notion-checkbox {
+  accent-color: var(--accent-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.notion-callout {
+  margin: 0.75rem 0;
+  padding: 0.85rem 1.1rem;
+  border-left: 4px solid var(--accent-primary);
+  background: rgba(255, 42, 95, 0.08);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.notion-bullet-item {
+  list-style-type: disc;
+  margin-left: 1.25rem;
+  padding: 0.15rem 0;
+}
+
+.notion-divider {
+  border: none;
+  border-top: 1px solid var(--border-glass-subtle);
+  margin: 1rem 0;
+}
+
+.notion-p {
+  margin: 0.4rem 0;
+}

@@ -1,0 +1,107 @@
+/* ==========================================================================
+   FocusFlow - Responsividade da Sidebar, Topbar Mobile e Telas Pequenas
+   ========================================================================== */
+
+@media (max-width: 840px) {
+  .mobile-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass-subtle);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .mobile-sidebar-toggle:hover {
+    background: var(--surface-glass-hover);
+    border-color: var(--accent-primary);
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
+  }
+
+  .sidebar-mobile-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+  }
+
+  .sidebar-mobile-close-btn:hover {
+    color: var(--text-primary);
+  }
+
+  .sidebar-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 290;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 300;
+    width: 280px !important;
+    transform: translateX(-100%);
+    transition: transform var(--transition-smooth);
+    box-shadow: none;
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
+  }
+}
+
+@media (max-width: 640px) {
+  .google-login-text {
+    display: none;
+  }
+  .google-login-btn {
+    padding: 0.45rem;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    justify-content: center;
+  }
+  .header-view-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+  .app-header {
+    flex-wrap: wrap;
+  }
+  .notion-editor-body.view-split {
+    flex-direction: column;
+  }
+  .notion-editor-body.view-split .notion-pane {
+    width: 100%;
+    height: 50%;
+  }
+  .notion-pane.editor-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass-subtle);
+  }
+}
