@@ -1,22 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  X,
-  Heading1,
-  Heading2,
-  CheckSquare,
-  List,
-  ListOrdered,
-  Code,
-  Quote,
-  Bold,
-  Italic,
-  Eye,
-  Edit3,
-  Columns,
-  Sparkles,
-  Save,
-} from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import { Subtask, Project } from '../types';
+import { NotionToolbar } from './notion/NotionToolbar';
+import { NotionMarkdownRenderer } from './notion/NotionMarkdownRenderer';
 
 interface NotionNoteEditorProps {
   isOpen: boolean;
@@ -76,95 +62,6 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
     }, 50);
   };
 
-  // Renderização simples e elegante de Markdown estilo Notion com suporte a checklists clicáveis
-  const renderMarkdown = (text: string) => {
-    if (!text.trim()) {
-      return (
-        <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem' }}>
-          Nenhuma anotação ainda. Use a barra de ferramentas acima para adicionar títulos, checklists, callouts ou código!
-        </div>
-      );
-    }
-
-    const lines = text.split('\n');
-
-    return (
-      <div className="notion-preview-content">
-        {lines.map((line, idx) => {
-          // 1. Título H1
-          if (line.startsWith('# ')) {
-            return <h1 key={idx} className="notion-h1">{line.replace('# ', '')}</h1>;
-          }
-          // 2. Título H2
-          if (line.startsWith('## ')) {
-            return <h2 key={idx} className="notion-h2">{line.replace('## ', '')}</h2>;
-          }
-          // 3. Título H3
-          if (line.startsWith('### ')) {
-            return <h3 key={idx} className="notion-h3">{line.replace('### ', '')}</h3>;
-          }
-          // 4. Checklists interativos [ ] ou [x]
-          if (/^- \[( |x)\] /i.test(line)) {
-            const isChecked = /- \[x\] /i.test(line);
-            const taskText = line.replace(/^- \[( |x)\] /i, '');
-            return (
-              <div
-                key={idx}
-                className={`notion-checklist-item ${isChecked ? 'completed' : ''}`}
-                onClick={() => {
-                  const newLines = [...lines];
-                  newLines[idx] = isChecked ? `- [ ] ${taskText}` : `- [x] ${taskText}`;
-                  handleContentChange(newLines.join('\n'));
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => {}}
-                  className="notion-checkbox"
-                />
-                <span style={{ textDecoration: isChecked ? 'line-through' : 'none', color: isChecked ? 'var(--text-muted)' : 'inherit' }}>
-                  {taskText}
-                </span>
-              </div>
-            );
-          }
-          // 5. Callouts / Citações (> 💡 ...)
-          if (line.startsWith('> ')) {
-            return (
-              <blockquote key={idx} className="notion-callout">
-                {line.replace('> ', '')}
-              </blockquote>
-            );
-          }
-          // 6. Linha horizontal
-          if (line.trim() === '---') {
-            return <hr key={idx} className="notion-divider" />;
-          }
-          // 7. Lista não-ordenada (- ...)
-          if (line.startsWith('- ')) {
-            return (
-              <li key={idx} className="notion-bullet-item">
-                {line.replace('- ', '')}
-              </li>
-            );
-          }
-          // 8. Linhas vazias
-          if (!line.trim()) {
-            return <div key={idx} style={{ height: '0.75rem' }} />;
-          }
-
-          // Parágrafo padrão
-          return (
-            <p key={idx} className="notion-p">
-              {line}
-            </p>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -210,98 +107,11 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
         </div>
 
         {/* Barra de Ferramentas Estilo Notion */}
-        <div className="notion-toolbar">
-          <div className="notion-tool-group">
-            <button
-              className="notion-tool-btn"
-              title="Título Grande (H1)"
-              onClick={() => insertTextAtCursor('# ', '\n', 'Título Principal')}
-            >
-              <Heading1 size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Subtítulo (H2)"
-              onClick={() => insertTextAtCursor('## ', '\n', 'Subtítulo')}
-            >
-              <Heading2 size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Lista de Tarefas (Checklist)"
-              onClick={() => insertTextAtCursor('- [ ] ', '\n', 'Nova tarefa')}
-            >
-              <CheckSquare size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Lista com Marcadores"
-              onClick={() => insertTextAtCursor('- ', '\n', 'Item da lista')}
-            >
-              <List size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Lista Numerada"
-              onClick={() => insertTextAtCursor('1. ', '\n', 'Primeiro passo')}
-            >
-              <ListOrdered size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Destaque / Callout"
-              onClick={() => insertTextAtCursor('> 💡 *Destaque:* ', '\n', 'Escreva uma anotação importante aqui')}
-            >
-              <Quote size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Código"
-              onClick={() => insertTextAtCursor('`', '`', 'codigo()')}
-            >
-              <Code size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Negrito"
-              onClick={() => insertTextAtCursor('**', '**', 'negrito')}
-            >
-              <Bold size={16} />
-            </button>
-            <button
-              className="notion-tool-btn"
-              title="Itálico"
-              onClick={() => insertTextAtCursor('*', '*', 'itálico')}
-            >
-              <Italic size={16} />
-            </button>
-          </div>
-
-          {/* Alternador de Visualização */}
-          <div className="notion-view-selector">
-            <button
-              className={`notion-view-btn ${viewMode === 'edit' ? 'active' : ''}`}
-              onClick={() => setViewMode('edit')}
-              title="Apenas Editor"
-            >
-              <Edit3 size={15} />
-            </button>
-            <button
-              className={`notion-view-btn ${viewMode === 'split' ? 'active' : ''}`}
-              onClick={() => setViewMode('split')}
-              title="Lado a Lado (Split)"
-            >
-              <Columns size={15} />
-            </button>
-            <button
-              className={`notion-view-btn ${viewMode === 'preview' ? 'active' : ''}`}
-              onClick={() => setViewMode('preview')}
-              title="Visualização Final"
-            >
-              <Eye size={15} />
-            </button>
-          </div>
-        </div>
+        <NotionToolbar
+          onInsertText={insertTextAtCursor}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
 
         {/* Corpo do Editor */}
         <div className={`notion-editor-body view-${viewMode}`}>
@@ -320,7 +130,10 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
 
           {(viewMode === 'preview' || viewMode === 'split') && (
             <div className="notion-pane preview-pane">
-              {renderMarkdown(content)}
+              <NotionMarkdownRenderer
+                content={content}
+                onContentChange={handleContentChange}
+              />
             </div>
           )}
         </div>
