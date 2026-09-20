@@ -86,8 +86,8 @@ export const App: React.FC = () => {
     setIsTimerRunningTheme: setIsTimerRunning,
   });
 
-  // 3. Controle de Modais e Telas
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'timer' | 'theme' | 'sounds' | 'cloud' | 'backup'>('timer');
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isZenModeOpen, setIsZenModeOpen] = useState(false);
@@ -99,6 +99,25 @@ export const App: React.FC = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleOpenSettings = (tab: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup' = 'timer') => {
+    playClick();
+    setSettingsTab(tab);
+    setIsSettingsOpen(true);
+  };
+
+  const handleGoogleLogin = async () => {
+    playClick();
+    const { error } = await supabaseService.signInWithGoogle();
+    if (error) {
+      alert(`Erro ao iniciar login Google: ${error.message}`);
+    }
+  };
+
+  const handleSignOut = async () => {
+    playClick();
+    await supabaseService.signOut();
+  };
 
   // 5. Atalhos de Teclado Globais
   useEffect(() => {
@@ -160,8 +179,9 @@ export const App: React.FC = () => {
         onSelectAmbient={setAmbient}
         onSetAmbientVolume={setAmbientVolume}
         userProfile={userProfile}
-        onOpenAuthModal={() => setIsSettingsOpen(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onGoogleLogin={handleGoogleLogin}
+        onSignOut={handleSignOut}
+        onOpenSettings={handleOpenSettings}
         onOpenStats={() => setIsStatsOpen(true)}
         onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
         onEnterZenMode={() => setIsZenModeOpen(true)}
@@ -242,6 +262,7 @@ export const App: React.FC = () => {
         onPlayAlarmPreview={(s) => playAlarm(s)}
         userProfile={userProfile}
         onRefreshTasks={() => window.location.reload()}
+        initialTab={settingsTab}
       />
 
       {/* Modo Zen (Fullscreen) */}
