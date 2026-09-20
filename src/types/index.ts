@@ -4,22 +4,57 @@ export type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
 export type PriorityLevel = 'baixa' | 'media' | 'alta';
 
-export interface Task {
+export interface Project {
   id: string;
   user_id?: string;
   title: string;
-  discipline: string;
+  description?: string;
+  start_date?: string; // YYYY-MM-DD
+  end_date?: string;   // YYYY-MM-DD
+  color: string;       // Código de cor hex ou tag
+  icon?: string;        // Emoji ou identificador
+  total_elapsed_seconds: number;
+  created_at: string;
+}
+
+export interface Subtask {
+  id: string;
+  project_id?: string;
+  user_id?: string;
+  title: string;
+  discipline?: string;
+  priority: PriorityLevel;
   pomodoros_estimated: number;
   pomodoros_completed: number;
+  elapsed_seconds?: number;
   is_completed: boolean;
-  priority: PriorityLevel;
+  notes?: string;      // Anotações ricas estilo Notion
+  due_date?: string;   // YYYY-MM-DD
   created_at?: string;
+}
+
+// Tipo Task mantido como alias compatível de Subtask
+export type Task = Subtask;
+
+export interface CalendarEvent {
+  id: string;
+  user_id?: string;
+  title: string;
+  description?: string;
+  start_time: string; // YYYY-MM-DDTHH:mm ou ISO
+  end_time: string;   // YYYY-MM-DDTHH:mm ou ISO
+  project_id?: string;
+  subtask_id?: string;
+  color?: string;
+  is_completed?: boolean;
 }
 
 export interface StudySession {
   id: string;
   user_id?: string;
   discipline: string;
+  project_id?: string;
+  subtask_id?: string;
   duration_minutes: number;
   completed_at: string; // ISO String
 }
