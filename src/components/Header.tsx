@@ -107,20 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {showAmbientMenu && (
-            <div
-              className="glass-panel"
-              style={{
-                position: 'absolute',
-                top: '48px',
-                right: '0',
-                padding: '0.75rem',
-                minWidth: '220px',
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
-            >
+            <div className="glass-panel ambient-dropdown-menu">
               <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>
                 ÁUDIO AMBIENTE
               </div>
