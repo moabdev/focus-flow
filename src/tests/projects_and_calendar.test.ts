@@ -81,13 +81,13 @@ describe('Projetos, Subtasks e Time-Tracking Acumulado', () => {
 
     // Adiciona 1500 segundos (25 minutos) de foco na subtask
     const result1 = await storageService.addTimeSpent('sub-test-time', 1500);
-    expect(result1.subtask.elapsed_seconds).toBe(1500);
-    expect(result1.project.total_elapsed_seconds).toBe(1500);
+    expect(result1.subtask?.elapsed_seconds).toBe(1500);
+    expect(result1.project?.total_elapsed_seconds).toBe(1500);
 
     // Adiciona mais 600 segundos (10 minutos)
     const result2 = await storageService.addTimeSpent('sub-test-time', 600);
-    expect(result2.subtask.elapsed_seconds).toBe(2100);
-    expect(result2.project.total_elapsed_seconds).toBe(2100);
+    expect(result2.subtask?.elapsed_seconds).toBe(2100);
+    expect(result2.project?.total_elapsed_seconds).toBe(2100);
 
     // Valida persistência no LocalStorage
     const savedProjects = storageService.getLocalProjects();
