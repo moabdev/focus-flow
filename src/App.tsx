@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useAudio } from './hooks/useAudio';
-import { useTasks } from './hooks/useTasks';
+import { useProjects } from './hooks/useProjects';
+import { useCalendar } from './hooks/useCalendar';
 import { useQuotes } from './hooks/useQuotes';
 import { useStats } from './hooks/useStats';
 import { useTimer } from './hooks/useTimer';
 import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
-import type { SupabaseProfile, UserSettings } from './types';
+import type { SupabaseProfile, UserSettings, TimerMode } from './types';
 
 import { Header } from './components/Header';
 import { QuoteBanner } from './components/QuoteBanner';
 import { TimerCard } from './components/TimerCard';
-import { TaskList } from './components/TaskList';
+import { ProjectManager } from './components/ProjectManager';
+import { CalendarView } from './components/CalendarView';
 import { Scratchpad } from './components/Scratchpad';
 import { SettingsModal } from './components/SettingsModal';
 import { StatsModal } from './components/StatsModal';
@@ -40,22 +42,39 @@ export const App: React.FC = () => {
   const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
   const [userProfile, setUserProfile] = useState<SupabaseProfile | null>(null);
 
-  // 2. Hooks de Conteúdo & Negócio
+  // 2. Visão Ativa (Foco / Projetos / Calendário)
+  const [currentView, setCurrentView] = useState<'timer' | 'projects' | 'calendar'>('timer');
+
+  // 3. Hooks de Negócio: Projetos, Subtasks e Calendário
   const {
-    tasks,
-    activeTask,
-    activeTaskId,
-    setActiveTaskId,
-    addTask,
-    toggleTaskCompleted,
-    deleteTask,
+    projects,
+    subtasks,
+    activeSubtask,
+    activeSubtaskId,
+    setActiveSubtaskId,
+    activeProject,
+    createProject,
+    updateProject,
+    deleteProject,
+    createSubtask,
+    updateSubtask,
+    deleteSubtask,
+    toggleSubtaskCompleted,
+    addTimeSpent,
     incrementPomodoro,
-    disciplines,
-    filterDiscipline,
-    setFilterDiscipline,
-    filterStatus,
-    setFilterStatus,
-  } = useTasks();
+  } = useProjects();
+
+  const {
+    events,
+    selectedDate,
+    setSelectedDate,
+    calendarView,
+    setCalendarView,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    toggleEventCompleted,
+  } = useCalendar();
 
   const {
     activeQuote,
@@ -69,21 +88,29 @@ export const App: React.FC = () => {
     addCompletedSession,
   } = useStats();
 
+  // Rastreamento de tempo em tempo real a cada segundo no Pomodoro
+  const handleTickSecond = useCallback((mode: TimerMode, elapsedSeconds: number) => {
+    if (mode === 'pomodoro' && activeSubtaskId) {
+      addTimeSpent(activeSubtaskId, elapsedSeconds);
+    }
+  }, [activeSubtaskId, addTimeSpent]);
+
   // Callback de conclusão de ciclo Pomodoro
   const handlePomodoroComplete = useCallback((durationMinutes: number) => {
-    const discipline = activeTask ? activeTask.discipline : 'Geral';
+    const discipline = activeSubtask ? (activeSubtask.discipline || 'Geral') : 'Geral';
     addCompletedSession(discipline, durationMinutes);
-    if (activeTaskId) {
-      incrementPomodoro(activeTaskId);
+    if (activeSubtaskId) {
+      incrementPomodoro(activeSubtaskId);
     }
-  }, [activeTask, activeTaskId, addCompletedSession, incrementPomodoro]);
+  }, [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro]);
 
-  // Hook do Timer
+  // Hook do Timer com rastreamento ao vivo
   const timer = useTimer({
     settings,
     onPomodoroComplete: handlePomodoroComplete,
     playAlarm,
     setIsTimerRunningTheme: setIsTimerRunning,
+    onTickSecond: handleTickSecond,
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -122,7 +149,6 @@ export const App: React.FC = () => {
   // 5. Atalhos de Teclado Globais
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Não dispara atalhos se estiver digitando em input ou textarea
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
         return;
@@ -142,6 +168,7 @@ export const App: React.FC = () => {
         timer.reset();
       } else if (e.altKey && e.code === 'KeyZ') {
         e.preventDefault();
+        playClick();
         setIsZenModeOpen((prev) => !prev);
       } else if (e.code === 'Escape') {
         if (isZenModeOpen) setIsZenModeOpen(false);
@@ -164,12 +191,12 @@ export const App: React.FC = () => {
   };
 
   const scrollToTasks = () => {
-    document.getElementById('tasks-container')?.scrollIntoView({ behavior: 'smooth' });
+    setCurrentView('projects');
   };
 
   return (
     <div className="app-container">
-      {/* Barra de Navegação Superior */}
+      {/* Barra de Navegação Superior com Abas */}
       <Header
         streakDays={metrics.streak.currentStreak}
         colorMode={colorMode}
@@ -185,60 +212,106 @@ export const App: React.FC = () => {
         onOpenStats={() => setIsStatsOpen(true)}
         onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
         onEnterZenMode={() => setIsZenModeOpen(true)}
+        currentView={currentView}
+        onChangeView={setCurrentView}
       />
 
-      {/* Banner de Citações Inspiradoras */}
-      <QuoteBanner
-        quote={activeQuote}
-        onRefreshQuote={() => {
-          playClick();
-          getRandomQuote();
-        }}
-        onAddMantra={addMantra}
-        isRotating={isRotating}
-      />
+      {/* Visão 1: Timer & Foco */}
+      {currentView === 'timer' && (
+        <>
+          {/* Banner de Citações Inspiradoras */}
+          <QuoteBanner
+            quote={activeQuote}
+            onRefreshQuote={() => {
+              playClick();
+              getRandomQuote();
+            }}
+            onAddMantra={addMantra}
+            isRotating={isRotating}
+          />
 
-      {/* Card Central do Cronômetro Pomodoro */}
-      <TimerCard
-        mode={timer.mode}
-        onChangeMode={(m) => {
-          playClick();
-          timer.changeMode(m);
-        }}
-        formattedTime={timer.formattedTime}
-        progressPercent={timer.progressPercent}
-        isRunning={timer.isRunning}
-        cycleCount={timer.cycleCount}
-        onToggle={() => {
-          playClick();
-          timer.toggle();
-        }}
-        onSkip={() => {
-          playClick();
-          timer.skip();
-        }}
-        onReset={() => {
-          playClick();
-          timer.reset();
-        }}
-        activeTask={activeTask}
-        onOpenTasksScroll={scrollToTasks}
-      />
+          {/* Card Central do Cronômetro Pomodoro */}
+          <TimerCard
+            mode={timer.mode}
+            onChangeMode={(m) => {
+              playClick();
+              timer.changeMode(m);
+            }}
+            formattedTime={timer.formattedTime}
+            progressPercent={timer.progressPercent}
+            isRunning={timer.isRunning}
+            cycleCount={timer.cycleCount}
+            onToggle={() => {
+              playClick();
+              timer.toggle();
+            }}
+            onSkip={() => {
+              playClick();
+              timer.skip();
+            }}
+            onReset={() => {
+              playClick();
+              timer.reset();
+            }}
+            activeTask={activeSubtask}
+            activeProject={activeProject}
+            onOpenTasksScroll={scrollToTasks}
+          />
 
-      {/* Gerenciador de Tarefas e Disciplinas */}
-      <TaskList
-        tasks={tasks}
-        activeTaskId={activeTaskId}
-        onSelectActiveTask={setActiveTaskId}
-        onToggleTaskCompleted={toggleTaskCompleted}
-        onDeleteTask={deleteTask}
-        onAddTask={addTask}
-        disciplines={disciplines}
-        filterDiscipline={filterDiscipline}
-        onSelectFilterDiscipline={setFilterDiscipline}
-        filterStatus={filterStatus}
-        onSelectFilterStatus={setFilterStatus}
-      />
+          {/* Gerenciador Integrado de Projetos & Tarefas */}
+          <ProjectManager
+            projects={projects}
+            subtasks={subtasks}
+            activeSubtaskId={activeSubtaskId}
+            onSelectActiveSubtask={setActiveSubtaskId}
+            onCreateProject={createProject}
+            onUpdateProject={updateProject}
+            onDeleteProject={deleteProject}
+            onCreateSubtask={createSubtask}
+            onUpdateSubtask={updateSubtask}
+            onDeleteSubtask={deleteSubtask}
+            onToggleSubtaskCompleted={toggleSubtaskCompleted}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        </>
+      )}
+
+      {/* Visão 2: Projetos & Subtasks */}
+      {currentView === 'projects' && (
+        <ProjectManager
+          projects={projects}
+          subtasks={subtasks}
+          activeSubtaskId={activeSubtaskId}
+          onSelectActiveSubtask={setActiveSubtaskId}
+          onCreateProject={createProject}
+          onUpdateProject={updateProject}
+          onDeleteProject={deleteProject}
+          onCreateSubtask={createSubtask}
+          onUpdateSubtask={updateSubtask}
+          onDeleteSubtask={deleteSubtask}
+          onToggleSubtaskCompleted={toggleSubtaskCompleted}
+          onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
+
+      {/* Visão 3: Calendário & Time-Blocking */}
+      {currentView === 'calendar' && (
+        <CalendarView
+          events={events}
+          projects={projects}
+          subtasks={subtasks}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          calendarView={calendarView}
+          onChangeView={setCalendarView}
+          onAddEvent={addEvent}
+          onUpdateEvent={updateEvent}
+          onDeleteEvent={deleteEvent}
+          onToggleEventCompleted={toggleEventCompleted}
+          onSelectSubtaskForFocus={setActiveSubtaskId}
+          onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
 
       {/* Gaveta Lateral de Anotações (Scratchpad) */}
       <Scratchpad
@@ -273,7 +346,7 @@ export const App: React.FC = () => {
         progressPercent={timer.progressPercent}
         isRunning={timer.isRunning}
         onToggleTimer={timer.toggle}
-        activeTask={activeTask}
+        activeTask={activeSubtask}
         quoteText={activeQuote.text}
         ambientSound={ambient}
         onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}

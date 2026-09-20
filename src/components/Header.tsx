@@ -12,6 +12,9 @@ import {
   VolumeX,
   LogOut,
   CheckCircle2,
+  Timer,
+  FolderKanban,
+  Calendar,
 } from 'lucide-react';
 import { AmbientSound, ColorMode, SupabaseProfile } from '../types';
 
@@ -30,6 +33,8 @@ interface HeaderProps {
   onOpenStats: () => void;
   onToggleScratchpad: () => void;
   onEnterZenMode: () => void;
+  currentView: 'timer' | 'projects' | 'calendar';
+  onChangeView: (view: 'timer' | 'projects' | 'calendar') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -47,6 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStats,
   onToggleScratchpad,
   onEnterZenMode,
+  currentView,
+  onChangeView,
 }) => {
   const [showAmbientMenu, setShowAmbientMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -93,6 +100,34 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{streakDays} {streakDays === 1 ? 'Dia' : 'Dias'}</span>
         </button>
       </div>
+
+      {/* Abas de Navegação Central: Foco, Projetos e Calendário */}
+      <nav className="header-view-tabs" aria-label="Navegação de Visualizações">
+        <button
+          className={`header-view-tab ${currentView === 'timer' ? 'active' : ''}`}
+          onClick={() => onChangeView('timer')}
+          title="Cronômetro Pomodoro e Foco"
+        >
+          <Timer size={16} />
+          <span>Foco</span>
+        </button>
+        <button
+          className={`header-view-tab ${currentView === 'projects' ? 'active' : ''}`}
+          onClick={() => onChangeView('projects')}
+          title="Projetos e Subtarefas"
+        >
+          <FolderKanban size={16} />
+          <span>Projetos</span>
+        </button>
+        <button
+          className={`header-view-tab ${currentView === 'calendar' ? 'active' : ''}`}
+          onClick={() => onChangeView('calendar')}
+          title="Calendário e Time-Blocking"
+        >
+          <Calendar size={16} />
+          <span>Calendário</span>
+        </button>
+      </nav>
 
       <div className="nav-actions">
         {/* Dropdown de Som Ambiente */}
