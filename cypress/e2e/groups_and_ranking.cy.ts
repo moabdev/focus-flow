@@ -32,6 +32,20 @@ describe('Grupos de Estudo, Ranking Semanal e Página Individual de Projetos', (
 
     // Mensagem deve aparecer no feed
     cy.contains('.chat-bubble', testMsg).should('be.visible');
+
+    // Testa botão de Convidar
+    cy.get('.group-invite-btn').should('be.visible').click();
+    cy.contains('.group-invite-btn', 'Copiado!').should('be.visible');
+
+    // Testa modal de Entrar com Código
+    cy.contains('button', 'Entrar com Código').click();
+    cy.get('.modal-card').should('be.visible');
+    cy.get('#join-group-code').type('MED-PRO');
+    cy.contains('.modal-actions button', 'Entrar no Grupo').click();
+
+    // Modal fecha e grupo 'Medicina & Residência' fica ativo
+    cy.get('.modal-card').should('not.exist');
+    cy.get('.group-chat-name').should('contain', 'Medicina');
   });
 
   it('deve alternar para o Ranking Semanal e exibir o pódio e tabela de classificação', () => {

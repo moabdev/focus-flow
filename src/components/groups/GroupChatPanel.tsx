@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Users, Sparkles } from 'lucide-react';
+import { Send, Users, Sparkles, Share2, Check } from 'lucide-react';
 import { StudyGroup, GroupMessage } from '../../types';
 
 interface GroupChatPanelProps {
@@ -22,6 +22,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   onSendMessage,
 }) => {
   const [inputText, setInputText] = useState('');
+  const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -37,6 +38,15 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
 
   const handleQuickCheer = (cheer: string) => {
     onSendMessage(cheer);
+  };
+
+  const handleCopyInvite = () => {
+    const inviteText = `Venha estudar comigo no FocusFlow! Entre no grupo "${group.name}" usando o código de convite: ${group.code}`;
+    try {
+      navigator.clipboard.writeText(inviteText);
+    } catch {}
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const formatTime = (isoString: string) => {
@@ -55,9 +65,18 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         <div className="group-chat-title-group">
           <span className="group-chat-icon">{group.avatar_icon}</span>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <h3 className="group-chat-name">{group.name}</h3>
-              <span className="group-code-pill">{group.code}</span>
+              <span className="group-code-pill" title="Código de Convite">{group.code}</span>
+              <button
+                className="group-invite-btn"
+                onClick={handleCopyInvite}
+                title="Copiar convite com código para compartilhar"
+                type="button"
+              >
+                {copied ? <Check size={13} color="#10b981" /> : <Share2 size={13} />}
+                <span>{copied ? 'Copiado!' : 'Convidar'}</span>
+              </button>
             </div>
             <p className="group-chat-desc">{group.description}</p>
           </div>

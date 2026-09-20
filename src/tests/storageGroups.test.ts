@@ -55,4 +55,33 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
     const history = storageGroups.getMessages(targetGroup.id);
     expect(history.some((m) => m.text === messageText)).toBe(true);
   });
+
+  it('deve permitir que um usuário entre no grupo usando um código de convite válido', () => {
+    const groups = storageGroups.getGroups();
+    const targetGroup = groups[0];
+    const initialCount = targetGroup.member_count;
+
+    const result = storageGroups.joinGroupByCode(targetGroup.code, 'Lucas Silva');
+    expect(result.success).toBe(true);
+    expect(result.group?.id).toBe(targetGroup.id);
+
+    // Verifica que o membro foi adicionado
+    const members = storageGroups.getMembers(targetGroup.id);
+    expect(members.some((m) => m.user_name === 'Lucas Silva')).toBe(true);
+
+    // Verifica incremento de membros
+    const updatedGroups = storageGroups.getGroups();
+    const updatedTarget = updatedGroups.find((g) => g.id === targetGroup.id);
+    expect(updatedTarget?.member_count).toBe(initialCount + 1);
+
+    // Verifica mensagem de boas-vindas do bot
+    const messages = storageGroups.getMessages(targetGroup.id);
+    expect(messages.some((m) => m.text.includes('Lucas Silva acabou de entrar'))).toBe(true);
+  });
+
+  it('deve retornar erro ao tentar entrar com código de convite inexistente', () => {
+    const result = storageGroups.joinGroupByCode('CODIGO_INVALIDO_XYZ');
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Grupo não encontrado com este código de convite.');
+  });
 });

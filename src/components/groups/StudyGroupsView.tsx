@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Sparkles } from 'lucide-react';
+import { Users, Plus, Search, Sparkles, KeyRound } from 'lucide-react';
 import { StudyGroup, GroupMember, GroupMessage, SupabaseProfile } from '../../types';
 import { storageGroups } from '../../services/storageGroups';
 import { GroupChatPanel } from './GroupChatPanel';
 import { CreateGroupModal } from './CreateGroupModal';
+import { JoinGroupModal } from './JoinGroupModal';
 
 interface StudyGroupsViewProps {
   userProfile?: SupabaseProfile | null;
@@ -22,6 +23,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   // Carrega membros e mensagens sempre que o grupo ativo mudar
   useEffect(() => {
@@ -42,6 +44,16 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
     const newGroup = storageGroups.createGroup(data);
     setGroups(storageGroups.getGroups());
     setActiveGroupId(newGroup.id);
+  };
+
+  const handleJoinGroup = (code: string) => {
+    const userName = userProfile?.full_name || 'Você';
+    const res = storageGroups.joinGroupByCode(code, userName);
+    if (res.success && res.group) {
+      setGroups(storageGroups.getGroups());
+      setActiveGroupId(res.group.id);
+    }
+    return res;
   };
 
   const handleSendMessage = (text: string) => {
@@ -77,9 +89,18 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
           </p>
         </div>
 
-        <button className="main-start-btn" onClick={() => setIsCreateModalOpen(true)}>
-          <Plus size={16} /> Novo Grupo
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <button
+            className="filter-chip"
+            onClick={() => setIsJoinModalOpen(true)}
+            style={{ padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <KeyRound size={15} /> Entrar com Código
+          </button>
+          <button className="main-start-btn" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus size={16} /> Novo Grupo
+          </button>
+        </div>
       </div>
 
       {/* Grid Principal com 3 Colunas: Grupos, Chat, Membros */}
@@ -176,6 +197,13 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateGroup={handleCreateGroup}
+      />
+
+      {/* Modal de Entrada com Código de Convite */}
+      <JoinGroupModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onJoinGroup={handleJoinGroup}
       />
     </div>
   );

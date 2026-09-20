@@ -251,4 +251,40 @@ export const storageGroups = {
       );
     });
   },
+
+  joinGroupByCode(code: string, userName: string = 'Você'): { success: boolean; group?: StudyGroup; error?: string } {
+    const cleanCode = code.trim().toUpperCase();
+    const groups = this.getGroups();
+    const targetGroup = groups.find((g) => g.code.toUpperCase() === cleanCode);
+
+    if (!targetGroup) {
+      return { success: false, error: 'Grupo não encontrado com este código de convite.' };
+    }
+
+    const members = this.getMembers(targetGroup.id);
+    const alreadyMember = members.some((m) => m.user_name === userName);
+
+    if (!alreadyMember) {
+      const newMember: GroupMember = {
+        id: `m-${Date.now()}`,
+        group_id: targetGroup.id,
+        user_name: userName,
+        role: 'member',
+        current_status: 'idle',
+        weekly_seconds: 0,
+        streak_days: 1,
+      };
+      this.saveMembers(targetGroup.id, [...members, newMember]);
+      targetGroup.member_count = (targetGroup.member_count || members.length) + 1;
+      this.saveGroups(groups);
+      this.sendMessage(
+        targetGroup.id,
+        `👋 ${userName} acabou de entrar no grupo com o código de convite!`,
+        'FocusFlow Bot',
+        'system_focus'
+      );
+    }
+
+    return { success: true, group: targetGroup };
+  },
 };
