@@ -46,6 +46,18 @@ describe('Grupos de Estudo, Ranking Semanal e Página Individual de Projetos', (
     // Modal fecha e grupo 'Medicina & Residência' fica ativo
     cy.get('.modal-card').should('not.exist');
     cy.get('.group-chat-name').should('contain', 'Medicina');
+
+    // Testa modal de Criação de Grupo e verifica padding
+    cy.contains('button', 'Novo Grupo').click();
+    cy.get('.modal-card').should('be.visible');
+    cy.get('.modal-form')
+      .should('be.visible')
+      .should('have.css', 'padding')
+      .and('not.eq', '0px');
+    cy.get('#group-name').type('Grupo Teste Cypress');
+    cy.contains('.modal-actions button', 'Criar Grupo').click();
+    cy.get('.modal-card').should('not.exist');
+    cy.contains('.group-item-name', 'Grupo Teste Cypress').should('be.visible');
   });
 
   it('deve alternar para o Ranking Semanal e exibir o pódio e tabela de classificação', () => {

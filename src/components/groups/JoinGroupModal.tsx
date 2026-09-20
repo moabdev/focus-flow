@@ -75,7 +75,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="icon-btn" onClick={onClose} style={{ padding: '0.6rem 1rem' }}>
+            <button type="button" className="btn-secondary" onClick={onClose}>
               Cancelar
             </button>
             <button type="submit" className="main-start-btn">
