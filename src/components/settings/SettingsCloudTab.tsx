@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { LogOut, Mail, ChevronDown, ChevronUp, Save, Check } from 'lucide-react';
+import React from 'react';
+import { LogOut, Mail } from 'lucide-react';
 import { SupabaseProfile } from '../../types';
-import { emailService, EmailServiceConfig } from '../../services/emailService';
+import { emailService } from '../../services/emailService';
 
 interface SettingsCloudTabProps {
   userProfile: SupabaseProfile | null;
@@ -18,16 +18,8 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
   onSyncToCloud,
   syncStatus,
 }) => {
-  const [emailConfig, setEmailConfig] = useState<EmailServiceConfig>(() => emailService.getConfig());
-  const [showEmailSettings, setShowEmailSettings] = useState(false);
-  const [savedEmailMsg, setSavedEmailMsg] = useState(false);
-
-  const handleSaveEmailConfig = (e: React.FormEvent) => {
-    e.preventDefault();
-    emailService.saveConfig(emailConfig);
-    setSavedEmailMsg(true);
-    setTimeout(() => setSavedEmailMsg(false), 3000);
-  };
+  const usage = emailService.getDailyUsage();
+  const isConfigured = emailService.isConfigured();
 
   return (
     <>
@@ -59,34 +51,47 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
               <img
                 src={userProfile.avatar_url}
                 alt="Avatar"
-                style={{ width: '42px', height: '42px', borderRadius: '50%' }}
+                className="cloud-avatar"
+                style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }}
               />
             ) : (
-              <div
-                className="brand-logo-icon"
-                style={{ width: '42px', height: '42px', fontSize: '1.1rem' }}
-              >
-                {userProfile.full_name?.charAt(0) || 'U'}
+              <div className="cloud-avatar-placeholder">
+                {(userProfile.email || 'U')[0].toUpperCase()}
               </div>
             )}
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{userProfile.full_name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{userProfile.email}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                {userProfile.full_name || userProfile.email}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {userProfile.email}
+              </div>
             </div>
           </div>
           <button
-            className="icon-btn"
+            className="filter-chip"
+            style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', gap: 4 }}
             onClick={onSignOut}
-            title="Desconectar Conta"
-            aria-label="Desconectar Conta"
           >
-            <LogOut size={16} />
+            <LogOut size={13} /> Sair
           </button>
         </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-          <button className="google-login-btn-lg" onClick={onGoogleLogin}>
-            <svg className="google-icon-svg" viewBox="0 0 24 24" width="20" height="20">
+        <div className="glass-card" style={{ padding: '1.25rem', textAlign: 'center' }}>
+          <button
+            className="filter-chip"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              fontWeight: 700,
+              justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+            onClick={onGoogleLogin}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -128,238 +133,39 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
         </div>
       )}
 
-      {/* Seção de Configuração do Serviço de E-mail (Brevo / Resend / EmailJS / API) */}
-      <div className="glass-card" style={{ marginTop: '1.25rem', padding: '1rem' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-          }}
-          onClick={() => setShowEmailSettings((prev) => !prev)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Mail size={16} color="var(--accent-primary)" />
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                Serviço de E-mail ({emailConfig.provider === 'brevo' ? 'Brevo 300/dia' : emailConfig.provider === 'resend' ? 'Resend 3.000/mês' : emailConfig.provider === 'emailjs' ? 'EmailJS' : 'Provedor'})
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                {emailService.isConfigured() ? 'Provedor conectado' : 'Modo envio direto pronto'} • {emailService.getDailyUsage().count}/{emailService.getDailyUsage().limit} hoje
-              </div>
+      {/* Status do Serviço de E-mail (Configuração via .env) */}
+      <div
+        className="glass-card"
+        style={{
+          marginTop: '1.25rem',
+          padding: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <Mail size={18} color="var(--accent-primary)" />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Envio de Convites (Brevo)</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {isConfigured ? 'Ativo via .env' : 'Configurado via .env'} • Cota: {usage.count}/300 hoje ({usage.remaining} restantes)
             </div>
           </div>
-          {showEmailSettings ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
-
-        {showEmailSettings && (
-          <form onSubmit={handleSaveEmailConfig} style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {/* Seletor de Provedor */}
-            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-              {[
-                { id: 'brevo', label: '🏆 Brevo (300/dia)', desc: '9.000/mês grátis' },
-                { id: 'resend', label: '⚡ Resend', desc: '3.000/mês grátis' },
-                { id: 'custom_api', label: '☁️ API / Supabase', desc: 'Endpoint próprio' },
-                { id: 'emailjs', label: '📧 EmailJS', desc: '200/mês' },
-              ].map((p) => {
-                const active = (emailConfig.provider || 'brevo') === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setEmailConfig({ ...emailConfig, provider: p.id as any })}
-                    style={{
-                      flex: '1 1 45%',
-                      padding: '0.45rem 0.5rem',
-                      borderRadius: '6px',
-                      border: `1px solid ${active ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.1)'}`,
-                      backgroundColor: active ? 'rgba(252, 0, 56, 0.1)' : 'transparent',
-                      color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                      fontSize: '0.78rem',
-                      fontWeight: active ? 700 : 500,
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div>{p.label}</div>
-                    <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>{p.desc}</div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Banner de Cota */}
-            {(() => {
-              const usage = emailService.getDailyUsage();
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: 'rgba(252, 0, 56, 0.05)',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(252, 0, 56, 0.15)',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  <span>⚡ Cota: <strong>{usage.count}/{usage.limit}</strong> envios hoje</span>
-                  <span style={{ color: usage.remaining > 20 ? '#10b981' : '#f59e0b', fontWeight: 600 }}>
-                    {usage.remaining} restantes hoje
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Campos Brevo */}
-            {(emailConfig.provider === 'brevo' || !emailConfig.provider) && (
-              <>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                  <strong>Brevo (antigo Sendinblue)</strong> oferece <strong>300 e-mails grátis por dia</strong> (~9.000/mês). Crie sua conta em brevo.com e gere sua chave em <em>SMTP & API</em>.
-                </p>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>Chave de API do Brevo (API Key)</label>
-                  <input
-                    type="password"
-                    className="modal-input"
-                    placeholder="xkeysib-..."
-                    value={emailConfig.brevoApiKey || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, brevoApiKey: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>E-mail do Remetente (Cadastrado no Brevo)</label>
-                  <input
-                    type="email"
-                    className="modal-input"
-                    placeholder="seu-email-verificado@gmail.com"
-                    value={emailConfig.brevoSenderEmail || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, brevoSenderEmail: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>Nome de Exibição do Remetente</label>
-                  <input
-                    type="text"
-                    className="modal-input"
-                    placeholder="FocusFlow Estudos"
-                    value={emailConfig.brevoSenderName || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, brevoSenderName: e.target.value })}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Campos Resend */}
-            {emailConfig.provider === 'resend' && (
-              <>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                  <strong>Resend</strong> oferece <strong>3.000 e-mails por mês</strong> (100 por dia). Obtenha sua chave em resend.com/api-keys.
-                </p>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>Chave de API do Resend</label>
-                  <input
-                    type="password"
-                    className="modal-input"
-                    placeholder="re_..."
-                    value={emailConfig.resendApiKey || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, resendApiKey: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>E-mail Remetente (Resend)</label>
-                  <input
-                    type="text"
-                    className="modal-input"
-                    placeholder="onboarding@resend.dev ou seu dominio"
-                    value={emailConfig.resendSenderEmail || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, resendSenderEmail: e.target.value })}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Campos API Customizada ou Supabase Function */}
-            {emailConfig.provider === 'custom_api' && (
-              <>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                  Dispare para uma Edge Function do Supabase (<code>/functions/v1/send-invite</code>), Make, n8n ou servidor próprio.
-                </p>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>URL do Endpoint / Webhook</label>
-                  <input
-                    type="url"
-                    className="modal-input"
-                    placeholder="https://sua-api.com/send-invite"
-                    value={emailConfig.customApiUrl || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, customApiUrl: e.target.value })}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Campos EmailJS */}
-            {emailConfig.provider === 'emailjs' && (
-              <>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                  EmailJS tem cota de <strong>200 e-mails/mês</strong> no plano gratuito:
-                </p>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Service ID</label>
-                  <input
-                    type="text"
-                    className="modal-input"
-                    placeholder="service_xxxxx"
-                    value={emailConfig.serviceId || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, serviceId: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Template ID</label>
-                  <input
-                    type="text"
-                    className="modal-input"
-                    placeholder="template_xxxxx"
-                    value={emailConfig.templateId || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, templateId: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Public Key</label>
-                  <input
-                    type="text"
-                    className="modal-input"
-                    placeholder="public_key_xxxxx"
-                    value={emailConfig.publicKey || ''}
-                    onChange={(e) => setEmailConfig({ ...emailConfig, publicKey: e.target.value })}
-                  />
-                </div>
-              </>
-            )}
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{
-                width: '100%',
-                padding: '0.65rem',
-                fontWeight: 600,
-                marginTop: '0.25rem',
-                justifyContent: 'center',
-              }}
-            >
-              Salvar Configurações de E-mail
-            </button>
-
-            {savedEmailMsg && (
-              <div style={{ fontSize: '0.8rem', color: '#10b981', textAlign: 'center', fontWeight: 600 }}>
-                ✓ Configurações de e-mail salvas com sucesso!
-              </div>
-            )}
-          </form>
-        )}
+        <span
+          style={{
+            fontSize: '0.75rem',
+            padding: '0.25rem 0.65rem',
+            borderRadius: '999px',
+            fontWeight: 700,
+            backgroundColor: isConfigured ? 'rgba(16, 185, 129, 0.12)' : 'rgba(252, 0, 56, 0.08)',
+            color: isConfigured ? '#10b981' : 'var(--accent-primary)',
+            border: `1px solid ${isConfigured ? 'rgba(16, 185, 129, 0.25)' : 'rgba(252, 0, 56, 0.2)'}`,
+          }}
+        >
+          {isConfigured ? '300/dia Ativo' : '300/dia'}
+        </span>
       </div>
     </>
   );

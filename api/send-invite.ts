@@ -1,5 +1,5 @@
 // Vercel Serverless Function: /api/send-invite
-// Suporta Brevo (300 e-mails/dia = 9.000/mês grátis) e Resend (3.000/mês grátis)
+// Provedor Exclusivo: Brevo (300 e-mails/dia = 9.000/mês 100% grátis)
 
 export default async function handler(req: any, res: any) {
   // CORS headers
@@ -22,7 +22,6 @@ export default async function handler(req: any, res: any) {
 
   try {
     const {
-      provider = 'brevo',
       apiKey,
       senderEmail,
       senderName,
@@ -35,91 +34,58 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Destinatário (to) é obrigatório.' });
     }
 
-    // 1. Brevo (300 e-mails/dia = 9.000/mês grátis)
-    if (provider === 'brevo') {
-      const brevoKey =
-        apiKey || process.env.VITE_BREVO_API_KEY || process.env.BREVO_API_KEY;
+    const brevoKey =
+      apiKey || process.env.VITE_BREVO_API_KEY || process.env.BREVO_API_KEY;
 
-      if (!brevoKey) {
-        return res
-          .status(400)
-          .json({ error: 'Chave de API do Brevo não configurada no servidor ou na requisição.' });
-      }
-
-      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'api-key': brevoKey,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: {
-            name: senderName || 'FocusFlow',
-            email: senderEmail || 'support@focusflow.app',
-          },
-          to: [{ email: to }],
-          subject: subject || 'Convite para sala de estudos no FocusFlow',
-          htmlContent: htmlContent,
-        }),
+    if (!brevoKey) {
+      return res.status(400).json({
+        error: 'Chave de API do Brevo não configurada no .env (VITE_BREVO_API_KEY).',
       });
-
-      const resText = await brevoRes.text();
-      let resJson: any = {};
-      try {
-        resJson = JSON.parse(resText);
-      } catch {}
-
-      if (!brevoRes.ok) {
-        return res
-          .status(brevoRes.status)
-          .json({ error: resJson.message || resText || 'Erro ao enviar via Brevo.' });
-      }
-
-      return res.status(200).json({ success: true, messageId: resJson.messageId });
     }
 
-    // 2. Resend (3.000 e-mails/mês grátis)
-    if (provider === 'resend') {
-      const resendKey =
-        apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
+    const finalSenderEmail =
+      senderEmail ||
+      process.env.VITE_BREVO_SENDER_EMAIL ||
+      process.env.BREVO_SENDER_EMAIL ||
+      'support@focusflow.app';
 
-      if (!resendKey) {
-        return res
-          .status(400)
-          .json({ error: 'Chave de API do Resend não configurada.' });
-      }
+    const finalSenderName =
+      senderName ||
+      process.env.VITE_BREVO_SENDER_NAME ||
+      process.env.BREVO_SENDER_NAME ||
+      'FocusFlow';
 
-      const resendRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${resendKey}`,
-          'Content-Type': 'application/json',
+    const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'api-key': brevoKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: {
+          name: finalSenderName,
+          email: finalSenderEmail,
         },
-        body: JSON.stringify({
-          from: `${senderName || 'FocusFlow'} <${senderEmail || 'onboarding@resend.dev'}>`,
-          to: [to],
-          subject: subject || 'Convite para sala de estudos no FocusFlow',
-          html: htmlContent,
-        }),
-      });
+        to: [{ email: to }],
+        subject: subject || 'Convite para sala de estudos no FocusFlow',
+        htmlContent: htmlContent,
+      }),
+    });
 
-      const resText = await resendRes.text();
-      let resJson: any = {};
-      try {
-        resJson = JSON.parse(resText);
-      } catch {}
+    const resText = await brevoRes.text();
+    let resJson: any = {};
+    try {
+      resJson = JSON.parse(resText);
+    } catch {}
 
-      if (!resendRes.ok) {
-        return res
-          .status(resendRes.status)
-          .json({ error: resJson.message || resText || 'Erro ao enviar via Resend.' });
-      }
-
-      return res.status(200).json({ success: true, id: resJson.id });
+    if (!brevoRes.ok) {
+      return res
+        .status(brevoRes.status)
+        .json({ error: resJson.message || resText || 'Erro ao enviar e-mail via Brevo.' });
     }
 
-    return res.status(400).json({ error: 'Provedor não suportado. Use "brevo" ou "resend".' });
+    return res.status(200).json({ success: true, messageId: resJson.messageId });
   } catch (err: any) {
     return res
       .status(500)

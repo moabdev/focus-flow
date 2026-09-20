@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { emailService } from '../services/emailService';
 import { StudyGroup } from '../types';
 
-describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
+describe('EmailService (Envio de Convites de Grupo com 1 Clique - Provedor Brevo)', () => {
   const mockGroup: StudyGroup = {
     id: 'grp-123',
     name: 'Engenharia de Software',
@@ -21,12 +21,6 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
-    emailService.saveConfig({
-      serviceId: '',
-      templateId: '',
-      publicKey: '',
-      customApiUrl: '',
-    });
   });
 
   describe('1. Validação de Sintaxe de E-mail', () => {
@@ -46,7 +40,7 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
     });
   });
 
-  describe('2. Envio de Convite com 1 Clique (Modo Demonstração / Out-of-the-box)', () => {
+  describe('2. Envio de Convite com 1 Clique (Modo Demonstração / Fallback)', () => {
     it('deve rejeitar envio quando o e-mail estiver em branco', async () => {
       const result = await emailService.sendGroupInvite({
         toEmail: '   ',
@@ -87,92 +81,12 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
     });
   });
 
-  describe('3. Envio via EmailJS REST API', () => {
-    it('deve disparar POST para o endpoint do EmailJS quando configurado', async () => {
-      emailService.saveConfig({
-        serviceId: 'service_focus',
-        templateId: 'template_invite',
-        publicKey: 'pub_key_123',
-      });
-
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-        ok: true,
-        text: vi.fn().mockResolvedValue('OK'),
-      } as any);
-
-      const result = await emailService.sendGroupInvite({
-        toEmail: 'dev@focusflow.app',
-        group: mockGroup,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.mode).toBe('emailjs');
-      expect(fetchSpy).toHaveBeenCalledWith(
-        'https://api.emailjs.com/api/v1.0/email/send',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        })
-      );
-    });
-
-    it('deve tratar erro quando a API do EmailJS retornar resposta não-OK', async () => {
-      emailService.saveConfig({
-        serviceId: 'service_focus',
-        templateId: 'template_invite',
-        publicKey: 'pub_key_123',
-      });
-
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-        ok: false,
-        status: 403,
-        text: vi.fn().mockResolvedValue('Invalid template ID'),
-      } as any);
-
-      const result = await emailService.sendGroupInvite({
-        toEmail: 'dev@focusflow.app',
-        group: mockGroup,
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.mode).toBe('emailjs');
-      expect(result.message).toContain('Invalid template ID');
-    });
-  });
-
-  describe('4. Envio via API Customizada / Webhook', () => {
-    it('deve despachar para URL customizada quando configurada', async () => {
-      emailService.saveConfig({
-        customApiUrl: 'https://api.focusflow.app/v1/send-invite',
-      });
-
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-        ok: true,
-      } as any);
-
-      const result = await emailService.sendGroupInvite({
-        toEmail: 'amigo@exemplo.com',
-        group: mockGroup,
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.mode).toBe('custom_api');
-      expect(fetchSpy).toHaveBeenCalledWith(
-        'https://api.focusflow.app/v1/send-invite',
-        expect.objectContaining({
-          method: 'POST',
-        })
-      );
-    });
-  });
-
-  describe('5. Envio via Brevo (300 e-mails/dia = 9.000/mês grátis)', () => {
-    it('deve despachar para /api/send-invite com provedor brevo quando configurado', async () => {
-      emailService.saveConfig({
-        provider: 'brevo',
-        brevoApiKey: 'xkeysib-test-12345',
-        brevoSenderEmail: 'admin@estudos.com',
-        brevoSenderName: 'FocusFlow Estudos',
+  describe('3. Envio via Brevo (300 e-mails/dia = 9.000/mês 100% grátis)', () => {
+    it('deve despachar para /api/send-invite quando a chave do Brevo estiver presente', async () => {
+      vi.spyOn(emailService, 'getConfig').mockReturnValue({
+        apiKey: 'xkeysib-mock-valid-key',
+        senderEmail: 'admin@estudos.com',
+        senderName: 'FocusFlow Estudos',
       });
 
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -183,6 +97,7 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
       const result = await emailService.sendGroupInvite({
         toEmail: 'novoaluno@gmail.com',
         group: mockGroup,
+        inviterName: 'Professor',
       });
 
       expect(result.success).toBe(true);
@@ -192,23 +107,45 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique)', () => {
         '/api/send-invite',
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('"provider":"brevo"'),
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.stringContaining('"novoaluno@gmail.com"'),
         })
       );
     });
+
+    it('deve tratar erro da API do Brevo graciosamente', async () => {
+      vi.spyOn(emailService, 'getConfig').mockReturnValue({
+        apiKey: 'xkeysib-mock-invalid-key',
+        senderEmail: 'admin@estudos.com',
+        senderName: 'FocusFlow Estudos',
+      });
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: vi.fn().mockResolvedValue({ error: 'Key not found in Brevo' }),
+      } as any);
+
+      const result = await emailService.sendGroupInvite({
+        toEmail: 'aluno@gmail.com',
+        group: mockGroup,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.mode).toBe('brevo');
+      expect(result.message).toContain('Key not found in Brevo');
+    });
   });
 
-  describe('6. Gestão de Cota Diária (300 no Brevo / 100 no Resend)', () => {
-    it('deve calcular cota restante de 300 para Brevo', () => {
-      emailService.saveConfig({ provider: 'brevo' });
+  describe('4. Gestão de Cota Diária do Brevo (300 e-mails por dia)', () => {
+    it('deve calcular cota restante de 300 para o Brevo', () => {
       const usage = emailService.getDailyUsage();
       expect(usage.limit).toBe(300);
       expect(usage.remaining).toBe(300);
       expect(usage.count).toBe(0);
     });
 
-    it('deve bloquear envio quando a cota diária for atingida', async () => {
-      emailService.saveConfig({ provider: 'brevo' });
+    it('deve bloquear envio quando a cota diária de 300 for atingida', async () => {
       const todayStr = new Date().toISOString().split('T')[0];
 
       // Simula 300 envios registrados hoje

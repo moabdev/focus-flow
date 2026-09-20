@@ -22,7 +22,6 @@ function emailApiPlugin(): Plugin {
           try {
             const data = JSON.parse(body || '{}');
             const {
-              provider = 'brevo',
               apiKey,
               senderEmail,
               senderName,
@@ -31,103 +30,78 @@ function emailApiPlugin(): Plugin {
               htmlContent,
             } = data;
 
-            if (provider === 'brevo') {
-              const brevoKey =
-                apiKey || process.env.VITE_BREVO_API_KEY || process.env.BREVO_API_KEY;
-              if (!brevoKey) {
-                res.statusCode = 400;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: 'Chave de API do Brevo não configurada.' }));
-                return;
-              }
+            const brevoKey =
+              apiKey || process.env.VITE_BREVO_API_KEY || process.env.BREVO_API_KEY;
 
-              const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: {
-                  accept: 'application/json',
-                  'api-key': brevoKey,
-                  'content-type': 'application/json',
-                },
-                body: JSON.stringify({
-                  sender: {
-                    name: senderName || 'FocusFlow',
-                    email: senderEmail || 'support@focusflow.app',
-                  },
-                  to: [{ email: to }],
-                  subject: subject,
-                  htmlContent: htmlContent,
-                }),
-              });
-
-              const resText = await brevoRes.text();
-              let resJson: any = {};
-              try {
-                resJson = JSON.parse(resText);
-              } catch {}
-
-              if (!brevoRes.ok) {
-                res.statusCode = brevoRes.status;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: resJson.message || resText || 'Erro na API do Brevo' }));
-                return;
-              }
-
-              res.statusCode = 200;
+            if (!brevoKey) {
+              res.statusCode = 400;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: true, messageId: resJson.messageId }));
+              res.end(
+                JSON.stringify({
+                  error: 'Chave de API do Brevo não configurada no .env (VITE_BREVO_API_KEY).',
+                })
+              );
               return;
             }
 
-            if (provider === 'resend') {
-              const resendKey =
-                apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
-              if (!resendKey) {
-                res.statusCode = 400;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: 'Chave de API do Resend não configurada.' }));
-                return;
-              }
+            const finalSenderEmail =
+              senderEmail ||
+              process.env.VITE_BREVO_SENDER_EMAIL ||
+              process.env.BREVO_SENDER_EMAIL ||
+              'support@focusflow.app';
 
-              const resendRes = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${resendKey}`,
-                  'Content-Type': 'application/json',
+            const finalSenderName =
+              senderName ||
+              process.env.VITE_BREVO_SENDER_NAME ||
+              process.env.BREVO_SENDER_NAME ||
+              'FocusFlow';
+
+            const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+              method: 'POST',
+              headers: {
+                accept: 'application/json',
+                'api-key': brevoKey,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                sender: {
+                  name: finalSenderName,
+                  email: finalSenderEmail,
                 },
-                body: JSON.stringify({
-                  from: `${senderName || 'FocusFlow'} <${senderEmail || 'onboarding@resend.dev'}>`,
-                  to: [to],
-                  subject: subject,
-                  html: htmlContent,
-                }),
-              });
+                to: [{ email: to }],
+                subject: subject || 'Convite para sala de estudos no FocusFlow',
+                htmlContent: htmlContent,
+              }),
+            });
 
-              const resText = await resendRes.text();
-              let resJson: any = {};
-              try {
-                resJson = JSON.parse(resText);
-              } catch {}
+            const resText = await brevoRes.text();
+            let resJson: any = {};
+            try {
+              resJson = JSON.parse(resText);
+            } catch {}
 
-              if (!resendRes.ok) {
-                res.statusCode = resendRes.status;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: resJson.message || resText || 'Erro na API do Resend' }));
-                return;
-              }
-
-              res.statusCode = 200;
+            if (!brevoRes.ok) {
+              res.statusCode = brevoRes.status;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: true, id: resJson.id }));
+              res.end(
+                JSON.stringify({
+                  error: resJson.message || resText || 'Erro na API do Brevo',
+                })
+              );
               return;
             }
 
-            res.statusCode = 400;
+            res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Provedor de e-mail não suportado' }));
+            res.end(JSON.stringify({ success: true, messageId: resJson.messageId }));
           } catch (err: any) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: err?.message || 'Erro interno no servidor de e-mail' }));
+            res.end(
+              JSON.stringify({
+                error: err?.message || 'Erro interno no servidor de e-mail',
+              })
+            );
           }
         });
       });

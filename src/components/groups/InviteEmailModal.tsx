@@ -194,8 +194,7 @@ Vamos focar juntos e bater nossas metas de estudo!`;
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <span>⚡</span>
                     <span>
-                      Cota ({quota.provider === 'brevo' ? 'Brevo 300/dia' : quota.provider === 'resend' ? 'Resend' : quota.provider}):{' '}
-                      <strong>{quota.count}/{quota.limit}</strong> envios hoje
+                      Cota diária Brevo: <strong>{quota.count}/{quota.limit}</strong> envios hoje
                     </span>
                   </div>
                   <span
