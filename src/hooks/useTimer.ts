@@ -8,6 +8,7 @@ interface UseTimerProps {
   onPomodoroComplete: (durationMinutes: number) => void;
   playAlarm: () => void;
   setIsTimerRunningTheme?: (running: boolean) => void;
+  onTickSecond?: (mode: TimerMode, elapsedSeconds: number) => void;
 }
 
 export function useTimer({
@@ -15,6 +16,7 @@ export function useTimer({
   onPomodoroComplete,
   playAlarm,
   setIsTimerRunningTheme,
+  onTickSecond,
 }: UseTimerProps) {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [cycleCount, setCycleCount] = useState<number>(0);
@@ -135,15 +137,27 @@ export function useTimer({
     onPomodoroComplete,
   ]);
 
+  const lastSecondRef = useRef<number>(timeLeft);
+
   // Contagem regressiva compensada por delta
   useEffect(() => {
     if (isRunning) {
       if (!endTimeRef.current) {
         endTimeRef.current = Date.now() + timeLeft * 1000;
+        lastSecondRef.current = timeLeft;
       }
 
       intervalRef.current = window.setInterval(() => {
         const remaining = Math.max(0, Math.ceil((endTimeRef.current! - Date.now()) / 1000));
+        const diff = lastSecondRef.current - remaining;
+
+        if (diff >= 1) {
+          lastSecondRef.current = remaining;
+          if (onTickSecond) {
+            onTickSecond(mode, diff);
+          }
+        }
+
         setTimeLeft(remaining);
 
         if (remaining <= 0) {
@@ -154,12 +168,13 @@ export function useTimer({
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
       endTimeRef.current = null;
+      lastSecondRef.current = timeLeft;
     }
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, timeLeft, handleCycleComplete]);
+  }, [isRunning, timeLeft, handleCycleComplete, mode, onTickSecond]);
 
   const start = (customTime?: number) => {
     const timeToSet = customTime !== undefined ? customTime : timeLeft;

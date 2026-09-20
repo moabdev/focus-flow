@@ -1,6 +1,6 @@
 import React from 'react';
-import { Play, Pause, SkipForward, RotateCcw, Target } from 'lucide-react';
-import { TimerMode, Task } from '../types';
+import { Play, Pause, SkipForward, RotateCcw, Target, Clock } from 'lucide-react';
+import { TimerMode, Task, Subtask, Project } from '../types';
 
 interface TimerCardProps {
   mode: TimerMode;
@@ -12,7 +12,8 @@ interface TimerCardProps {
   onToggle: () => void;
   onSkip: () => void;
   onReset: () => void;
-  activeTask: Task | null;
+  activeTask: Task | Subtask | null;
+  activeProject?: Project | null;
   onOpenTasksScroll: () => void;
 }
 
@@ -27,12 +28,21 @@ export const TimerCard: React.FC<TimerCardProps> = ({
   onSkip,
   onReset,
   activeTask,
+  activeProject,
   onOpenTasksScroll,
 }) => {
   // Parâmetros do anel SVG
   const radius = 135;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+
+  const formatSeconds = (totalSecs?: number) => {
+    if (!totalSecs || totalSecs <= 0) return '0 min';
+    const hours = Math.floor(totalSecs / 3600);
+    const minutes = Math.floor((totalSecs % 3600) / 60);
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   return (
     <div className="timer-card glass-panel" aria-label="Cronômetro Pomodoro">
@@ -77,31 +87,37 @@ export const TimerCard: React.FC<TimerCardProps> = ({
           />
         </svg>
 
+        {/* Display Central do Tempo */}
         <div className="timer-digits-container">
-          <div className="timer-digits" data-testid="timer-display">
+          <span className="timer-digits" data-testid="timer-display">
             {formattedTime}
-          </div>
-          <div className="timer-cycle-label">
-            {mode === 'pomodoro' ? `Ciclo de Foco #${cycleCount + 1}` : 'Momento de Pausa'}
-          </div>
+          </span>
+          <span className="timer-mode-label">
+            {mode === 'pomodoro' ? 'Foco Produtivo' : mode === 'shortBreak' ? 'Pausa Curta' : 'Descanso Longo'}
+          </span>
+          {mode === 'pomodoro' && (
+            <span className="timer-cycle-badge">
+              Ciclo #{cycleCount + 1}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Controles do Timer */}
+      {/* Controles Principais */}
       <div className="timer-controls">
         <button
           className="secondary-control-btn"
           onClick={onReset}
           title="Reiniciar tempo atual (Alt + R)"
-          aria-label="Reiniciar"
+          aria-label="Reiniciar cronômetro"
         >
           <RotateCcw size={20} />
         </button>
 
         <button
-          className="main-start-btn"
+          className={`main-start-btn ${isRunning ? 'running' : ''}`}
           onClick={onToggle}
-          title="Iniciar ou Pausar (Barra de Espaço)"
+          aria-label={isRunning ? 'Pausar cronômetro' : 'Iniciar cronômetro'}
           data-testid="timer-start-btn"
         >
           {isRunning ? (
@@ -131,12 +147,29 @@ export const TimerCard: React.FC<TimerCardProps> = ({
           className="active-task-banner"
           onClick={onOpenTasksScroll}
           style={{ cursor: 'pointer' }}
-          title="Clique para ir até a lista de tarefas"
+          title="Clique para ir até as tarefas"
         >
           <Target size={16} color="var(--accent-primary)" />
+          {activeProject && (
+            <span
+              className="discipline-tag"
+              style={{
+                backgroundColor: `${activeProject.color}25`,
+                borderColor: `${activeProject.color}50`,
+                color: activeProject.color,
+                marginRight: '0.35rem',
+              }}
+            >
+              {activeProject.icon || '📁'} {activeProject.title}
+            </span>
+          )}
           <span>Foco Atual: <strong>{activeTask.title}</strong></span>
           <span style={{ opacity: 0.5 }}>|</span>
-          <div style={{ display: 'flex', gap: '3px' }}>
+          <span className="subtask-elapsed-badge" style={{ fontSize: '0.8rem' }}>
+            <Clock size={12} style={{ display: 'inline', marginRight: '3px' }} />
+            {formatSeconds(activeTask.elapsed_seconds)}
+          </span>
+          <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
             {Array.from({ length: Math.max(activeTask.pomodoros_estimated, activeTask.pomodoros_completed) }).map((_, i) => (
               <div
                 key={i}
