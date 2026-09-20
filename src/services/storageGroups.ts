@@ -148,6 +148,25 @@ const DEFAULT_MESSAGES: Record<string, GroupMessage[]> = {
   ],
 };
 
+export const isSameUser = (nameA?: string, nameB?: string): boolean => {
+  if (!nameA || !nameB) return false;
+  const a = nameA.trim().toLowerCase();
+  const b = nameB.trim().toLowerCase();
+  if (a === b) return true;
+  if (a.startsWith('você') && b.startsWith('você')) return true;
+  if ((a === 'você' || a.startsWith('você')) && b === 'você') return true;
+  if (a === 'você' && (b === 'você' || b.startsWith('você'))) return true;
+  return false;
+};
+
+export const isGroupCreator = (group: StudyGroup, members: GroupMember[], userName: string = 'Você'): boolean => {
+  if (group.created_by && isSameUser(group.created_by, userName)) {
+    return true;
+  }
+  const userMember = members.find((m) => isSameUser(m.user_name, userName));
+  return userMember?.role === 'admin';
+};
+
 export const storageGroups = {
   getGroups(): StudyGroup[] {
     try {
@@ -164,10 +183,14 @@ export const storageGroups = {
     } catch {}
   },
 
-  createGroup(data: { name: string; description: string; category: string; avatar_icon: string }): StudyGroup {
+  createGroup(
+    data: { name: string; description: string; category: string; avatar_icon: string },
+    creatorName: string = 'Você'
+  ): StudyGroup {
     const groups = this.getGroups();
+    const newGroupId = `grp-${Date.now()}`;
     const newGroup: StudyGroup = {
-      id: `grp-${Date.now()}`,
+      id: newGroupId,
       name: data.name,
       description: data.description,
       category: data.category,
@@ -175,10 +198,43 @@ export const storageGroups = {
       code: `GRP-${Math.floor(1000 + Math.random() * 9000)}`,
       member_count: 1,
       created_at: new Date().toISOString(),
+      created_by: creatorName,
     };
     const updated = [newGroup, ...groups];
     this.saveGroups(updated);
+
+    // Cria o registro inicial do criador como admin do grupo
+    const creatorMember: GroupMember = {
+      id: `m-${Date.now()}`,
+      group_id: newGroupId,
+      user_name: creatorName,
+      role: 'admin',
+      current_status: 'idle',
+      weekly_seconds: 0,
+      streak_days: 1,
+    };
+    this.saveMembers(newGroupId, [creatorMember]);
+
+    // Mensagem inicial de sistema
+    this.sendMessage(
+      newGroupId,
+      `🎉 ${creatorName} criou o grupo "${newGroup.name}"! Compartilhe o código ${newGroup.code} para convidar amigos.`,
+      'FocusFlow Bot',
+      'system_focus'
+    );
+
     return newGroup;
+  },
+
+  deleteGroup(groupId: string): boolean {
+    const groups = this.getGroups();
+    const updated = groups.filter((g) => g.id !== groupId);
+    this.saveGroups(updated);
+    try {
+      localStorage.removeItem(`${STORAGE_KEYS.MEMBERS}_${groupId}`);
+      localStorage.removeItem(`${STORAGE_KEYS.MESSAGES}_${groupId}`);
+    } catch {}
+    return true;
   },
 
   getMembers(groupId: string): GroupMember[] {
@@ -205,6 +261,71 @@ export const storageGroups = {
     try {
       localStorage.setItem(`${STORAGE_KEYS.MEMBERS}_${groupId}`, JSON.stringify(members));
     } catch {}
+  },
+
+  joinGroup(groupId: string, userName: string = 'Você'): { success: boolean; group?: StudyGroup; error?: string } {
+    const groups = this.getGroups();
+    const targetGroup = groups.find((g) => g.id === groupId);
+
+    if (!targetGroup) {
+      return { success: false, error: 'Grupo não encontrado.' };
+    }
+
+    const members = this.getMembers(targetGroup.id);
+    const alreadyMember = members.some((m) => isSameUser(m.user_name, userName));
+
+    if (!alreadyMember) {
+      const newMember: GroupMember = {
+        id: `m-${Date.now()}`,
+        group_id: targetGroup.id,
+        user_name: userName,
+        role: 'member',
+        current_status: 'idle',
+        weekly_seconds: 0,
+        streak_days: 1,
+      };
+      this.saveMembers(targetGroup.id, [...members, newMember]);
+      targetGroup.member_count = (targetGroup.member_count || members.length) + 1;
+      this.saveGroups(groups);
+      this.sendMessage(
+        targetGroup.id,
+        `👋 ${userName} acabou de entrar no grupo!`,
+        'FocusFlow Bot',
+        'system_focus'
+      );
+    }
+
+    return { success: true, group: targetGroup };
+  },
+
+  leaveGroup(groupId: string, userName: string = 'Você'): { success: boolean; error?: string } {
+    const groups = this.getGroups();
+    const targetGroup = groups.find((g) => g.id === groupId);
+
+    if (!targetGroup) {
+      return { success: false, error: 'Grupo não encontrado.' };
+    }
+
+    const members = this.getMembers(targetGroup.id);
+    const memberIndex = members.findIndex((m) => isSameUser(m.user_name, userName));
+
+    if (memberIndex === -1) {
+      return { success: false, error: 'Você não é membro deste grupo.' };
+    }
+
+    const remainingMembers = members.filter((_, idx) => idx !== memberIndex);
+    this.saveMembers(targetGroup.id, remainingMembers);
+    targetGroup.member_count = Math.max(0, (targetGroup.member_count || members.length) - 1);
+    this.saveGroups(groups);
+
+    this.sendMessage(
+      targetGroup.id,
+      `👋 ${userName} saiu do grupo.`,
+      'FocusFlow Bot',
+      'system_focus'
+    );
+
+    return { success: true };
   },
 
   getMessages(groupId: string): GroupMessage[] {
@@ -261,30 +382,8 @@ export const storageGroups = {
       return { success: false, error: 'Grupo não encontrado com este código de convite.' };
     }
 
-    const members = this.getMembers(targetGroup.id);
-    const alreadyMember = members.some((m) => m.user_name === userName);
-
-    if (!alreadyMember) {
-      const newMember: GroupMember = {
-        id: `m-${Date.now()}`,
-        group_id: targetGroup.id,
-        user_name: userName,
-        role: 'member',
-        current_status: 'idle',
-        weekly_seconds: 0,
-        streak_days: 1,
-      };
-      this.saveMembers(targetGroup.id, [...members, newMember]);
-      targetGroup.member_count = (targetGroup.member_count || members.length) + 1;
-      this.saveGroups(groups);
-      this.sendMessage(
-        targetGroup.id,
-        `👋 ${userName} acabou de entrar no grupo com o código de convite!`,
-        'FocusFlow Bot',
-        'system_focus'
-      );
-    }
-
-    return { success: true, group: targetGroup };
+    return this.joinGroup(targetGroup.id, userName);
   },
 };
+
+export const storageGroupsService = storageGroups;

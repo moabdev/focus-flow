@@ -176,3 +176,24 @@
 .chat-text-input:focus {
   border-color: var(--accent-primary);
 }
+
+.group-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.group-not-member-banner {
+  padding: 1.15rem 1.35rem;
+  border-top: 1px solid var(--border-glass-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
