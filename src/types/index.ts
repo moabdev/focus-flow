@@ -4,7 +4,16 @@ export type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
 export type PriorityLevel = 'baixa' | 'media' | 'alta';
 
-export type AppViewMode = 'timer' | 'projects' | 'project-detail' | 'calendar' | 'groups' | 'ranking' | 'drafts';
+export type AppViewMode =
+  | 'timer'
+  | 'projects'
+  | 'project-detail'
+  | 'calendar'
+  | 'groups'
+  | 'ranking'
+  | 'drafts'
+  | 'flashcards'
+  | 'mindmaps';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
 
@@ -204,5 +213,85 @@ export interface CloudSyncInfo {
   status: CloudSyncStatus;
   lastSyncedAt: Date | null;
   errorMessage?: string | null;
+}
+
+// ==============================================================================
+// Sistema de Flashcards & Repetição Espaçada (SM-2)
+// ==============================================================================
+
+export type FlashcardReviewRating = 0 | 1 | 2 | 3; // 0: Errei, 1: Difícil, 2: Bom, 3: Fácil
+
+export interface Flashcard {
+  id: string;
+  deck_id: string;
+  user_id?: string;
+  front: string; // Pergunta / Conceito / Código
+  back: string;  // Resposta / Explicação
+  hint?: string; // Dica opcional
+  tags?: string[];
+  // Algoritmo SM-2 (SuperMemo)
+  repetition: number;      // Número consecutivo de acertos
+  interval_days: number;   // Intervalo até a próxima revisão em dias
+  ease_factor: number;     // Fator de facilidade (padrão 2.5)
+  due_date: string;        // Data ISO da próxima revisão (YYYY-MM-DD ou ISO string)
+  last_reviewed_at?: string;
+  lapses: number;          // Quantidade de erros (recomeços)
+  created_at: string;
+}
+
+export interface FlashcardDeck {
+  id: string;
+  user_id?: string;
+  title: string;
+  description?: string;
+  color: string;           // Cor temática do baralho
+  icon: string;            // Emoji ou ícone representativo
+  project_id?: string;     // Vínculo opcional com um Projeto do FocusFlow
+  tags?: string[];
+  card_count?: number;     // Total de cartões
+  due_count?: number;      // Cartões pendentes para revisão hoje
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FlashcardSessionStats {
+  deck_id: string;
+  deck_title: string;
+  total_reviewed: number;
+  again_count: number;
+  hard_count: number;
+  good_count: number;
+  easy_count: number;
+  duration_seconds: number;
+}
+
+// ==============================================================================
+// Sistema de Mapas Mentais (Canvas Interativo)
+// ==============================================================================
+
+export interface MindMapNode {
+  id: string;
+  parent_id: string | null; // null se for o nó raiz central
+  text: string;
+  color?: string;
+  icon?: string;
+  notes?: string;           // Anotações ricas do nó (resumos, links, código)
+  is_collapsed?: boolean;   // Se os filhos estão recolhidos
+  x?: number;               // Posição opcional para renderização livre ou balanceada
+  y?: number;
+  project_id?: string;      // Vínculo opcional com projeto
+  subtask_id?: string;      // Vínculo opcional com subtarefa
+}
+
+export interface MindMap {
+  id: string;
+  user_id?: string;
+  title: string;
+  description?: string;
+  project_id?: string;
+  root_node_id: string;
+  nodes: MindMapNode[];
+  created_at: string;
+  updated_at: string;
 }
 
