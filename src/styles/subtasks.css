@@ -1,5 +1,6 @@
 /* ==========================================================================
-   FocusFlow - Gestão de Subtarefas: Formulários, Checkbox & Tempo Decorrido
+   FocusFlow - Gestão de Subtarefas: Glassmorphism Cards & Micro-Interações
+   Cards de Alta Performance para Visualização em Projetos e Detalhes
    ========================================================================== */
 
 .subtasks-container {
@@ -90,9 +91,66 @@
 .subtasks-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
+.empty-subtasks-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+/* ==========================================================================
+   Card de Subtarefa Redesenhado (Micro-Card Glassmorphism)
+   ========================================================================== */
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-glass-subtle);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.subtask-item:hover {
+  background: var(--surface-glass-hover);
+  border-color: var(--border-glass);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  transform: translateY(-1px);
+}
+
+/* Estado de Foco Ativo (Rodando no Timer) */
+.subtask-item.active-focus {
+  border-color: var(--accent-primary);
+  border-left: 4px solid var(--accent-primary);
+  background: linear-gradient(90deg, rgba(255, 42, 95, 0.1) 0%, var(--surface-glass) 100%);
+  box-shadow: 0 4px 22px var(--accent-glow);
+}
+
+/* Estado Concluído */
+.subtask-item.completed {
+  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.015);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.subtask-item.completed:hover {
+  opacity: 0.85;
+}
+
+.subtask-item.completed .subtask-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Checkbox Interativo de Conclusão */
+.subtask-checkbox,
 .task-checkbox {
   width: 22px;
   height: 22px;
@@ -100,7 +158,7 @@
   min-height: 22px;
   border-radius: 6px;
   border: 2px solid var(--border-glass);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,55 +169,21 @@
   flex-shrink: 0;
 }
 
+.subtask-checkbox:hover,
 .task-checkbox:hover {
-  border-color: var(--accent-primary);
-  background: rgba(255, 42, 95, 0.12);
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  transform: scale(1.08);
 }
 
+.subtask-checkbox.checked,
 .task-checkbox.checked {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
 }
 
-.empty-subtasks-note {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-style: italic;
-  padding: 0.5rem 0;
-}
-
-.subtask-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.9rem;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  transition: all var(--transition-fast);
-}
-
-.subtask-item:hover {
-  background: var(--surface-glass-hover);
-  border-color: var(--border-glass-subtle);
-}
-
-.subtask-item.active-focus {
-  border-color: var(--accent-primary);
-  background: rgba(255, 42, 95, 0.08);
-  box-shadow: 0 0 14px rgba(255, 42, 95, 0.25);
-}
-
-.subtask-item.completed {
-  opacity: 0.55;
-}
-
-.subtask-item.completed .subtask-title {
-  text-decoration: line-through;
-  color: var(--text-muted);
-}
-
+/* Conteúdo e Tipografia */
 .subtask-info {
   flex: 1;
   cursor: pointer;
@@ -169,83 +193,313 @@
 .subtask-title-line {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
 
 .subtask-title {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+  letter-spacing: -0.01em;
 }
 
+/* Badge Animado de Foco Ativo */
 .active-timer-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
   background: var(--accent-primary);
   color: #ffffff;
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: pulseFire 2s infinite ease-in-out;
 }
 
+.active-pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px #ffffff;
+}
+
+/* ==========================================================================
+   Chips de Metadados (Prioridade, Pomodoros, Tempo, Disciplina e Prazo)
+   ========================================================================== */
+.subtask-meta-row,
 .subtask-details-line {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
-  margin-top: 0.3rem;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  margin-top: 0.35rem;
 }
 
-.subtask-elapsed-badge {
+.subtask-meta-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0.5rem;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.48rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.06);
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass-subtle);
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.subtask-meta-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
 }
 
+.subtask-meta-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* Chips de Prioridade com Ponto Colorido */
+.subtask-priority-alta,
+.priority-pill.priority-alta {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.subtask-priority-media,
+.priority-pill.priority-media {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.subtask-priority-baixa,
+.priority-pill.priority-baixa {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #10b981;
+  font-weight: 700;
+}
+
+.priority-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* Chip de Pomodoros */
+.subtask-pomo-chip,
+.pomodoro-count {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.pomo-emoji {
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+/* Chip de Tempo Decorrido */
+.subtask-time-chip,
+.subtask-elapsed-badge {
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* Chip de Disciplina / Matéria */
+.subtask-discipline-chip {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Chips de Prazo / Due Date */
+.subtask-date-chip,
 .subtask-due-date {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
+.subtask-date-chip.today {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.subtask-date-chip.overdue {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Ações da Subtarefa (Focar, Notas Notion e Excluir)
+   ========================================================================== */
 .subtask-actions {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
-.notion-notes-btn {
-  display: flex;
+.subtask-action-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.35rem 0.65rem;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.32rem 0.6rem;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass-subtle);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.subtask-action-btn:hover {
+  background: var(--surface-glass-hover);
+  color: var(--text-primary);
+  border-color: var(--border-glass);
+}
+
+/* Botão de Foco Rápido */
+.subtask-focus-btn {
+  color: var(--accent-primary);
+  border-color: rgba(255, 42, 95, 0.25);
+  background: rgba(255, 42, 95, 0.06);
+}
+
+.subtask-focus-btn:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+/* Botão de Anotações Notion */
+.subtask-notes-btn,
+.notion-notes-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.32rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-glass-subtle);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
+.subtask-notes-btn:hover,
 .notion-notes-btn:hover {
   background: var(--surface-glass-hover);
   color: var(--text-primary);
+  border-color: var(--border-glass);
 }
 
+.subtask-notes-btn.has-notes,
 .notion-notes-btn.has-notes {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.subtask-notes-btn.has-notes:hover,
+.notion-notes-btn.has-notes:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+}
+
+.notes-indicator-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 5px #10b981;
+}
+
+/* Botão de Excluir Subtarefa */
+.subtask-delete-btn {
+  padding: 0.32rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subtask-delete-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ==========================================================================
+   Responsividade Mobile dos Cards de Subtarefa
+   ========================================================================== */
+@media (max-width: 540px) {
+  .subtask-item {
+    padding: 0.65rem 0.75rem;
+    gap: 0.65rem;
+  }
+
+  .subtask-title {
+    font-size: 0.88rem;
+  }
+
+  .action-btn-text {
+    display: none;
+  }
+
+  .subtask-action-btn {
+    padding: 0.35rem;
+  }
+
+  .subtask-meta-chip {
+    font-size: 0.68rem;
+    padding: 0.12rem 0.4rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .subtask-item {
+    padding: 0.55rem 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .subtask-title {
+    font-size: 0.84rem;
+  }
+
+  .subtask-actions {
+    gap: 0.2rem;
+  }
 }

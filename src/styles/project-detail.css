@@ -1,23 +1,26 @@
-/* ==========================================================================
+/* ==============================================================================
    FocusFlow - Página Individual de Projeto (Project Detail View)
-   ========================================================================== */
+   Design System Glassmorphism de Alta Performance
+   ============================================================================== */
 
 .project-detail-container {
   width: 100%;
-  max-width: 920px;
+  max-width: 980px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: 2rem;
 }
 
+/* Botão Voltar */
 .project-detail-back-btn {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 0.9rem;
+  padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
   background: var(--surface-glass);
   border: 1px solid var(--border-glass-subtle);
@@ -26,137 +29,369 @@
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .project-detail-back-btn:hover {
   color: var(--text-primary);
   background: var(--surface-glass-hover);
   border-color: var(--accent-primary);
-  transform: translateX(-2px);
+  transform: translateX(-3px);
+  box-shadow: var(--shadow-md);
 }
 
+/* Hero do Projeto */
 .project-detail-hero {
   border-radius: var(--radius-xl);
-  padding: 1.75rem;
+  padding: 1.75rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
   border-left: 6px solid var(--accent-primary);
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border-glass);
+  border-right: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
 }
 
 .project-hero-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .project-hero-identity {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.1rem;
+  flex: 1;
+  min-width: 260px;
 }
 
 .project-hero-icon {
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-size: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .project-hero-title {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
 }
 
 .project-hero-desc {
   font-size: 0.92rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin: 0;
+  max-width: 620px;
 }
 
-.project-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.project-meta-pill {
+/* Botão Focar Agora no Hero */
+.project-focus-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-glass-subtle);
-}
-
-.project-hero-progress {
-  display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-}
-
-.project-progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
+  padding: 0.7rem 1.35rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-gradient);
+  border: none;
+  color: #ffffff;
+  font-size: 0.9rem;
   font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 42, 95, 0.4);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.project-progress-track {
+.project-focus-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(255, 42, 95, 0.6);
+}
+
+.project-focus-btn:active {
+  transform: translateY(0);
+}
+
+/* Metadados e Timeline */
+.project-hero-meta-grid {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass-subtle);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.hero-meta-pill svg {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+/* Barra de Progresso no Hero */
+.project-hero-progress-track {
   width: 100%;
-  height: 8px;
+  height: 9px;
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.project-progress-fill {
+.project-hero-progress-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--accent-gradient);
-  transition: width 0.4s ease;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px rgba(255, 42, 95, 0.4);
 }
 
-.project-subtasks-section {
+/* Card Principal de Subtarefas */
+.project-detail-subtasks-card {
   border-radius: var(--radius-xl);
-  padding: 1.5rem;
+  padding: 1.5rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
 }
 
+/* Barra de Ferramentas / Toolbar */
 .project-subtasks-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-glass-subtle);
 }
 
-.project-subtasks-title {
-  font-size: 1.15rem;
-  font-weight: 700;
+/* Caixa de Busca */
+.project-search-box {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-glass-subtle);
+  min-width: 220px;
+  transition: all var(--transition-fast);
 }
 
+.project-search-box:focus-within {
+  border-color: var(--accent-primary);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 42, 95, 0.2);
+}
+
+.project-search-box svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.project-search-box input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+}
+
+.project-search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Filtros de Status (Pills) */
+.project-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 3px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-glass-subtle);
+}
+
+.filter-pill {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-pill:hover {
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  background: var(--surface-glass-hover);
+  color: var(--accent-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Botão Nova Subtarefa */
+.add-subtask-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-glass-hover);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.add-subtask-quick-btn:hover {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(255, 42, 95, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Formulário Inline de Criação de Subtarefa */
+.add-subtask-form.inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.15rem;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-glass);
+  animation: slideDown 0.2s ease;
+}
+
+.subtask-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass-subtle);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.subtask-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(255, 42, 95, 0.2);
+}
+
+.add-subtask-options {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.subtask-num-input {
+  width: 60px;
+  padding: 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass-subtle);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+
+.subtask-num-input:focus {
+  border-color: var(--accent-primary);
+}
+
+/* Lista de Subtarefas */
 .project-subtasks-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
+}
+
+/* Dica de Vazio */
+.empty-subtasks-hint {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border: 1px dashed var(--border-glass-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .project-hero-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .project-focus-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .project-subtasks-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .project-search-box {
+    width: 100%;
+  }
+  .project-filter-pills {
+    justify-content: space-between;
+  }
+  .add-subtask-options {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .subtask-input,
+  .subtask-num-input {
+    width: 100% !important;
+  }
 }

@@ -7,11 +7,13 @@ import {
   Plus,
   Play,
   Search,
+  Trash2,
 } from 'lucide-react';
 import { Project, Subtask, PriorityLevel } from '../../types';
 import { SubtaskItem } from './SubtaskItem';
 import { NotionNoteEditor } from '../NotionNoteEditor';
 import { CustomSelect, SelectOption } from '../common/CustomSelect';
+import { ConfirmModal } from '../common/ConfirmModal';
 
 const DETAIL_PRIORITY_OPTIONS: SelectOption[] = [
   { value: 'baixa', label: 'Baixa prioridade', badgeColor: '#10b981' },
@@ -50,6 +52,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   onSelectActiveSubtask,
   onOpenTimerTab,
   onBack,
+  onDeleteProject,
   onCreateSubtask,
   onUpdateSubtask,
   onDeleteSubtask,
@@ -59,6 +62,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   const [filterStatus, setFilterStatus] = useState<'todas' | 'pendentes' | 'concluidas'>('todas');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newEstimated, setNewEstimated] = useState(2);
   const [newPriority, setNewPriority] = useState<PriorityLevel>('media');
@@ -115,11 +119,25 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
             </div>
           </div>
 
-          {onOpenTimerTab && (
-            <button className="project-focus-btn" onClick={onOpenTimerTab} title="Focar neste projeto no Cronômetro">
-              <Play size={16} fill="currentColor" /> Focar Agora
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {onOpenTimerTab && (
+              <button className="project-focus-btn" onClick={onOpenTimerTab} title="Focar neste projeto no Cronômetro">
+                <Play size={16} fill="currentColor" /> Focar Agora
+              </button>
+            )}
+            {onDeleteProject && (
+              <button
+                type="button"
+                className="btn btn-danger"
+                style={{ padding: '0.65rem 1rem', fontSize: '0.86rem' }}
+                onClick={() => setIsDeleteModalOpen(true)}
+                title="Excluir este projeto"
+              >
+                <Trash2 size={15} />
+                <span>Excluir</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Metadados e Timeline */}
@@ -234,8 +252,17 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 className="subtask-num-input"
                 title="Ciclos de pomodoro estimados"
               />
-              <button type="submit" className="main-start-btn">Salvar</button>
-              <button type="button" className="icon-btn" onClick={() => setIsAddingSubtask(false)}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" style={{ padding: '0.55rem 1.25rem', fontSize: '0.85rem' }}>
+                Salvar
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ padding: '0.55rem 1rem', fontSize: '0.85rem' }}
+                onClick={() => setIsAddingSubtask(false)}
+              >
+                Cancelar
+              </button>
             </div>
           </form>
         )}
@@ -282,6 +309,27 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
             setEditingNotesSubtask(null);
           }}
           onClose={() => setEditingNotesSubtask(null)}
+        />
+      )}
+
+      {onDeleteProject && (
+        <ConfirmModal
+          isOpen={isDeleteModalOpen}
+          title="Excluir Projeto"
+          message={
+            <>
+              Tem certeza que deseja excluir o projeto <strong>"{project.title}"</strong> e todas as suas subtarefas? Essa ação não pode ser desfeita.
+            </>
+          }
+          confirmText="Excluir Projeto"
+          cancelText="Cancelar"
+          variant="danger"
+          onConfirm={async () => {
+            setIsDeleteModalOpen(false);
+            await onDeleteProject(project.id);
+            onBack();
+          }}
+          onCancel={() => setIsDeleteModalOpen(false)}
         />
       )}
     </div>

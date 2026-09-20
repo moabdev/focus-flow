@@ -96,8 +96,8 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({
           </p>
         </div>
 
-        <button className="main-start-btn" onClick={handleOpenCreateProject}>
-          <FolderPlus size={18} /> Novo Projeto
+        <button className="btn btn-primary pm-create-btn" onClick={handleOpenCreateProject}>
+          <FolderPlus size={16} /> Novo Projeto
         </button>
       </div>
 
@@ -140,7 +140,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({
             <Sparkles size={36} color="var(--accent-primary)" />
             <h3>Nenhum projeto cadastrado ainda</h3>
             <p>Crie seu primeiro projeto para começar a organizar suas metas e subtasks!</p>
-            <button className="main-start-btn" onClick={handleOpenCreateProject} style={{ marginTop: '1rem' }}>
+            <button className="btn btn-primary pm-create-btn" onClick={handleOpenCreateProject} style={{ marginTop: '0.85rem' }}>
               <Plus size={16} /> Criar Projeto
             </button>
           </div>
