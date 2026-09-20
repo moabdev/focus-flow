@@ -13,11 +13,6 @@ import {
   Mic,
   MicOff,
   Sparkles,
-  ArrowRight,
-  Clock,
-  AlertCircle,
-  X,
-  ExternalLink,
 } from 'lucide-react';
 import { storageService } from '../../services/storage';
 import { QuickNote, Project, Subtask } from '../../types';
@@ -34,7 +29,6 @@ interface DraftsViewProps {
 export const DraftsView: React.FC<DraftsViewProps> = ({
   projects = [],
   subtasks = [],
-  onOpenTimerTab,
 }) => {
   const [notes, setNotes] = useState<QuickNote[]>(() => storageService.getQuickNotes());
   const [activeNoteId, setActiveNoteId] = useState<string | null>(() => notes[0]?.id || null);
@@ -105,9 +99,7 @@ export const DraftsView: React.FC<DraftsViewProps> = ({
   const {
     isSupported: isSpeechSupported,
     isListening,
-    errorMessage: speechError,
     toggleListening: toggleSpeech,
-    stopListening: stopSpeech,
   } = useSpeechRecognition({
     lang: 'pt-BR',
     continuous: true,
@@ -223,12 +215,8 @@ export const DraftsView: React.FC<DraftsViewProps> = ({
     return new Date(b.updated_at || b.created_at || '').getTime() - new Date(a.updated_at || a.created_at || '').getTime();
   });
 
-  // Projetos disponíveis e subtarefas do projeto vinculado
-  const linkedProject = projects.find((p) => p.id === activeNote?.project_id);
+  // Subtarefas do projeto vinculado
   const projectSubtasks = subtasks.filter((s) => s.project_id === activeNote?.project_id);
-
-  // Total de palavras geral
-  const totalWords = notes.reduce((acc, n) => acc + getWordCount(n.content), 0);
   const linkedCount = notes.filter((n) => !!n.project_id).length;
 
   return (
@@ -333,7 +321,7 @@ export const DraftsView: React.FC<DraftsViewProps> = ({
           <select
             className="drafts-sort-select"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'recent' | 'oldest' | 'title')}
             title="Ordenar rascunhos"
           >
             <option value="recent">Mais recentes primeiro</option>
