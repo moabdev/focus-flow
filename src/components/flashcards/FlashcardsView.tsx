@@ -193,83 +193,70 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
           </button>
         </div>
       ) : (
-        <div className="decks-grid">
+        <div className="decks-list">
           {filteredDecks.map((deck) => {
             const hasDue = (deck.due_count || 0) > 0;
             const project = projects.find((p) => p.id === deck.project_id);
 
             return (
-              <div key={deck.id} className="deck-card">
-                <div className="deck-card-top-bar" style={{ background: deck.color }} />
+              <div key={deck.id} className="deck-list-item">
+                <div className="deck-list-item-color-bar" style={{ background: deck.color }} />
 
-                <div className="deck-card-body">
-                  <div className="deck-card-header">
-                    <div className="deck-avatar-title">
-                      <span className="deck-emoji-icon">{deck.icon}</span>
-                      <div>
-                        <h3 className="deck-card-title">{deck.title}</h3>
-                        {project && (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                            {project.icon || '📁'} {project.title}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                <div className="deck-list-item-icon">
+                  {deck.icon}
+                </div>
 
-                    {hasDue ? (
-                      <span className="deck-due-badge">
-                        {deck.due_count} {deck.due_count === 1 ? 'pendente' : 'pendentes'}
-                      </span>
-                    ) : (
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          color: '#10b981',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.2rem',
-                        }}
-                      >
-                        <CheckCircle size={13} /> Em dia
+                <div className="deck-list-item-content">
+                  <div className="deck-list-item-header">
+                    <h3 className="deck-list-item-title">{deck.title}</h3>
+                    {project && (
+                      <span className="deck-list-project">
+                        {project.icon || '📁'} {project.title}
                       </span>
                     )}
                   </div>
+                  
+                  {deck.description && <p className="deck-list-item-desc">{deck.description}</p>}
 
-                  {deck.description && <p className="deck-card-desc">{deck.description}</p>}
-
-                  {deck.tags && deck.tags.length > 0 && (
-                    <div className="deck-tags-row">
-                      {deck.tags.map((t, i) => (
-                        <span key={i} className="deck-tag-pill">
-                          #{t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="deck-card-meta">
-                    <span>
+                  <div className="deck-list-item-meta">
+                    <span className="deck-list-count">
                       <strong>{deck.card_count || 0}</strong> {deck.card_count === 1 ? 'cartão' : 'cartões'}
                     </span>
-                    <span>Revisão SM-2</span>
+                    {deck.tags && deck.tags.length > 0 && (
+                      <div className="deck-tags-row" style={{ marginTop: 0 }}>
+                        {deck.tags.map((t, i) => (
+                          <span key={i} className="deck-tag-pill">#{t}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="deck-card-actions">
+                <div className="deck-list-item-status">
+                  {hasDue ? (
+                    <span className="deck-due-badge">
+                      {deck.due_count} {deck.due_count === 1 ? 'pendente' : 'pendentes'}
+                    </span>
+                  ) : (
+                    <span className="deck-done-badge">
+                      <CheckCircle size={13} /> Em dia
+                    </span>
+                  )}
+                </div>
+
+                <div className="deck-list-item-actions">
                   <button
                     className="btn-study-deck"
                     onClick={() => openStudyModal(deck.id)}
                     title="Iniciar Sessão de Estudo"
                   >
-                    <Play size={16} /> Estudar Agora
+                    <Play size={16} /> Estudar
                   </button>
 
                   <button
                     className="btn-deck-icon"
                     onClick={() => openEditDeckModal(deck)}
                     title="Gerenciar / Adicionar Cartões"
-                    aria-label="Gerenciar Baralho"
                   >
                     <Settings2 size={16} />
                   </button>
@@ -282,7 +269,6 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
                       }
                     }}
                     title="Excluir Baralho"
-                    aria-label="Excluir Baralho"
                     style={{ color: '#ef4444' }}
                   >
                     <Trash2 size={16} />
