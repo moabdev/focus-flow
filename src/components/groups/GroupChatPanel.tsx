@@ -109,123 +109,131 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
 
   return (
     <div className="group-chat-panel glass-panel">
-      {/* Topo do Chat */}
+      {/* Topo do Chat Compacto & Funcional */}
       <div className="group-chat-header">
-        <div className="group-chat-title-group">
+        <div className="group-chat-identity">
           <div className="group-chat-icon-wrap">
             <span className="group-chat-icon">{group.avatar_icon}</span>
           </div>
-          <div className="group-chat-header-main-info">
-            <div className="group-chat-title-badges-row">
+          <div className="group-chat-titles">
+            <div className="group-chat-name-row">
               <h3 className="group-chat-name">{group.name}</h3>
               <span className="group-category-badge">{group.category}</span>
-              <span className="group-code-pill" title="Código de Convite">{group.code}</span>
+              <span className="group-code-pill" title={`Código de Convite: ${group.code}`}>
+                {group.code}
+              </span>
             </div>
-
-            <div className="group-chat-pills-row">
-              {/* Botão de Regras */}
-              <button
-                className="group-rules-btn"
-                onClick={() => setIsRulesModalOpen(true)}
-                title="Visualizar regras de convivência e foco"
-                type="button"
-              >
-                <BookOpen size={13} />
-                <span>Regras</span>
-                {group.rules && group.rules.length > 0 && (
-                  <span className="rules-count-pill">{group.rules.length}</span>
-                )}
-              </button>
-
-              {/* Botão de Copiar Convite */}
-              <button
-                className="group-invite-btn"
-                onClick={handleCopyInvite}
-                title="Copiar convite com código para compartilhar"
-                type="button"
-              >
-                {copied ? <Check size={13} color="#10b981" /> : <Share2 size={13} />}
-                <span>{copied ? 'Copiado!' : 'Convidar'}</span>
-              </button>
-
-              {/* Botão de Convite por E-mail */}
-              <button
-                className="group-invite-email-btn"
-                onClick={() => setIsEmailInviteModalOpen(true)}
-                title="Enviar convite por e-mail"
-                type="button"
-              >
-                <Mail size={13} />
-                <span>E-mail</span>
-              </button>
-            </div>
-
-            <p className="group-chat-desc">{group.description}</p>
+            {group.description && (
+              <p className="group-chat-desc" title={group.description}>
+                {group.description}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="group-header-actions">
-          {onToggleMembersPanel ? (
+        {/* Toolbar Unificada de Ações do Chat */}
+        <div className="group-chat-toolbar">
+          <div className="group-chat-pills-row">
+            {/* Botão de Regras */}
             <button
+              className="group-rules-btn"
+              onClick={() => setIsRulesModalOpen(true)}
+              title="Visualizar regras de convivência e foco"
               type="button"
-              className={`group-members-toggle-btn ${showMembersPanel ? 'active' : ''}`}
-              onClick={onToggleMembersPanel}
-              title={showMembersPanel ? 'Ocultar membros' : 'Exibir membros'}
             >
-              <Users size={15} />
-              <span>{group.member_count}</span>
+              <BookOpen size={13} />
+              <span>Regras</span>
+              {group.rules && group.rules.length > 0 && (
+                <span className="rules-count-pill">{group.rules.length}</span>
+              )}
             </button>
-          ) : (
-            <div className="group-members-count-indicator">
-              <Users size={15} />
-              <span>{group.member_count}</span>
-            </div>
-          )}
 
-          {/* Botão Editar Grupo (Apenas Administrador) */}
-          {isAdmin && onUpdateGroup && (
+            {/* Botão de Copiar Convite */}
             <button
+              className="group-invite-btn"
+              onClick={handleCopyInvite}
+              title="Copiar convite com código para compartilhar"
               type="button"
-              className="btn btn-secondary btn-chat-header-action"
-              onClick={() => setIsEditGroupModalOpen(true)}
-              title="Editar título, descrição e regras do grupo"
             >
-              <Edit3 size={13} />
-              <span>Editar Grupo</span>
+              {copied ? <Check size={13} color="#10b981" /> : <Share2 size={13} />}
+              <span>{copied ? 'Copiado!' : 'Convidar'}</span>
             </button>
-          )}
 
-          {isCreator ? (
+            {/* Botão de Convite por E-mail */}
             <button
+              className="group-invite-email-btn"
+              onClick={() => setIsEmailInviteModalOpen(true)}
+              title="Enviar convite por e-mail"
               type="button"
-              className="btn btn-danger btn-chat-header-action"
-              onClick={() => setIsDeleteModalOpen(true)}
-              title="Excluir este grupo de estudos (Apenas Criador)"
             >
-              <Trash2 size={13} />
-              <span>Excluir Grupo</span>
+              <Mail size={13} />
+              <span>E-mail</span>
             </button>
-          ) : isMember ? (
-            <button
-              type="button"
-              className="btn btn-secondary btn-chat-header-action"
-              onClick={() => setIsLeaveModalOpen(true)}
-              title="Sair deste grupo"
-            >
-              <LogOut size={13} />
-              <span>Sair</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-primary btn-chat-header-action"
-              onClick={() => onJoinGroup(group.id)}
-              title="Entrar neste grupo para participar"
-            >
-              <UserPlus size={13} />
-              <span>Entrar</span>
-            </button>
-          )}
+          </div>
+
+          <div className="group-header-actions">
+            {onToggleMembersPanel ? (
+              <button
+                type="button"
+                className={`group-members-toggle-btn ${showMembersPanel ? 'active' : ''}`}
+                onClick={onToggleMembersPanel}
+                title={showMembersPanel ? 'Ocultar membros' : 'Exibir membros'}
+              >
+                <Users size={14} />
+                <span>{group.member_count}</span>
+              </button>
+            ) : (
+              <div className="group-members-count-indicator">
+                <Users size={14} />
+                <span>{group.member_count}</span>
+              </div>
+            )}
+
+            {/* Botão Editar Grupo (Apenas Administrador) */}
+            {isAdmin && onUpdateGroup && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-chat-header-action"
+                onClick={() => setIsEditGroupModalOpen(true)}
+                title="Editar título, descrição e regras do grupo"
+              >
+                <Edit3 size={13} />
+                <span>Editar Grupo</span>
+              </button>
+            )}
+
+            {isCreator ? (
+              <button
+                type="button"
+                className="btn btn-danger btn-chat-header-action"
+                onClick={() => setIsDeleteModalOpen(true)}
+                title="Excluir este grupo de estudos (Apenas Criador)"
+              >
+                <Trash2 size={13} />
+                <span>Excluir Grupo</span>
+              </button>
+            ) : isMember ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-chat-header-action"
+                onClick={() => setIsLeaveModalOpen(true)}
+                title="Sair deste grupo"
+              >
+                <LogOut size={13} />
+                <span>Sair</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary btn-chat-header-action"
+                onClick={() => onJoinGroup(group.id)}
+                title="Entrar neste grupo para participar"
+              >
+                <UserPlus size={13} />
+                <span>Entrar</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
