@@ -220,16 +220,16 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
           <div className="groups-title-icon-halo">
             <Users size={22} color="var(--accent-primary)" />
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <div className="groups-title-text-group">
+            <div className="groups-title-headline-wrap">
+              <h2 className="groups-title-heading">
                 Grupos de Estudo & Chat ao Vivo
               </h2>
               <span className="groups-live-pulse-badge">
                 <span className="live-dot-mini" /> Salas em Tempo Real
               </span>
             </div>
-            <p style={{ margin: '0.2rem 0 0', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+            <p className="groups-title-desc">
               Estude junto com colegas, compartilhe ciclos de Pomodoro e mantenha a consistência.
             </p>
           </div>
@@ -260,22 +260,25 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
           type="button"
           className={`mobile-tab-btn ${mobileTab === 'groups' ? 'active' : ''}`}
           onClick={() => setMobileTab('groups')}
+          title={`Salas de Estudo (${filteredGroups.length})`}
         >
-          Salas ({filteredGroups.length})
+          <span className="mobile-tab-label">Salas ({filteredGroups.length})</span>
         </button>
         <button
           type="button"
           className={`mobile-tab-btn ${mobileTab === 'chat' ? 'active' : ''}`}
           onClick={() => setMobileTab('chat')}
+          title={activeGroup ? `Chat #${activeGroup.name}` : 'Chat'}
         >
-          Chat #{activeGroup?.name || 'Sala'}
+          <span className="mobile-tab-label">Chat #{activeGroup?.name || 'Sala'}</span>
         </button>
         <button
           type="button"
           className={`mobile-tab-btn ${mobileTab === 'members' ? 'active' : ''}`}
           onClick={() => setMobileTab('members')}
+          title={`Membros (${members.length})`}
         >
-          Membros ({members.length})
+          <span className="mobile-tab-label">Membros ({members.length})</span>
         </button>
       </div>
 

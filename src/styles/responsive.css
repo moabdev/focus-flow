@@ -501,51 +501,7 @@ html, body {
     font-size: 0.68rem;
   }
 
-  /* Grupos de Estudo */
-  .groups-layout {
-    grid-template-columns: 1fr;
-    height: auto;
-    gap: 0.85rem;
-  }
-
-  .groups-sidebar-panel {
-    max-height: 220px;
-    padding: 0.75rem;
-  }
-
-  .group-chat-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.65rem;
-    padding: 0.85rem;
-  }
-
-  .group-header-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .chat-message-row {
-    max-width: 92%;
-  }
-
-  .group-not-member-banner {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-    gap: 0.75rem;
-    padding: 1rem 0.85rem;
-  }
-
-  .group-not-member-banner button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .group-members-panel {
-    max-height: 220px;
-    padding: 0.75rem;
-  }
+  /* Grupos de Estudo: gerenciado com precisão e fluidez em groups.css e groups-chat.css */
 
   /* Modais, Formulários & Grids Responsivos */
   .modal-backdrop {

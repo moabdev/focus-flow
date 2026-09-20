@@ -115,12 +115,14 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           <div className="group-chat-icon-wrap">
             <span className="group-chat-icon">{group.avatar_icon}</span>
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="group-chat-header-main-info">
+            <div className="group-chat-title-badges-row">
               <h3 className="group-chat-name">{group.name}</h3>
               <span className="group-category-badge">{group.category}</span>
               <span className="group-code-pill" title="Código de Convite">{group.code}</span>
+            </div>
 
+            <div className="group-chat-pills-row">
               {/* Botão de Regras */}
               <button
                 className="group-rules-btn"
@@ -157,6 +159,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
                 <span>E-mail</span>
               </button>
             </div>
+
             <p className="group-chat-desc">{group.description}</p>
           </div>
         </div>
@@ -173,7 +176,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
               <span>{group.member_count}</span>
             </button>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem', marginRight: '0.35rem' }}>
+            <div className="group-members-count-indicator">
               <Users size={15} />
               <span>{group.member_count}</span>
             </div>
@@ -183,8 +186,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           {isAdmin && onUpdateGroup && (
             <button
               type="button"
-              className="btn btn-secondary"
-              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
+              className="btn btn-secondary btn-chat-header-action"
               onClick={() => setIsEditGroupModalOpen(true)}
               title="Editar título, descrição e regras do grupo"
             >
@@ -196,8 +198,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           {isCreator ? (
             <button
               type="button"
-              className="btn btn-danger"
-              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
+              className="btn btn-danger btn-chat-header-action"
               onClick={() => setIsDeleteModalOpen(true)}
               title="Excluir este grupo de estudos (Apenas Criador)"
             >
@@ -207,8 +208,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           ) : isMember ? (
             <button
               type="button"
-              className="btn btn-secondary"
-              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
+              className="btn btn-secondary btn-chat-header-action"
               onClick={() => setIsLeaveModalOpen(true)}
               title="Sair deste grupo"
             >
@@ -218,8 +218,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
           ) : (
             <button
               type="button"
-              className="btn btn-primary"
-              style={{ padding: '0.4rem 0.95rem', fontSize: '0.78rem' }}
+              className="btn btn-primary btn-chat-header-action"
               onClick={() => onJoinGroup(group.id)}
               title="Entrar neste grupo para participar"
             >
