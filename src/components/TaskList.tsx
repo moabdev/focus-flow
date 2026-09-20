@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Check, Trash2, Tag, ChevronDown, CheckCircle } from 'lucide-react';
+import { Plus, Check, Trash2, Tag } from 'lucide-react';
 import { Task, PriorityLevel } from '../types';
 
 interface TaskListProps {

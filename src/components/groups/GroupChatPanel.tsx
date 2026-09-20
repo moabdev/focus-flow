@@ -63,7 +63,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   onUpdateGroup,
   onOpenMembersModal,
   onRemoveMember,
-  showMembersPanel,
+  showMembersPanel: _showMembersPanel,
   onToggleMembersPanel,
 }) => {
   const [inputText, setInputText] = useState('');

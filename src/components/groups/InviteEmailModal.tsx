@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Copy, Check, ExternalLink, Sparkles } from 'lucide-react';
+import { X, Mail, Copy, Check, ExternalLink } from 'lucide-react';
 import { StudyGroup } from '../../types';
 import { useToast } from '../../context/ToastContext';
 

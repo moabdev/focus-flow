@@ -74,7 +74,7 @@ export class ReportExportService {
     tasks: Subtask[];
     userName?: string;
   }): void {
-    const { sessions, projects, tasks, userName } = params;
+    const { sessions, projects: _projects, tasks, userName } = params;
     const totalMinutes = sessions.reduce((acc, s) => acc + (s.duration_minutes || 0), 0);
     const totalHours = (totalMinutes / 60).toFixed(1);
     const completedTasks = tasks.filter((t) => t.is_completed).length;

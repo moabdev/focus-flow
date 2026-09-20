@@ -22,7 +22,7 @@ export const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   selectedDate,
   onSelectDate,
   onToggleEventCompleted,
-  onDeleteEvent,
+  onDeleteEvent: _onDeleteEvent,
   onSelectSubtaskForFocus,
   onOpenTimerTab,
   onOpenCreateForDate,

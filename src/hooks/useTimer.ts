@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { TimerMode, UserSettings } from '../types';
-import { storageService } from '../services/storage';
 import { notificationService } from '../services/notificationService';
 
 interface UseTimerProps {
@@ -44,6 +43,7 @@ export function useTimer({
   const [totalDuration, setTotalDuration] = useState<number>(() => getDurationForMode('pomodoro'));
 
   const intervalRef = useRef<number | null>(null);
+  const startRef = useRef<(customTime?: number) => void>(() => {});
   const endTimeRef = useRef<number | null>(null);
 
   // Atualiza duração se as configurações mudarem e o timer estiver parado
@@ -135,7 +135,7 @@ export function useTimer({
       setTotalDuration(nextDur);
 
       if (settings.auto_start_breaks) {
-        setTimeout(() => start(nextDur), 600);
+        setTimeout(() => startRef.current(nextDur), 600);
       }
     } else {
       // Retorno para Pomodoro
@@ -145,12 +145,13 @@ export function useTimer({
       setTotalDuration(nextDur);
 
       if (settings.auto_start_pomodoros) {
-        setTimeout(() => start(nextDur), 600);
+        setTimeout(() => startRef.current(nextDur), 600);
       }
     }
   }, [
     mode,
     playAlarm,
+    activeTaskTitle,
     settings.pomodoro_time,
     settings.long_break_interval,
     settings.auto_start_breaks,
@@ -209,6 +210,7 @@ export function useTimer({
       Notification.requestPermission();
     }
   };
+  startRef.current = start;
 
   const pause = () => {
     setIsRunning(false);

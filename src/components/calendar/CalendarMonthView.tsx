@@ -16,7 +16,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
   onSelectDate,
   onSwitchToDayView,
 }) => {
-  const { monthDays, currentMonthYearTitle } = useMemo(() => {
+  const { monthDays } = useMemo(() => {
     const [yearStr, monthStr] = selectedDate.split('-');
     const year = parseInt(yearStr, 10);
     const month = parseInt(monthStr, 10) - 1; // 0-indexed
@@ -46,7 +46,6 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({
 
     // Dias do mês atual
     for (let d = 1; d <= totalDaysInMonth; d++) {
-      const currDate = new Date(year, month, d);
       const isoDate = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
       cells.push({
         isoDate,

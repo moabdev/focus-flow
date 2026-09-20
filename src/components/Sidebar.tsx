@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSignOut,
   onOpenSettings,
   onOpenStats,
-  onToggleScratchpad,
+  onToggleScratchpad: _onToggleScratchpad,
   onEnterZenMode,
   isCollapsed,
   onToggleCollapse,
