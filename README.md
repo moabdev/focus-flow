@@ -5,14 +5,14 @@
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-100%20Passing-10b981?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-105%20Passing-10b981?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 
 ---
 
 ## 🌟 Visão Geral
 
-O **FocusFlow** é uma solução completa para concurseiros, vestibulandos, desenvolvedores e estudantes de alta performance. O aplicativo combina a técnica Pomodoro com **Gamificação (Medalhas e Níveis)**, **Time-Blocking em Calendário**, **Gestão de Projetos e Subtarefas (com anotações estilo Notion)**, **Grupos de Estudo colaborativos com chat em tempo real**, **Relatórios exportáveis (CSV e PDF formatado)** e **Áudio Ambiente nativo sintetizado via Web Audio API**.
+O **FocusFlow** é uma solução completa para concurseiros, vestibulandos, desenvolvedores e estudantes de alta performance. O aplicativo combina a técnica Pomodoro com **Gamificação (Medalhas e Níveis)**, **Time-Blocking em Calendário**, **Gestão de Projetos e Subtarefas (com anotações estilo Notion e transcrição por voz)**, **Grupos de Estudo colaborativos com chat em tempo real**, **Relatórios exportáveis (CSV e PDF formatado)** e **Áudio Ambiente nativo sintetizado via Web Audio API**.
 
 Desenvolvido sob o paradigma **Offline-First**, o FocusFlow pode ser instalado como **PWA** e funciona 100% sem internet ou sem login através do `localStorage`, oferecendo sincronização em nuvem e autenticação Google segura via **Supabase**.
 
@@ -48,6 +48,7 @@ Desenvolvido sob o paradigma **Offline-First**, o FocusFlow pode ser instalado c
 ### 📂 5. Gestão de Projetos & Subtarefas com Anotações Notion
 - **Cards Leves com Accordion:** Subtarefas retráteis por projeto para máxima clareza visual.
 - **Anotações Ricas:** Editor integrado estilo Notion para cada subtarefa, permitindo registrar resumos, fórmulas e insights.
+- **Ditado por Voz & Transcrição em Tempo Real (Speech-to-Text):** Botão de microfone nativo (Web Speech API) para ditar notas faladas diretamente na posição do cursor sem precisar digitar, com atalho rápido `Alt+D` e banner de gravação pulsante.
 - **Metadados Completos:** Prioridade (Alta, Média, Baixa com dots coloridos), estimativa vs. realização de ciclos Pomodoro, prazos relativos inteligentes (Hoje, Amanhã, Atrasada) e botão rápido *"Focar Agora"*.
 - **Página de Detalhes do Projeto:** Visão panorâmica individual com KPIs, progresso percentual e gerenciamento de tarefas.
 
