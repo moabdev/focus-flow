@@ -6,39 +6,21 @@ import { useCalendar } from './hooks/useCalendar';
 import { useQuotes } from './hooks/useQuotes';
 import { useStats } from './hooks/useStats';
 import { useTimer } from './hooks/useTimer';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
 import type { SupabaseProfile, UserSettings, TimerMode } from './types';
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { QuoteBanner } from './components/QuoteBanner';
-import { TimerCard } from './components/TimerCard';
-import { ProjectManager } from './components/ProjectManager';
-import { CalendarView } from './components/CalendarView';
-import { Scratchpad } from './components/Scratchpad';
-import { SettingsModal } from './components/SettingsModal';
-import { StatsModal } from './components/StatsModal';
-import { ZenMode } from './components/ZenMode';
+import { AppViews } from './components/AppViews';
+import { AppModals } from './components/AppModals';
 
 export const App: React.FC = () => {
   // 1. Hooks de Sistema
-  const {
-    colorMode,
-    toggleColorMode,
-    theme,
-    setTheme,
-    setIsTimerRunning,
-  } = useTheme();
+  const { colorMode, toggleColorMode, theme, setTheme, setIsTimerRunning } = useTheme();
 
-  const {
-    ambient,
-    setAmbient,
-    ambientVolume,
-    setAmbientVolume,
-    playAlarm,
-    playClick,
-  } = useAudio();
+  const { ambient, setAmbient, ambientVolume, setAmbientVolume, playAlarm, playClick } = useAudio();
 
   const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
   const [userProfile, setUserProfile] = useState<SupabaseProfile | null>(null);
@@ -97,33 +79,30 @@ export const App: React.FC = () => {
     toggleEventCompleted,
   } = useCalendar();
 
-  const {
-    activeQuote,
-    getRandomQuote,
-    addMantra,
-    isRotating,
-  } = useQuotes();
-
-  const {
-    metrics,
-    addCompletedSession,
-  } = useStats();
+  const { activeQuote, getRandomQuote, addMantra, isRotating } = useQuotes();
+  const { metrics, addCompletedSession } = useStats();
 
   // Rastreamento de tempo em tempo real a cada segundo no Pomodoro
-  const handleTickSecond = useCallback((mode: TimerMode, elapsedSeconds: number) => {
-    if (mode === 'pomodoro' && activeSubtaskId) {
-      addTimeSpent(activeSubtaskId, elapsedSeconds);
-    }
-  }, [activeSubtaskId, addTimeSpent]);
+  const handleTickSecond = useCallback(
+    (mode: TimerMode, elapsedSeconds: number) => {
+      if (mode === 'pomodoro' && activeSubtaskId) {
+        addTimeSpent(activeSubtaskId, elapsedSeconds);
+      }
+    },
+    [activeSubtaskId, addTimeSpent]
+  );
 
   // Callback de conclusão de ciclo Pomodoro
-  const handlePomodoroComplete = useCallback((durationMinutes: number) => {
-    const discipline = activeSubtask ? (activeSubtask.discipline || 'Geral') : 'Geral';
-    addCompletedSession(discipline, durationMinutes);
-    if (activeSubtaskId) {
-      incrementPomodoro(activeSubtaskId);
-    }
-  }, [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro]);
+  const handlePomodoroComplete = useCallback(
+    (durationMinutes: number) => {
+      const discipline = activeSubtask ? activeSubtask.discipline || 'Geral' : 'Geral';
+      addCompletedSession(discipline, durationMinutes);
+      if (activeSubtaskId) {
+        incrementPomodoro(activeSubtaskId);
+      }
+    },
+    [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro]
+  );
 
   // Hook do Timer com rastreamento ao vivo
   const timer = useTimer({
@@ -168,40 +147,19 @@ export const App: React.FC = () => {
   };
 
   // 5. Atalhos de Teclado Globais
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        return;
-      }
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        playClick();
-        timer.toggle();
-      } else if (e.altKey && e.code === 'KeyS') {
-        e.preventDefault();
-        playClick();
-        timer.skip();
-      } else if (e.altKey && e.code === 'KeyR') {
-        e.preventDefault();
-        playClick();
-        timer.reset();
-      } else if (e.altKey && e.code === 'KeyZ') {
-        e.preventDefault();
-        playClick();
-        setIsZenModeOpen((prev) => !prev);
-      } else if (e.code === 'Escape') {
-        if (isZenModeOpen) setIsZenModeOpen(false);
-        if (isSettingsOpen) setIsSettingsOpen(false);
-        if (isStatsOpen) setIsStatsOpen(false);
-        if (isScratchpadOpen) setIsScratchpadOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [timer, playClick, isZenModeOpen, isSettingsOpen, isStatsOpen, isScratchpadOpen]);
+  useKeyboardShortcuts({
+    onToggleTimer: () => timer.toggle(),
+    onSkipTimer: () => timer.skip(),
+    onResetTimer: () => timer.reset(),
+    onToggleZenMode: () => setIsZenModeOpen((prev) => !prev),
+    onCloseModals: () => {
+      setIsZenModeOpen(false);
+      setIsSettingsOpen(false);
+      setIsStatsOpen(false);
+      setIsScratchpadOpen(false);
+    },
+    playClick,
+  });
 
   const handleUpdateSettings = (newSettings: UserSettings) => {
     setSettings(newSettings);
@@ -209,10 +167,6 @@ export const App: React.FC = () => {
     if (newSettings.theme !== theme) {
       setTheme(newSettings.theme);
     }
-  };
-
-  const scrollToTasks = () => {
-    setCurrentView('projects');
   };
 
   return (
@@ -230,9 +184,7 @@ export const App: React.FC = () => {
             if (firstSub) setActiveSubtaskId(firstSub.id);
           }
         }}
-        onCreateProject={() => {
-          setCurrentView('projects');
-        }}
+        onCreateProject={() => setCurrentView('projects')}
         colorMode={colorMode}
         onToggleColorMode={toggleColorMode}
         ambientSound={ambient}
@@ -254,7 +206,6 @@ export const App: React.FC = () => {
 
       <div className={`app-main-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="app-container">
-          {/* Barra de Navegação Superior com Abas e Toggle Mobile */}
           <Header
             streakDays={metrics.streak.currentStreak}
             colorMode={colorMode}
@@ -275,141 +226,60 @@ export const App: React.FC = () => {
             onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           />
 
-      {/* Visão 1: Timer & Foco */}
-      {currentView === 'timer' && (
-        <>
-          {/* Banner de Citações Inspiradoras */}
-          <QuoteBanner
-            quote={activeQuote}
-            onRefreshQuote={() => {
-              playClick();
-              getRandomQuote();
-            }}
-            onAddMantra={addMantra}
+          <AppViews
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            activeQuote={activeQuote}
+            getRandomQuote={getRandomQuote}
+            addMantra={addMantra}
             isRotating={isRotating}
-          />
-
-          {/* Card Central do Cronômetro Pomodoro */}
-          <TimerCard
-            mode={timer.mode}
-            onChangeMode={(m) => {
-              playClick();
-              timer.changeMode(m);
-            }}
-            formattedTime={timer.formattedTime}
-            progressPercent={timer.progressPercent}
-            isRunning={timer.isRunning}
-            cycleCount={timer.cycleCount}
-            onToggle={() => {
-              playClick();
-              timer.toggle();
-            }}
-            onSkip={() => {
-              playClick();
-              timer.skip();
-            }}
-            onReset={() => {
-              playClick();
-              timer.reset();
-            }}
-            activeTask={activeSubtask}
+            timer={timer}
+            activeSubtask={activeSubtask}
             activeProject={activeProject}
-            onOpenTasksScroll={scrollToTasks}
-          />
-
-          {/* Gerenciador Integrado de Projetos & Tarefas */}
-          <ProjectManager
+            playClick={playClick}
             projects={projects}
             subtasks={subtasks}
             activeSubtaskId={activeSubtaskId}
-            onSelectActiveSubtask={setActiveSubtaskId}
-            onCreateProject={createProject}
-            onUpdateProject={updateProject}
-            onDeleteProject={deleteProject}
+            setActiveSubtaskId={setActiveSubtaskId}
+            createProject={createProject}
+            updateProject={updateProject}
+            deleteProject={deleteProject}
             onCreateSubtask={createSubtask}
             onUpdateSubtask={updateSubtask}
             onDeleteSubtask={deleteSubtask}
             onToggleSubtaskCompleted={toggleSubtaskCompleted}
-            onOpenTimerTab={() => setCurrentView('timer')}
+            events={events}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            calendarView={calendarView}
+            setCalendarView={setCalendarView}
+            addEvent={addEvent}
+            updateEvent={updateEvent}
+            deleteEvent={deleteEvent}
+            toggleEventCompleted={toggleEventCompleted}
           />
-        </>
-      )}
-
-      {/* Visão 2: Projetos & Subtasks */}
-      {currentView === 'projects' && (
-        <ProjectManager
-          projects={projects}
-          subtasks={subtasks}
-          activeSubtaskId={activeSubtaskId}
-          onSelectActiveSubtask={setActiveSubtaskId}
-          onCreateProject={createProject}
-          onUpdateProject={updateProject}
-          onDeleteProject={deleteProject}
-          onCreateSubtask={createSubtask}
-          onUpdateSubtask={updateSubtask}
-          onDeleteSubtask={deleteSubtask}
-          onToggleSubtaskCompleted={toggleSubtaskCompleted}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
-
-      {/* Visão 3: Calendário & Time-Blocking */}
-      {currentView === 'calendar' && (
-        <CalendarView
-          events={events}
-          projects={projects}
-          subtasks={subtasks}
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-          calendarView={calendarView}
-          onChangeView={setCalendarView}
-          onAddEvent={addEvent}
-          onUpdateEvent={updateEvent}
-          onDeleteEvent={deleteEvent}
-          onToggleEventCompleted={toggleEventCompleted}
-          onSelectSubtaskForFocus={setActiveSubtaskId}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
         </div>
       </div>
 
-      {/* Gaveta Lateral de Anotações (Scratchpad) */}
-      <Scratchpad
-        isOpen={isScratchpadOpen}
-        onClose={() => setIsScratchpadOpen(false)}
-      />
-
-      {/* Modal de Estatísticas e Métricas */}
-      <StatsModal
-        isOpen={isStatsOpen}
-        onClose={() => setIsStatsOpen(false)}
+      <AppModals
+        isScratchpadOpen={isScratchpadOpen}
+        onCloseScratchpad={() => setIsScratchpadOpen(false)}
+        isStatsOpen={isStatsOpen}
+        onCloseStats={() => setIsStatsOpen(false)}
         metrics={metrics}
-      />
-
-      {/* Modal de Configurações Gerais */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        isSettingsOpen={isSettingsOpen}
+        onCloseSettings={() => setIsSettingsOpen(false)}
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
-        onPlayAlarmPreview={(s) => playAlarm(s)}
+        onPlayAlarm={playAlarm}
         userProfile={userProfile}
-        onRefreshTasks={() => window.location.reload()}
-        initialTab={settingsTab}
-      />
-
-      {/* Modo Zen (Fullscreen) */}
-      <ZenMode
-        isOpen={isZenModeOpen}
-        onExit={() => setIsZenModeOpen(false)}
-        formattedTime={timer.formattedTime}
-        progressPercent={timer.progressPercent}
-        isRunning={timer.isRunning}
-        onToggleTimer={timer.toggle}
-        activeTask={activeSubtask}
-        quoteText={activeQuote.text}
-        ambientSound={ambient}
+        settingsTab={settingsTab}
+        isZenModeOpen={isZenModeOpen}
+        onCloseZenMode={() => setIsZenModeOpen(false)}
+        timer={timer}
+        activeSubtask={activeSubtask}
+        activeQuote={activeQuote}
+        ambient={ambient}
         onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}
       />
     </div>
