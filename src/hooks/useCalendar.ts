@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CalendarEvent } from '../types';
 import { storageService, DEFAULT_CALENDAR_EVENTS } from '../services/storage';
+import { syncService } from '../services/syncService';
 
 export function useCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -8,6 +9,18 @@ export function useCalendar() {
     return new Date().toISOString().split('T')[0];
   });
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
+
+  const refreshEvents = useCallback(() => {
+    const loaded = storageService.getLocalCalendarEvents();
+    setEvents(loaded);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = syncService.onDataSynced(() => {
+      refreshEvents();
+    });
+    return () => unsubscribe();
+  }, [refreshEvents]);
 
   useEffect(() => {
     storageService.fetchCalendarEvents().then((loaded) => {
@@ -96,5 +109,7 @@ export function useCalendar() {
     deleteEvent,
     toggleEventCompleted,
     clearEvents,
+    refreshEvents,
   };
 }
+

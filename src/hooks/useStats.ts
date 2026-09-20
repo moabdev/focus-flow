@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StudySession, StudyMetrics, StreakInfo } from '../types';
 import { storageService } from '../services/storage';
+import { syncService } from '../services/syncService';
 
 export function useStats() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
@@ -12,6 +13,13 @@ export function useStats() {
 
   useEffect(() => {
     loadSessions();
+  }, [loadSessions]);
+
+  useEffect(() => {
+    const unsubscribe = syncService.onDataSynced(() => {
+      loadSessions();
+    });
+    return () => unsubscribe();
   }, [loadSessions]);
 
   // Função auxiliar para calcular data em formato YYYY-MM-DD local
@@ -129,6 +137,7 @@ export function useStats() {
 
     await storageService.recordSession(newSession);
     setSessions((prev) => [newSession, ...prev]);
+    syncService.scheduleSync();
   }, []);
 
   const clearStats = useCallback(() => {

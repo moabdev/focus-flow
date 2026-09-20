@@ -7,7 +7,7 @@ import {
   Timer,
   Search,
 } from 'lucide-react';
-import { ColorMode, SupabaseProfile, AppViewMode } from '../types';
+import { ColorMode, SupabaseProfile, AppViewMode, CloudSyncInfo } from '../types';
 import { HeaderUserMenu } from './header/HeaderUserMenu';
 
 interface HeaderProps {
@@ -27,6 +27,8 @@ interface HeaderProps {
   activeTaskTitle?: string;
   onOpenTimerTab?: () => void;
   onOpenMobileSidebar?: () => void;
+  syncInfo?: CloudSyncInfo;
+  onManualSync?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -46,6 +48,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeTaskTitle,
   onOpenTimerTab,
   onOpenMobileSidebar,
+  syncInfo,
+  onManualSync,
 }) => {
   const getViewTitle = () => {
     switch (currentView) {
@@ -152,6 +156,8 @@ export const Header: React.FC<HeaderProps> = ({
           onGoogleLogin={onGoogleLogin}
           onSignOut={onSignOut}
           onOpenSettings={onOpenSettings}
+          syncInfo={syncInfo}
+          onManualSync={onManualSync}
         />
       </div>
     </header>

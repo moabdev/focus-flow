@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { Project, Subtask, PriorityLevel } from '../types';
 import { storageService } from '../services/storage';
+import { syncService } from '../services/syncService';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -10,6 +11,26 @@ export function useProjects() {
   const [activeSubtaskId, setActiveSubtaskId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'todas' | 'pendentes' | 'concluidas'>('todas');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const refreshProjects = useCallback(() => {
+    const loadedProjects = storageService.getLocalProjects();
+    const loadedSubtasks = storageService.getLocalSubtasks();
+    setProjects(loadedProjects);
+    setSubtasks(loadedSubtasks);
+    setActiveSubtaskId((prev) => {
+      if (prev && loadedSubtasks.some((s) => s.id === prev)) return prev;
+      const firstPending = loadedSubtasks.find((s) => !s.is_completed);
+      return firstPending ? firstPending.id : (loadedSubtasks[0]?.id || null);
+    });
+  }, []);
+
+  // Escuta atualizações de sincronização em nuvem
+  useEffect(() => {
+    const unsubscribe = syncService.onDataSynced(() => {
+      refreshProjects();
+    });
+    return () => unsubscribe();
+  }, [refreshProjects]);
 
   // Carrega projetos e subtasks no início
   useEffect(() => {
@@ -283,5 +304,6 @@ export function useProjects() {
     addTimeSpent,
     incrementPomodoro,
     clearProjects,
+    refreshProjects,
   };
 }

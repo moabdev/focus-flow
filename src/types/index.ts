@@ -196,3 +196,13 @@ export interface AchievementBadge {
   target_value: number;
   unit: string;
 }
+
+// Sincronização em Nuvem (Supabase)
+export type CloudSyncStatus = 'idle' | 'syncing' | 'synced' | 'offline' | 'error';
+
+export interface CloudSyncInfo {
+  status: CloudSyncStatus;
+  lastSyncedAt: Date | null;
+  errorMessage?: string | null;
+}
+

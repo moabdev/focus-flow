@@ -11,8 +11,9 @@ import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
 import { badgeService } from './services/badgeService';
 import { storageGroupsService } from './services/storageGroups';
+import { syncService } from './services/syncService';
 import { useToast } from './context/ToastContext';
-import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode } from './types';
+import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode, CloudSyncInfo } from './types';
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
   const { ambient, setAmbient, ambientVolume, setAmbientVolume, playAlarm, playClick } = useAudio();
   const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
   const [userProfile, setUserProfile] = useState<SupabaseProfile | null>(null);
+  const [syncInfo, setSyncInfo] = useState<CloudSyncInfo>(() => syncService.getStatus());
   const toast = useToast();
 
   // Visões e Detalhes de Projeto
@@ -140,8 +142,15 @@ export const App: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = supabaseService.onAuthChange((profile) => setUserProfile(profile));
-    return () => unsubscribe();
+    const unsubscribeAuth = supabaseService.onAuthChange((profile) => {
+      setUserProfile(profile);
+      syncService.init(profile);
+    });
+    const unsubscribeSync = syncService.subscribeStatus((info) => setSyncInfo(info));
+    return () => {
+      unsubscribeAuth();
+      unsubscribeSync();
+    };
   }, []);
 
   const handleOpenSettings = (tab: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup' = 'timer') => {
@@ -159,6 +168,7 @@ export const App: React.FC = () => {
   const handleSignOut = async () => {
     playClick();
     await supabaseService.signOut();
+    syncService.init(null);
 
     // Limpar armazenamento do navegador (localStorage, sessionStorage, tokens de autenticação)
     storageService.clearAllUserData();
@@ -260,6 +270,15 @@ export const App: React.FC = () => {
           activeTaskTitle={activeSubtask?.title}
           activeProjectTitle={activeProject?.title}
           onOpenTimerTab={() => setCurrentView('timer')}
+          syncInfo={syncInfo}
+          onManualSync={async () => {
+            const success = await syncService.syncAll();
+            if (success) {
+              toast.success('Sincronização com o Supabase concluída com sucesso!', 'Nuvem Atualizada');
+            } else {
+              toast.error('Não foi possível sincronizar no momento. Verifique a conexão.', 'Falha de Sincronização');
+            }
+          }}
         />
 
         <main className={`app-container view-${currentView}`}>

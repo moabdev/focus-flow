@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cloud, CheckCircle2, Settings, LogOut } from 'lucide-react';
-import { SupabaseProfile } from '../../types';
+import { Cloud, CheckCircle2, Settings, LogOut, RefreshCw, WifiOff, AlertCircle } from 'lucide-react';
+import { SupabaseProfile, CloudSyncInfo } from '../../types';
 
 interface HeaderUserMenuProps {
   userProfile: SupabaseProfile | null;
   onGoogleLogin: () => void;
   onSignOut: () => void;
   onOpenSettings: (tab?: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup') => void;
+  syncInfo?: CloudSyncInfo;
+  onManualSync?: () => void;
 }
 
 export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
@@ -14,6 +16,8 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
   onGoogleLogin,
   onSignOut,
   onOpenSettings,
+  syncInfo,
+  onManualSync,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,6 +67,14 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
     );
   }
 
+  const syncStatus = syncInfo?.status || 'synced';
+  const formatTime = (date: Date | null | undefined) => {
+    if (!date) return '';
+    const h = String(date.getHours()).padStart(2, '0');
+    const m = String(date.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+  };
+
   return (
     <div style={{ position: 'relative' }} ref={menuRef}>
       <button
@@ -76,6 +88,13 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
           <Cloud size={16} />
         )}
         <span className="profile-user-name">{userProfile.full_name ? userProfile.full_name.split(' ')[0] : 'Conta'}</span>
+        {syncStatus === 'syncing' ? (
+          <RefreshCw size={12} className="spin" style={{ marginLeft: 4, color: '#38bdf8' }} />
+        ) : syncStatus === 'offline' ? (
+          <WifiOff size={12} style={{ marginLeft: 4, color: '#f59e0b' }} />
+        ) : (
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', display: 'inline-block', marginLeft: 4 }} />
+        )}
       </button>
 
       {isOpen && (
@@ -83,11 +102,45 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
           <div className="user-dropdown-info">
             <div className="user-dropdown-name">{userProfile.full_name}</div>
             <div className="user-dropdown-email">{userProfile.email}</div>
-            <div className="user-dropdown-cloud-status">
-              <CheckCircle2 size={13} color="#10b981" /> Nuvem Supabase Ativa
+            <div className="user-dropdown-cloud-status" style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {syncStatus === 'syncing' ? (
+                <>
+                  <RefreshCw size={13} className="spin" color="#38bdf8" />
+                  <span style={{ color: '#38bdf8' }}>Sincronizando com Supabase...</span>
+                </>
+              ) : syncStatus === 'offline' ? (
+                <>
+                  <WifiOff size={13} color="#f59e0b" />
+                  <span style={{ color: '#f59e0b' }}>Modo Offline (salvo local)</span>
+                </>
+              ) : syncStatus === 'error' ? (
+                <>
+                  <AlertCircle size={13} color="#ef4444" />
+                  <span style={{ color: '#ef4444' }}>Erro na nuvem</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={13} color="#10b981" />
+                  <span>
+                    Sincronizado {syncInfo?.lastSyncedAt ? `às ${formatTime(syncInfo.lastSyncedAt)}` : 'com Nuvem'}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <div className="user-dropdown-divider" />
+          {onManualSync && (
+            <button
+              className="user-dropdown-item"
+              disabled={syncStatus === 'syncing'}
+              onClick={() => {
+                onManualSync();
+              }}
+            >
+              <RefreshCw size={15} className={syncStatus === 'syncing' ? 'spin' : ''} />
+              <span>{syncStatus === 'syncing' ? 'Sincronizando...' : 'Sincronizar Agora'}</span>
+            </button>
+          )}
           <button
             className="user-dropdown-item"
             onClick={() => {
@@ -95,7 +148,7 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
               onOpenSettings('cloud');
             }}
           >
-            <Cloud size={15} /> Sincronização & Nuvem
+            <Cloud size={15} /> Configurações de Nuvem
           </button>
           <button
             className="user-dropdown-item"
@@ -104,7 +157,7 @@ export const HeaderUserMenu: React.FC<HeaderUserMenuProps> = ({
               onOpenSettings();
             }}
           >
-            <Settings size={15} /> Configurações Gerais
+            <Settings size={15} /> Preferências do App
           </button>
           <div className="user-dropdown-divider" />
           <button

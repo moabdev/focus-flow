@@ -3,6 +3,7 @@ import { X, Clock, Palette, Volume2, Cloud, Database } from 'lucide-react';
 import { UserSettings, AlarmSound, SupabaseProfile } from '../types';
 import { supabaseService } from '../services/supabase';
 import { storageService } from '../services/storage';
+import { syncService } from '../services/syncService';
 import { useToast } from '../context/ToastContext';
 import { SettingsTimerTab } from './settings/SettingsTimerTab';
 import { SettingsThemeTab } from './settings/SettingsThemeTab';
@@ -28,39 +29,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateSettings,
   onPlayAlarmPreview,
   userProfile,
-  onRefreshTasks,
-  initialTab,
+  onRefreshTasks: _onRefreshTasks,
+  initialTab = 'timer',
 }) => {
   const [activeTab, setActiveTab] = useState<'timer' | 'theme' | 'sounds' | 'cloud' | 'backup'>(
-    initialTab || 'timer'
+    initialTab
   );
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const toast = useToast();
 
   useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab);
-    }
-  }, [initialTab, isOpen]);
+    if (isOpen) setActiveTab(initialTab);
+  }, [isOpen, initialTab]);
 
   const handleGoogleLogin = async () => {
     const { error } = await supabaseService.signInWithGoogle();
     if (error) {
-      toast.error(`Erro no login: ${error.message}`, 'Falha de Autenticação');
+      toast.error(`Erro ao iniciar login Google: ${error.message}`, 'Falha no Login');
     }
   };
 
   const handleSignOut = async () => {
     await supabaseService.signOut();
+    syncService.init(null);
     toast.info('Sessão encerrada com sucesso.', 'Logout');
   };
 
   const handleSyncToCloud = async () => {
     setSyncStatus('Sincronizando tarefas locais com a nuvem...');
-    const result = await storageService.syncLocalToCloud();
-    setSyncStatus(`${result.count} registros sincronizados no seu PostgreSQL!`);
-    toast.success(`${result.count} registros sincronizados no PostgreSQL!`, 'Sincronização Concluída');
-    onRefreshTasks();
+    const ok = await syncService.syncAll();
+    if (ok) {
+      setSyncStatus('Dados sincronizados com o Supabase com sucesso!');
+      toast.success('Dados sincronizados com o Supabase com sucesso!', 'Sincronização Concluída');
+    } else {
+      setSyncStatus('Falha ao sincronizar. Verifique a conexão com a nuvem.');
+      toast.error('Falha ao sincronizar com a nuvem.', 'Erro de Sincronização');
+    }
     setTimeout(() => setSyncStatus(null), 3500);
   };
 
