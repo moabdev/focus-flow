@@ -7,6 +7,7 @@ interface UseKeyboardShortcutsOptions {
   onToggleZenMode: () => void;
   onCloseModals: () => void;
   playClick: () => void;
+  onToggleCommandPalette?: () => void;
 }
 
 export function useKeyboardShortcuts({
@@ -16,9 +17,16 @@ export function useKeyboardShortcuts({
   onToggleZenMode,
   onCloseModals,
   playClick,
+  onToggleCommandPalette,
 }: UseKeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        onToggleCommandPalette?.();
+        return;
+      }
+
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
         return;
@@ -47,5 +55,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onToggleTimer, onSkipTimer, onResetTimer, onToggleZenMode, onCloseModals, playClick]);
+  }, [onToggleTimer, onSkipTimer, onResetTimer, onToggleZenMode, onCloseModals, playClick, onToggleCommandPalette]);
 }
