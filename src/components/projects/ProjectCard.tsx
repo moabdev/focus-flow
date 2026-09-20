@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Edit, Trash2, Plus } from 'lucide-react';
+import { Calendar, Clock, Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
 import { Project, Subtask, PriorityLevel } from '../../types';
 import { SubtaskItem, formatSeconds } from './SubtaskItem';
 
@@ -10,6 +10,7 @@ interface ProjectCardProps {
   activeSubtaskId: string | null;
   onSelectActiveSubtask: (id: string) => void;
   onOpenTimerTab?: () => void;
+  onOpenProjectDetail?: (id: string) => void;
   onEditProject: (project: Project) => void;
   onDeleteProject: (id: string) => void;
   onCreateSubtask: (
@@ -33,6 +34,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   activeSubtaskId,
   onSelectActiveSubtask,
   onOpenTimerTab,
+  onOpenProjectDetail,
   onEditProject,
   onDeleteProject,
   onCreateSubtask,
@@ -87,7 +89,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           >
             {project.icon || '📁'}
           </span>
-          <div>
+          <div
+            onClick={() => onOpenProjectDetail && onOpenProjectDetail(project.id)}
+            style={{ cursor: onOpenProjectDetail ? 'pointer' : 'default' }}
+            title={onOpenProjectDetail ? 'Ver página do projeto' : undefined}
+          >
             <h3 className="project-card-title">{project.title}</h3>
             {project.description && (
               <p className="project-card-desc">{project.description}</p>
@@ -96,6 +102,16 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
 
         <div className="project-card-actions">
+          {onOpenProjectDetail && (
+            <button
+              className="icon-btn"
+              onClick={() => onOpenProjectDetail(project.id)}
+              title="Abrir página individual do projeto"
+              aria-label="Abrir página individual do projeto"
+            >
+              <ExternalLink size={14} />
+            </button>
+          )}
           <button
             className="icon-btn"
             onClick={() => onEditProject(project)}

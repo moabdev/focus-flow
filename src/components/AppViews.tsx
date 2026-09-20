@@ -3,6 +3,9 @@ import { QuoteBanner } from './QuoteBanner';
 import { TimerCard } from './TimerCard';
 import { ProjectManager } from './ProjectManager';
 import { CalendarView } from './CalendarView';
+import { ProjectDetailView } from './projects/ProjectDetailView';
+import { StudyGroupsView } from './groups/StudyGroupsView';
+import { WeeklyLeaderboardView } from './ranking/WeeklyLeaderboardView';
 import type {
   Quote,
   TimerMode,
@@ -10,11 +13,14 @@ import type {
   Project,
   PriorityLevel,
   CalendarEvent,
+  AppViewMode,
+  CalendarViewMode,
+  SupabaseProfile,
 } from '../types';
 
 export interface AppViewsProps {
-  currentView: 'timer' | 'projects' | 'calendar';
-  setCurrentView: (view: 'timer' | 'projects' | 'calendar') => void;
+  currentView: AppViewMode;
+  setCurrentView: (view: AppViewMode) => void;
   // Quote & Timer props
   activeQuote: Quote;
   getRandomQuote: () => void;
@@ -39,6 +45,9 @@ export interface AppViewsProps {
   subtasks: Subtask[];
   activeSubtaskId: string | null;
   setActiveSubtaskId: (id: string | null) => void;
+  selectedProjectDetailId: string | null;
+  onOpenProjectDetail: (id: string) => void;
+  onBackFromProjectDetail: () => void;
   createProject: (data: {
     title: string;
     description?: string;
@@ -65,12 +74,15 @@ export interface AppViewsProps {
   events: CalendarEvent[];
   selectedDate: string;
   setSelectedDate: (date: string) => void;
-  calendarView: 'day' | 'week' | 'month';
-  setCalendarView: (view: 'day' | 'week' | 'month') => void;
+  calendarView: CalendarViewMode;
+  setCalendarView: (view: CalendarViewMode) => void;
   addEvent: (eventData: Omit<CalendarEvent, 'id'>) => Promise<CalendarEvent>;
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   toggleEventCompleted: (id: string) => Promise<void>;
+  // User & Ranking props
+  userProfile: SupabaseProfile | null;
+  weekMinutes: number;
 }
 
 export const AppViews: React.FC<AppViewsProps> = ({
@@ -88,6 +100,9 @@ export const AppViews: React.FC<AppViewsProps> = ({
   subtasks,
   activeSubtaskId,
   setActiveSubtaskId,
+  selectedProjectDetailId,
+  onOpenProjectDetail,
+  onBackFromProjectDetail,
   createProject,
   updateProject,
   deleteProject,
@@ -104,7 +119,12 @@ export const AppViews: React.FC<AppViewsProps> = ({
   updateEvent,
   deleteEvent,
   toggleEventCompleted,
+  userProfile,
+  weekMinutes,
 }) => {
+  const currentDetailProject = projects.find((p) => p.id === selectedProjectDetailId);
+  const detailSubtasks = subtasks.filter((s) => s.project_id === selectedProjectDetailId);
+
   return (
     <>
       {/* Visão 1: Timer & Foco */}
@@ -162,6 +182,7 @@ export const AppViews: React.FC<AppViewsProps> = ({
             onDeleteSubtask={onDeleteSubtask}
             onToggleSubtaskCompleted={onToggleSubtaskCompleted}
             onOpenTimerTab={() => setCurrentView('timer')}
+            onOpenProjectDetail={onOpenProjectDetail}
           />
         </>
       )}
@@ -183,10 +204,27 @@ export const AppViews: React.FC<AppViewsProps> = ({
           onDeleteSubtask={onDeleteSubtask}
           onToggleSubtaskCompleted={onToggleSubtaskCompleted}
           onOpenTimerTab={() => setCurrentView('timer')}
+          onOpenProjectDetail={onOpenProjectDetail}
         />
       )}
 
-      {/* Visão 3: Calendário & Time-Blocking */}
+      {/* Visão 3: Página Individual de Detalhes do Projeto */}
+      {currentView === 'project-detail' && currentDetailProject && (
+        <ProjectDetailView
+          project={currentDetailProject}
+          subtasks={detailSubtasks}
+          activeSubtaskId={activeSubtaskId}
+          onSelectActiveSubtask={setActiveSubtaskId}
+          onBack={onBackFromProjectDetail}
+          onCreateSubtask={onCreateSubtask}
+          onUpdateSubtask={onUpdateSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+          onToggleSubtaskCompleted={onToggleSubtaskCompleted}
+          onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
+
+      {/* Visão 4: Calendário & Time-Blocking */}
       {currentView === 'calendar' && (
         <CalendarView
           events={events}
@@ -202,6 +240,23 @@ export const AppViews: React.FC<AppViewsProps> = ({
           onToggleEventCompleted={toggleEventCompleted}
           onSelectSubtaskForFocus={(sId) => setActiveSubtaskId(sId)}
           onOpenTimerTab={() => setCurrentView('timer')}
+        />
+      )}
+
+      {/* Visão 5: Grupos de Estudo & Chat */}
+      {currentView === 'groups' && (
+        <StudyGroupsView
+          userProfile={userProfile}
+          isUserStudying={timer.isRunning}
+          activeTaskTitle={activeSubtask?.title}
+        />
+      )}
+
+      {/* Visão 6: Ranking Semanal de Foco */}
+      {currentView === 'ranking' && (
+        <WeeklyLeaderboardView
+          currentUserMinutes={weekMinutes}
+          userProfile={userProfile}
         />
       )}
     </>

@@ -3,29 +3,28 @@ import {
   Timer,
   FolderKanban,
   Calendar,
+  Users,
+  Trophy,
   BarChart2,
   Edit3,
   Flame,
-  Sun,
-  Moon,
-  Maximize2,
-  Settings,
   ChevronLeft,
   ChevronRight,
   X,
 } from 'lucide-react';
-import { Project, AmbientSound, ColorMode, SupabaseProfile } from '../types';
+import { Project, AmbientSound, ColorMode, SupabaseProfile, AppViewMode } from '../types';
 import { SidebarProjectsList } from './sidebar/SidebarProjectsList';
-import { SidebarAmbientMenu } from './sidebar/SidebarAmbientMenu';
 import { SidebarUserProfile } from './sidebar/SidebarUserProfile';
+import { SidebarQuickTools } from './sidebar/SidebarQuickTools';
 
 interface SidebarProps {
-  currentView: 'timer' | 'projects' | 'calendar';
-  onChangeView: (view: 'timer' | 'projects' | 'calendar') => void;
+  currentView: AppViewMode;
+  onChangeView: (view: AppViewMode) => void;
   streakDays: number;
   projects: Project[];
   selectedProjectId?: string | 'todos';
   onSelectProject?: (id: string | 'todos') => void;
+  onOpenProjectDetail?: (id: string) => void;
   onCreateProject?: () => void;
   colorMode: ColorMode;
   onToggleColorMode: () => void;
@@ -53,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   projects,
   selectedProjectId = 'todos',
   onSelectProject,
+  onOpenProjectDetail,
   onCreateProject,
   colorMode,
   onToggleColorMode,
@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [showAmbientMenu, setShowAmbientMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const handleNavClick = (view: 'timer' | 'projects' | 'calendar') => {
+  const handleNavClick = (view: AppViewMode) => {
     onChangeView(view);
     if (isMobileOpen) {
       onCloseMobile();
@@ -164,7 +164,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            className={`sidebar-nav-item ${currentView === 'projects' ? 'active' : ''}`}
+            className={`sidebar-nav-item ${
+              currentView === 'projects' || currentView === 'project-detail' ? 'active' : ''
+            }`}
             onClick={() => handleNavClick('projects')}
             title="Projetos e Subtarefas"
           >
@@ -184,6 +186,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Calendar size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Calendário</span>}
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${currentView === 'groups' ? 'active' : ''}`}
+            onClick={() => handleNavClick('groups')}
+            title="Grupos de Estudo e Chat"
+          >
+            <Users size={18} className="nav-icon" />
+            {!isCollapsed && <span className="nav-label">Grupos</span>}
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${currentView === 'ranking' ? 'active' : ''}`}
+            onClick={() => handleNavClick('ranking')}
+            title="Ranking Semanal de Foco"
+          >
+            <Trophy size={18} className="nav-icon" />
+            {!isCollapsed && <span className="nav-label">Ranking</span>}
           </button>
 
           <button
@@ -217,6 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             projects={projects}
             selectedProjectId={selectedProjectId}
             onSelectProject={onSelectProject}
+            onOpenProjectDetail={onOpenProjectDetail}
             onCreateProject={onCreateProject}
             onNavigateProjects={() => handleNavClick('projects')}
             onCloseMobile={onCloseMobile}
@@ -228,50 +249,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Rodapé da Sidebar */}
         <div className="sidebar-footer">
-          <div className="sidebar-quick-tools">
-            <SidebarAmbientMenu
-              ambientSound={ambientSound}
-              ambientVolume={ambientVolume}
-              onSelectAmbient={onSelectAmbient}
-              onSetAmbientVolume={onSetAmbientVolume}
-              isOpen={showAmbientMenu}
-              onToggleOpen={() => setShowAmbientMenu(!showAmbientMenu)}
-              onClose={() => setShowAmbientMenu(false)}
-            />
-
-            <button
-              className="icon-btn"
-              onClick={onToggleColorMode}
-              title={`Alternar para modo ${colorMode === 'dark' ? 'Claro' : 'Escuro'}`}
-              aria-label="Alternar tema de cores"
-            >
-              {colorMode === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
-
-            <button
-              className="icon-btn"
-              onClick={() => {
-                onEnterZenMode();
-                if (isMobileOpen) onCloseMobile();
-              }}
-              title="Modo Zen (Tela Cheia)"
-              aria-label="Modo Zen"
-            >
-              <Maximize2 size={17} />
-            </button>
-
-            <button
-              className="icon-btn"
-              onClick={() => {
-                onOpenSettings();
-                if (isMobileOpen) onCloseMobile();
-              }}
-              title="Configurações"
-              aria-label="Configurações"
-            >
-              <Settings size={17} />
-            </button>
-          </div>
+          <SidebarQuickTools
+            colorMode={colorMode}
+            onToggleColorMode={onToggleColorMode}
+            ambientSound={ambientSound}
+            ambientVolume={ambientVolume}
+            onSelectAmbient={onSelectAmbient}
+            onSetAmbientVolume={onSetAmbientVolume}
+            showAmbientMenu={showAmbientMenu}
+            onToggleAmbientMenu={() => setShowAmbientMenu(!showAmbientMenu)}
+            onCloseAmbientMenu={() => setShowAmbientMenu(false)}
+            onEnterZenMode={onEnterZenMode}
+            onOpenSettings={onOpenSettings}
+            onCloseMobile={onCloseMobile}
+            isMobileOpen={isMobileOpen}
+          />
 
           <SidebarUserProfile
             userProfile={userProfile}

@@ -4,6 +4,10 @@ export type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak';
 
 export type PriorityLevel = 'baixa' | 'media' | 'alta';
 
+export type AppViewMode = 'timer' | 'projects' | 'project-detail' | 'calendar' | 'groups' | 'ranking';
+
+export type CalendarViewMode = 'day' | 'week' | 'month';
+
 export interface Project {
   id: string;
   user_id?: string;
@@ -113,4 +117,50 @@ export interface SupabaseProfile {
   email?: string;
   full_name?: string;
   avatar_url?: string;
+}
+
+// Grupos de Estudo & Chat
+export interface StudyGroup {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  avatar_icon: string;
+  code: string;
+  member_count: number;
+  created_at: string;
+}
+
+export interface GroupMember {
+  id: string;
+  group_id: string;
+  user_name: string;
+  user_avatar?: string;
+  role: 'admin' | 'member';
+  current_status: 'focusing' | 'break' | 'idle';
+  current_task_title?: string;
+  weekly_seconds: number;
+  streak_days: number;
+}
+
+export interface GroupMessage {
+  id: string;
+  group_id: string;
+  user_id: string;
+  user_name: string;
+  user_avatar?: string;
+  text: string;
+  type: 'chat' | 'system_focus' | 'milestone';
+  created_at: string;
+}
+
+// Ranking Semanal (Leaderboard)
+export interface LeaderboardUser {
+  id: string;
+  name: string;
+  avatar?: string;
+  weekly_seconds: number;
+  pomodoros_completed: number;
+  streak_days: number;
+  is_current_user?: boolean;
 }

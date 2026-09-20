@@ -5,8 +5,10 @@ import {
   ChevronRight,
   Plus,
 } from 'lucide-react';
-import { CalendarEvent, Project, Subtask } from '../types';
-import { CalendarEventBlock } from './calendar/CalendarEventBlock';
+import { CalendarEvent, Project, Subtask, CalendarViewMode } from '../types';
+import { CalendarDayView } from './calendar/CalendarDayView';
+import { CalendarWeekView } from './calendar/CalendarWeekView';
+import { CalendarMonthView } from './calendar/CalendarMonthView';
 import { CalendarEventModal } from './calendar/CalendarEventModal';
 
 interface CalendarViewProps {
@@ -15,8 +17,8 @@ interface CalendarViewProps {
   subtasks: Subtask[];
   selectedDate: string; // YYYY-MM-DD
   onSelectDate: (date: string) => void;
-  calendarView: 'day' | 'week' | 'month';
-  onChangeView: (view: 'day' | 'week' | 'month') => void;
+  calendarView: CalendarViewMode;
+  onChangeView: (view: CalendarViewMode) => void;
   onAddEvent: (data: Omit<CalendarEvent, 'id'>) => Promise<CalendarEvent>;
   onUpdateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>;
   onDeleteEvent: (id: string) => Promise<void>;
@@ -24,9 +26,6 @@ interface CalendarViewProps {
   onSelectSubtaskForFocus: (subtaskId: string) => void;
   onOpenTimerTab?: () => void;
 }
-
-// Horários de exibição na grade: 06:00 às 23:00
-const HOURS = Array.from({ length: 18 }, (_, i) => i + 6);
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
   events,
@@ -67,21 +66,26 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     setIsModalOpen(true);
   };
 
-  // Eventos do dia selecionado
-  const dayEvents = useMemo(() => {
-    return events.filter((ev) => ev.start_time.startsWith(selectedDate));
-  }, [events, selectedDate]);
+  const handleOpenCreateForDate = (dateStr: string) => {
+    onSelectDate(dateStr);
+    setModalHour(9);
+    setIsModalOpen(true);
+  };
 
-  // Formata o dia para exibição amigável
+  // Formatação amigável de cabeçalho
   const formattedHeaderDate = useMemo(() => {
     const d = new Date(`${selectedDate}T12:00:00`);
+    if (calendarView === 'month') {
+      const monthTitle = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      return monthTitle.charAt(0).toUpperCase() + monthTitle.slice(1);
+    }
     return d.toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
-  }, [selectedDate]);
+  }, [selectedDate, calendarView]);
 
   return (
     <div className="calendar-view-container">
@@ -105,7 +109,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
       </div>
 
-      {/* Controles de Navegação e Visão */}
+      {/* Controles de Navegação e Seletor de Visão (Dia / Semana / Mês) */}
       <div className="calendar-controls-bar glass-panel">
         <div className="calendar-nav-group">
           <button className="icon-btn" onClick={() => handleNavigateDate('prev')} title="Anterior">
@@ -136,63 +140,54 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           >
             Semana
           </button>
+          <button
+            className={`filter-chip ${calendarView === 'month' ? 'active' : ''}`}
+            onClick={() => onChangeView('month')}
+          >
+            Mês
+          </button>
         </div>
       </div>
 
-      {/* Grade de Horários (Time-Blocking) */}
-      <div className="time-blocking-grid glass-panel">
-        {HOURS.map((hour) => {
-          const hourPrefix = `${hour.toString().padStart(2, '0')}:`;
-          const slotEvents = dayEvents.filter((ev) => {
-            const timePart = ev.start_time.split('T')[1] || '';
-            return timePart.startsWith(hourPrefix);
-          });
+      {/* Renderização Condicional das Visões */}
+      {calendarView === 'day' && (
+        <CalendarDayView
+          events={events}
+          projects={projects}
+          subtasks={subtasks}
+          selectedDate={selectedDate}
+          onToggleEventCompleted={onToggleEventCompleted}
+          onDeleteEvent={onDeleteEvent}
+          onSelectSubtaskForFocus={onSelectSubtaskForFocus}
+          onOpenTimerTab={onOpenTimerTab}
+          onOpenCreateAtHour={handleOpenCreateAtHour}
+        />
+      )}
 
-          return (
-            <div key={hour} className="time-slot-row">
-              <div className="time-label">
-                <span>{hour.toString().padStart(2, '0')}:00</span>
-              </div>
+      {calendarView === 'week' && (
+        <CalendarWeekView
+          events={events}
+          projects={projects}
+          subtasks={subtasks}
+          selectedDate={selectedDate}
+          onSelectDate={onSelectDate}
+          onToggleEventCompleted={onToggleEventCompleted}
+          onDeleteEvent={onDeleteEvent}
+          onSelectSubtaskForFocus={onSelectSubtaskForFocus}
+          onOpenTimerTab={onOpenTimerTab}
+          onOpenCreateForDate={handleOpenCreateForDate}
+        />
+      )}
 
-              <div
-                className="time-slot-content"
-                onClick={(e) => {
-                  if ((e.target as HTMLElement).classList.contains('time-slot-content')) {
-                    handleOpenCreateAtHour(hour);
-                  }
-                }}
-              >
-                {slotEvents.map((ev) => {
-                  const parentProject = projects.find((p) => p.id === ev.project_id);
-                  const linkedSubtask = subtasks.find((s) => s.id === ev.subtask_id);
-
-                  return (
-                    <CalendarEventBlock
-                      key={ev.id}
-                      event={ev}
-                      parentProject={parentProject}
-                      linkedSubtask={linkedSubtask}
-                      onToggleEventCompleted={onToggleEventCompleted}
-                      onDeleteEvent={onDeleteEvent}
-                      onSelectSubtaskForFocus={onSelectSubtaskForFocus}
-                      onOpenTimerTab={onOpenTimerTab}
-                    />
-                  );
-                })}
-
-                {slotEvents.length === 0 && (
-                  <button
-                    className="add-event-slot-hint"
-                    onClick={() => handleOpenCreateAtHour(hour)}
-                  >
-                    + Agendar tarefa neste horário
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {calendarView === 'month' && (
+        <CalendarMonthView
+          events={events}
+          projects={projects}
+          selectedDate={selectedDate}
+          onSelectDate={onSelectDate}
+          onSwitchToDayView={() => onChangeView('day')}
+        />
+      )}
 
       {/* Modal de Adicionar Evento no Calendário */}
       <CalendarEventModal

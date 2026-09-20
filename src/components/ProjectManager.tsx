@@ -33,6 +33,7 @@ interface ProjectManagerProps {
   onDeleteSubtask: (id: string) => Promise<void>;
   onToggleSubtaskCompleted: (id: string) => Promise<void>;
   onOpenTimerTab?: () => void;
+  onOpenProjectDetail?: (id: string) => void;
 }
 
 export const ProjectManager: React.FC<ProjectManagerProps> = ({
@@ -48,6 +49,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({
   onDeleteSubtask,
   onToggleSubtaskCompleted,
   onOpenTimerTab,
+  onOpenProjectDetail,
 }) => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -166,6 +168,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({
                 activeSubtaskId={activeSubtaskId}
                 onSelectActiveSubtask={onSelectActiveSubtask}
                 onOpenTimerTab={onOpenTimerTab}
+                onOpenProjectDetail={onOpenProjectDetail}
                 onEditProject={handleOpenEditProject}
                 onDeleteProject={onDeleteProject}
                 onCreateSubtask={onCreateSubtask}

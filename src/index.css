@@ -17,4 +17,10 @@
 @import './styles/subtasks.css';
 @import './styles/notion.css';
 @import './styles/calendar.css';
+@import './styles/calendar-views.css';
+@import './styles/project-detail.css';
+@import './styles/groups.css';
+@import './styles/groups-chat.css';
+@import './styles/ranking.css';
 @import './styles/responsive.css';
+

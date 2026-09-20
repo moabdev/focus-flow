@@ -9,7 +9,7 @@ import { useTimer } from './hooks/useTimer';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { supabaseService } from './services/supabase';
 import { storageService } from './services/storage';
-import type { SupabaseProfile, UserSettings, TimerMode } from './types';
+import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode } from './types';
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -17,18 +17,16 @@ import { AppViews } from './components/AppViews';
 import { AppModals } from './components/AppModals';
 
 export const App: React.FC = () => {
-  // 1. Hooks de Sistema
   const { colorMode, toggleColorMode, theme, setTheme, setIsTimerRunning } = useTheme();
-
   const { ambient, setAmbient, ambientVolume, setAmbientVolume, playAlarm, playClick } = useAudio();
-
   const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
   const [userProfile, setUserProfile] = useState<SupabaseProfile | null>(null);
 
-  // 2. Visão Ativa (Foco / Projetos / Calendário)
-  const [currentView, setCurrentView] = useState<'timer' | 'projects' | 'calendar'>('timer');
+  // Visões e Detalhes de Projeto
+  const [currentView, setCurrentView] = useState<AppViewMode>('timer');
+  const [selectedProjectDetailId, setSelectedProjectDetailId] = useState<string | null>(null);
 
-  // Estado da Barra Lateral (Sidebar)
+  // Estado da Barra Lateral
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem('focusflow_sidebar_collapsed') === 'true';
@@ -36,19 +34,27 @@ export const App: React.FC = () => {
       return false;
     }
   });
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleToggleSidebarCollapse = () => {
     setIsSidebarCollapsed((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem('focusflow_sidebar_collapsed', String(next));
-      } catch {}
+      try { localStorage.setItem('focusflow_sidebar_collapsed', String(next)); } catch {}
       return next;
     });
   };
 
-  // 3. Hooks de Negócio: Projetos, Subtasks e Calendário
+  const handleOpenProjectDetail = (id: string) => {
+    setSelectedProjectDetailId(id);
+    setCurrentView('project-detail');
+  };
+
+  const handleBackFromProjectDetail = () => {
+    setSelectedProjectDetailId(null);
+    setCurrentView('projects');
+  };
+
+  // Hooks de Negócio
   const {
     projects,
     subtasks,
@@ -82,29 +88,23 @@ export const App: React.FC = () => {
   const { activeQuote, getRandomQuote, addMantra, isRotating } = useQuotes();
   const { metrics, addCompletedSession } = useStats();
 
-  // Rastreamento de tempo em tempo real a cada segundo no Pomodoro
+  // Rastreamento de tempo Pomodoro
   const handleTickSecond = useCallback(
     (mode: TimerMode, elapsedSeconds: number) => {
-      if (mode === 'pomodoro' && activeSubtaskId) {
-        addTimeSpent(activeSubtaskId, elapsedSeconds);
-      }
+      if (mode === 'pomodoro' && activeSubtaskId) addTimeSpent(activeSubtaskId, elapsedSeconds);
     },
     [activeSubtaskId, addTimeSpent]
   );
 
-  // Callback de conclusão de ciclo Pomodoro
   const handlePomodoroComplete = useCallback(
     (durationMinutes: number) => {
-      const discipline = activeSubtask ? activeSubtask.discipline || 'Geral' : 'Geral';
+      const discipline = activeSubtask?.discipline || 'Geral';
       addCompletedSession(discipline, durationMinutes);
-      if (activeSubtaskId) {
-        incrementPomodoro(activeSubtaskId);
-      }
+      if (activeSubtaskId) incrementPomodoro(activeSubtaskId);
     },
     [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro]
   );
 
-  // Hook do Timer com rastreamento ao vivo
   const timer = useTimer({
     settings,
     onPomodoroComplete: handlePomodoroComplete,
@@ -119,11 +119,8 @@ export const App: React.FC = () => {
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isZenModeOpen, setIsZenModeOpen] = useState(false);
 
-  // 4. Inscrição na Sessão Supabase
   useEffect(() => {
-    const unsubscribe = supabaseService.onAuthChange((profile) => {
-      setUserProfile(profile);
-    });
+    const unsubscribe = supabaseService.onAuthChange((profile) => setUserProfile(profile));
     return () => unsubscribe();
   }, []);
 
@@ -136,9 +133,7 @@ export const App: React.FC = () => {
   const handleGoogleLogin = async () => {
     playClick();
     const { error } = await supabaseService.signInWithGoogle();
-    if (error) {
-      alert(`Erro ao iniciar login Google: ${error.message}`);
-    }
+    if (error) alert(`Erro ao iniciar login Google: ${error.message}`);
   };
 
   const handleSignOut = async () => {
@@ -146,7 +141,6 @@ export const App: React.FC = () => {
     await supabaseService.signOut();
   };
 
-  // 5. Atalhos de Teclado Globais
   useKeyboardShortcuts({
     onToggleTimer: () => timer.toggle(),
     onSkipTimer: () => timer.skip(),
@@ -164,14 +158,11 @@ export const App: React.FC = () => {
   const handleUpdateSettings = (newSettings: UserSettings) => {
     setSettings(newSettings);
     storageService.saveSettings(newSettings);
-    if (newSettings.theme !== theme) {
-      setTheme(newSettings.theme);
-    }
+    if (newSettings.theme !== theme) setTheme(newSettings.theme);
   };
 
   return (
     <div className="app-shell">
-      {/* Barra Lateral (Sidebar Moderna) */}
       <Sidebar
         currentView={currentView}
         onChangeView={setCurrentView}
@@ -184,6 +175,7 @@ export const App: React.FC = () => {
             if (firstSub) setActiveSubtaskId(firstSub.id);
           }
         }}
+        onOpenProjectDetail={handleOpenProjectDetail}
         onCreateProject={() => setCurrentView('projects')}
         colorMode={colorMode}
         onToggleColorMode={toggleColorMode}
@@ -209,20 +201,18 @@ export const App: React.FC = () => {
           streakDays={metrics.streak.currentStreak}
           colorMode={colorMode}
           onToggleColorMode={toggleColorMode}
-          ambientSound={ambient}
-          ambientVolume={ambientVolume}
-          onSelectAmbient={setAmbient}
-          onSetAmbientVolume={setAmbientVolume}
           userProfile={userProfile}
           onGoogleLogin={handleGoogleLogin}
           onSignOut={handleSignOut}
           onOpenSettings={handleOpenSettings}
           onOpenStats={() => setIsStatsOpen(true)}
-          onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
-          onEnterZenMode={() => setIsZenModeOpen(true)}
           currentView={currentView}
-          onChangeView={setCurrentView}
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          isTimerRunning={timer.isRunning}
+          timerFormattedTime={timer.formattedTime}
+          activeTaskTitle={activeSubtask?.title}
+          activeProjectTitle={activeProject?.title}
+          onOpenTimerTab={() => setCurrentView('timer')}
         />
 
         <main className="app-container">
@@ -241,6 +231,9 @@ export const App: React.FC = () => {
             subtasks={subtasks}
             activeSubtaskId={activeSubtaskId}
             setActiveSubtaskId={setActiveSubtaskId}
+            selectedProjectDetailId={selectedProjectDetailId}
+            onOpenProjectDetail={handleOpenProjectDetail}
+            onBackFromProjectDetail={handleBackFromProjectDetail}
             createProject={createProject}
             updateProject={updateProject}
             deleteProject={deleteProject}
@@ -257,6 +250,8 @@ export const App: React.FC = () => {
             updateEvent={updateEvent}
             deleteEvent={deleteEvent}
             toggleEventCompleted={toggleEventCompleted}
+            userProfile={userProfile}
+            weekMinutes={metrics.weekMinutes}
           />
         </main>
       </div>

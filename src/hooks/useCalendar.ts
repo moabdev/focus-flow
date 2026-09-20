@@ -7,7 +7,7 @@ export function useCalendar() {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return new Date().toISOString().split('T')[0];
   });
-  const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('week');
+  const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
 
   useEffect(() => {
     storageService.fetchCalendarEvents().then((loaded) => {

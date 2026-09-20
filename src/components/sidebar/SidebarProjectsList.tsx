@@ -6,6 +6,7 @@ interface SidebarProjectsListProps {
   projects: Project[];
   selectedProjectId?: string | 'todos';
   onSelectProject?: (id: string | 'todos') => void;
+  onOpenProjectDetail?: (id: string) => void;
   onCreateProject?: () => void;
   onNavigateProjects: () => void;
   onCloseMobile: () => void;
@@ -16,6 +17,7 @@ export const SidebarProjectsList: React.FC<SidebarProjectsListProps> = ({
   projects,
   selectedProjectId = 'todos',
   onSelectProject,
+  onOpenProjectDetail,
   onCreateProject,
   onNavigateProjects,
   onCloseMobile,
@@ -53,8 +55,13 @@ export const SidebarProjectsList: React.FC<SidebarProjectsListProps> = ({
                 key={proj.id}
                 className={`sidebar-project-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => {
-                  if (onSelectProject) onSelectProject(proj.id);
-                  onNavigateProjects();
+                  if (onOpenProjectDetail) {
+                    onOpenProjectDetail(proj.id);
+                  } else {
+                    if (onSelectProject) onSelectProject(proj.id);
+                    onNavigateProjects();
+                  }
+                  if (isMobileOpen) onCloseMobile();
                 }}
                 title={proj.title}
               >

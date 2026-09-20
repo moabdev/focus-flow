@@ -3,36 +3,28 @@ import {
   Flame,
   Sun,
   Moon,
-  Settings,
-  BarChart2,
-  Edit3,
-  Maximize2,
-  Timer,
-  FolderKanban,
-  Calendar,
   Menu,
+  Timer,
+  ChevronRight,
 } from 'lucide-react';
-import { AmbientSound, ColorMode, SupabaseProfile } from '../types';
-import { HeaderAmbientMenu } from './header/HeaderAmbientMenu';
+import { ColorMode, SupabaseProfile, AppViewMode } from '../types';
 import { HeaderUserMenu } from './header/HeaderUserMenu';
 
 interface HeaderProps {
   streakDays: number;
   colorMode: ColorMode;
   onToggleColorMode: () => void;
-  ambientSound: AmbientSound;
-  ambientVolume: number;
-  onSelectAmbient: (sound: AmbientSound) => void;
-  onSetAmbientVolume: (vol: number) => void;
   userProfile: SupabaseProfile | null;
   onGoogleLogin: () => void;
   onSignOut: () => void;
   onOpenSettings: (tab?: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup') => void;
   onOpenStats: () => void;
-  onToggleScratchpad: () => void;
-  onEnterZenMode: () => void;
-  currentView: 'timer' | 'projects' | 'calendar';
-  onChangeView: (view: 'timer' | 'projects' | 'calendar') => void;
+  currentView: AppViewMode;
+  activeProjectTitle?: string;
+  isTimerRunning?: boolean;
+  timerFormattedTime?: string;
+  activeTaskTitle?: string;
+  onOpenTimerTab?: () => void;
   onOpenMobileSidebar?: () => void;
 }
 
@@ -40,23 +32,41 @@ export const Header: React.FC<HeaderProps> = ({
   streakDays,
   colorMode,
   onToggleColorMode,
-  ambientSound,
-  ambientVolume,
-  onSelectAmbient,
-  onSetAmbientVolume,
   userProfile,
   onGoogleLogin,
   onSignOut,
   onOpenSettings,
   onOpenStats,
-  onToggleScratchpad,
-  onEnterZenMode,
   currentView,
-  onChangeView,
+  activeProjectTitle,
+  isTimerRunning = false,
+  timerFormattedTime = '25:00',
+  activeTaskTitle,
+  onOpenTimerTab,
   onOpenMobileSidebar,
 }) => {
+  const getViewTitle = () => {
+    switch (currentView) {
+      case 'timer':
+        return 'Foco & Pomodoro';
+      case 'projects':
+        return 'Projetos & Tarefas';
+      case 'project-detail':
+        return activeProjectTitle ? `Projetos > ${activeProjectTitle}` : 'Detalhes do Projeto';
+      case 'calendar':
+        return 'Calendário & Time-Blocking';
+      case 'groups':
+        return 'Grupos de Estudo & Chat';
+      case 'ranking':
+        return 'Ranking Semanal de Estudos';
+      default:
+        return 'FocusFlow';
+    }
+  };
+
   return (
     <header className="app-header">
+      {/* Esquerda: Menu Mobile e Breadcrumbs de Navegação */}
       <div className="brand-section">
         {onOpenMobileSidebar && (
           <button
@@ -74,12 +84,37 @@ export const Header: React.FC<HeaderProps> = ({
           <span>FocusFlow</span>
         </div>
 
-        <div className="header-view-title" aria-current="page">
-          {currentView === 'timer' && 'Foco & Pomodoro'}
-          {currentView === 'projects' && 'Projetos & Tarefas'}
-          {currentView === 'calendar' && 'Calendário & Time-Blocking'}
+        <div className="header-breadcrumbs" aria-current="page">
+          <span className="header-breadcrumb-root">FocusFlow</span>
+          <ChevronRight size={14} className="header-breadcrumb-arrow" />
+          <span className="header-breadcrumb-current">{getViewTitle()}</span>
         </div>
+      </div>
 
+      {/* Centro: Indicador de Foco Ativo ao Vivo */}
+      <div className="header-center-widget">
+        {isTimerRunning ? (
+          <button
+            className="header-live-focus-chip active"
+            onClick={onOpenTimerTab}
+            title="Sessão de foco ativa - clique para ir ao timer"
+          >
+            <span className="live-pulse-dot" />
+            <Timer size={15} />
+            <span className="live-focus-time">{timerFormattedTime}</span>
+            {activeTaskTitle && (
+              <span className="live-focus-task">• {activeTaskTitle}</span>
+            )}
+          </button>
+        ) : (
+          <div className="header-idle-status">
+            <span>Produtividade & Foco Contínuo</span>
+          </div>
+        )}
+      </div>
+
+      {/* Direita: Ofensiva, Alternador Dark/Light e Perfil */}
+      <div className="nav-actions">
         <button
           className="streak-badge"
           onClick={onOpenStats}
@@ -88,44 +123,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Flame size={16} />
           <span>{streakDays} {streakDays === 1 ? 'Dia' : 'Dias'}</span>
         </button>
-      </div>
-
-      {/* Abas de Navegação Central: Foco, Projetos e Calendário */}
-      <nav className="header-view-tabs" aria-label="Navegação de Visualizações">
-        <button
-          className={`header-view-tab ${currentView === 'timer' ? 'active' : ''}`}
-          onClick={() => onChangeView('timer')}
-          title="Cronômetro Pomodoro e Foco"
-        >
-          <Timer size={16} />
-          <span>Foco</span>
-        </button>
-        <button
-          className={`header-view-tab ${currentView === 'projects' ? 'active' : ''}`}
-          onClick={() => onChangeView('projects')}
-          title="Projetos e Subtarefas"
-        >
-          <FolderKanban size={16} />
-          <span>Projetos</span>
-        </button>
-        <button
-          className={`header-view-tab ${currentView === 'calendar' ? 'active' : ''}`}
-          onClick={() => onChangeView('calendar')}
-          title="Calendário e Time-Blocking"
-        >
-          <Calendar size={16} />
-          <span>Calendário</span>
-        </button>
-      </nav>
-
-      <div className="nav-actions">
-        {/* Dropdown de Som Ambiente */}
-        <HeaderAmbientMenu
-          ambientSound={ambientSound}
-          ambientVolume={ambientVolume}
-          onSelectAmbient={onSelectAmbient}
-          onSetAmbientVolume={onSetAmbientVolume}
-        />
 
         {/* Alternador Dark / Light Mode */}
         <button
@@ -137,53 +134,13 @@ export const Header: React.FC<HeaderProps> = ({
           {colorMode === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        {/* Botão de Estatísticas */}
-        <button
-          className="icon-btn"
-          onClick={onOpenStats}
-          title="Relatórios e Estatísticas"
-          aria-label="Abrir Estatísticas"
-        >
-          <BarChart2 size={18} />
-        </button>
-
-        {/* Botão de Rascunho / Scratchpad */}
-        <button
-          className="icon-btn"
-          onClick={onToggleScratchpad}
-          title="Notas Rápidas (Scratchpad)"
-          aria-label="Abrir Notas Rápidas"
-        >
-          <Edit3 size={18} />
-        </button>
-
-        {/* Modo Zen */}
-        <button
-          className="icon-btn"
-          onClick={onEnterZenMode}
-          title="Modo Zen (Foco Total em Tela Cheia)"
-          aria-label="Ativar Modo Zen"
-        >
-          <Maximize2 size={18} />
-        </button>
-
-        {/* Opção de Login Visível ou Menu de Usuário Conectado */}
+        {/* Perfil do Usuário & Autenticação Google */}
         <HeaderUserMenu
           userProfile={userProfile}
           onGoogleLogin={onGoogleLogin}
           onSignOut={onSignOut}
           onOpenSettings={onOpenSettings}
         />
-
-        {/* Configurações */}
-        <button
-          className="icon-btn"
-          onClick={() => onOpenSettings()}
-          title="Configurações"
-          aria-label="Abrir Configurações"
-        >
-          <Settings size={18} />
-        </button>
       </div>
     </header>
   );
