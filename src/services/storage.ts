@@ -1,5 +1,5 @@
 // Camada Híbrida de Persistência (Supabase Cloud + LocalStorage Offline First)
-import { Project, Subtask, Task, CalendarEvent, StudySession, UserSettings } from '../types';
+import { Project, Subtask, Task, CalendarEvent, StudySession, UserSettings, QuickNote } from '../types';
 import { supabaseService } from './supabase';
 import {
   STORAGE_KEYS,
@@ -228,6 +228,102 @@ export class StorageService {
 
   public saveScratchpad(content: string): void {
     localStorage.setItem(STORAGE_KEYS.SCRATCHPAD, content);
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.QUICK_NOTES);
+      if (data) {
+        const notes: QuickNote[] = JSON.parse(data);
+        if (notes.length > 0) {
+          notes[0].content = content;
+          notes[0].updated_at = new Date().toISOString();
+          localStorage.setItem(STORAGE_KEYS.QUICK_NOTES, JSON.stringify(notes));
+        }
+      }
+    } catch {}
+  }
+
+  // Métodos CRUD para Notas Rápidas / Rascunhos Vinculados
+  public getQuickNotes(): QuickNote[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.QUICK_NOTES);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+
+    const legacy = this.getScratchpad();
+    const initialNote: QuickNote = {
+      id: 'note-1',
+      title: 'Anotações Rápidas',
+      content: legacy || '',
+      project_id: null,
+      subtask_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const initialList = [initialNote];
+    this.saveQuickNotes(initialList);
+    return initialList;
+  }
+
+  public saveQuickNotes(notes: QuickNote[]): void {
+    localStorage.setItem(STORAGE_KEYS.QUICK_NOTES, JSON.stringify(notes));
+    if (notes.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.SCRATCHPAD, notes[0].content);
+    }
+  }
+
+  public createQuickNote(data?: Partial<QuickNote>): QuickNote {
+    const notes = this.getQuickNotes();
+    const newNote: QuickNote = {
+      id: `note-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      title: data?.title?.trim() || 'Nova Anotação',
+      content: data?.content || '',
+      project_id: data?.project_id || null,
+      subtask_id: data?.subtask_id || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const updated = [newNote, ...notes];
+    this.saveQuickNotes(updated);
+    return newNote;
+  }
+
+  public updateQuickNote(id: string, updates: Partial<QuickNote>): QuickNote | null {
+    const notes = this.getQuickNotes();
+    const index = notes.findIndex((n) => n.id === id);
+    if (index === -1) return null;
+
+    const updatedNote: QuickNote = {
+      ...notes[index],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    notes[index] = updatedNote;
+    this.saveQuickNotes(notes);
+    return updatedNote;
+  }
+
+  public deleteQuickNote(id: string): void {
+    const notes = this.getQuickNotes().filter((n) => n.id !== id);
+    if (notes.length === 0) {
+      const blank: QuickNote = {
+        id: `note-${Date.now()}`,
+        title: 'Nova Anotação',
+        content: '',
+        project_id: null,
+        subtask_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      this.saveQuickNotes([blank]);
+    } else {
+      this.saveQuickNotes(notes);
+    }
   }
 
   public getMantras(): string[] {

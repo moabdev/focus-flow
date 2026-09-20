@@ -92,6 +92,12 @@ Desenvolvido sob o paradigma **Offline-First**, o FocusFlow pode ser instalado c
 ### 🛡️ 12. Diálogos com ConfirmModal Customizado
 - Eliminação de alertas nativos do navegador (`window.confirm`), substituídos por diálogos acessíveis em Glassmorphism com variantes visuais dedicadas (`danger`, `warning`, `primary`).
 
+### 📝 13. Rascunho & Notas Rápidas (CRUD, Vínculo de Projetos/Subtarefas & Voz)
+- **Multi-Notas com Abas:** Criação e gestão de múltiplos rascunhos rápidos com busca instantânea.
+- **Vinculação Inteligente:** Conecte cada anotação diretamente a um Projeto pai e a uma Subtarefa para contextualizar ideias de estudo.
+- **Ditado por Voz Integrado (Web Speech API):** Transcrição de fala em tempo real diretamente na posição do cursor com atalho `Alt+D`.
+- **Auto-Save & Ações Rápidas:** Salvamento com debounce automático, contador de caracteres e botão de cópia com 1 clique.
+
 ---
 
 ## 🛠️ Stack Tecnológica
@@ -105,7 +111,7 @@ Desenvolvido sob o paradigma **Offline-First**, o FocusFlow pode ser instalado c
 | **Autenticação** | Supabase Auth (Google OAuth) |
 | **Áudio** | Web Audio API Nativa |
 | **PWA** | Service Worker + Web App Manifest |
-| **Testes Unitários/Integração** | Vitest, Testing Library, jsdom (100 testes aprovados) |
+| **Testes Unitários/Integração** | Vitest, Testing Library, jsdom (115 testes aprovados) |
 | **Testes E2E** | Cypress |
 | **Deploy** | Vercel |
 

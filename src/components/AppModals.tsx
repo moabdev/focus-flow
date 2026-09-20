@@ -84,7 +84,12 @@ export const AppModals: React.FC<AppModalsProps> = ({
   return (
     <>
       {/* Gaveta Lateral de Anotações (Scratchpad) */}
-      <Scratchpad isOpen={isScratchpadOpen} onClose={onCloseScratchpad} />
+      <Scratchpad
+        isOpen={isScratchpadOpen}
+        onClose={onCloseScratchpad}
+        projects={projects}
+        subtasks={subtasks}
+      />
 
       {/* Modal de Estatísticas, Conquistas & Exportação de Relatórios */}
       <StatsModal

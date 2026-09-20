@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   SESSIONS: 'focusflow_sessions',
   SETTINGS: 'focusflow_settings',
   SCRATCHPAD: 'focusflow_scratchpad',
+  QUICK_NOTES: 'focusflow_quick_notes',
   MANTRAS: 'focusflow_mantras',
 };
 

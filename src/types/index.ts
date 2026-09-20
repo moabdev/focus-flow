@@ -40,6 +40,18 @@ export interface Subtask {
 // Tipo Task mantido como alias compatível de Subtask
 export type Task = Subtask;
 
+// Nota Rápida (Rascunho vinculado a Projetos/Subtasks)
+export interface QuickNote {
+  id: string;
+  user_id?: string;
+  title: string;
+  content: string;
+  project_id?: string | null;
+  subtask_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CalendarEvent {
   id: string;
   user_id?: string;
