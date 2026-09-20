@@ -7,6 +7,11 @@
     <meta name="description" content="FocusFlow - Gerenciador Moderno de Estudos e Pomodoro com frases motivacionais, som ambiente, estatísticas e nuvem Supabase." />
     <title>FocusFlow | Foco & Produtividade nos Estudos</title>
 
+    <meta name="theme-color" content="#ff2a5f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- Google Fonts: Outfit & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,5 +23,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

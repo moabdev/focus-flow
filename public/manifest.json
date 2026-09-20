@@ -1,0 +1,18 @@
+{
+  "short_name": "FocusFlow",
+  "name": "FocusFlow - Pomodoro, Projetos & Calendário",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#09080d",
+  "theme_color": "#ff2a5f",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "description": "Aplicativo de alta performance para estudos e foco com Pomodoro, Projetos, Subtasks, Calendário e Grupos de Estudo."
+}
