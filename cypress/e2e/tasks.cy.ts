@@ -1,20 +1,26 @@
-describe('Gerenciamento de Tarefas e Disciplinas', () => {
+describe('Gerenciamento de Projetos e Subtarefas', () => {
   beforeEach(() => {
     cy.visit('/');
   });
 
-  it('deve listar tarefas iniciais e permitir adicionar uma nova tarefa', () => {
-    cy.get('[data-testid="add-task-btn"]').click();
-    cy.get('input[placeholder*="O que você vai estudar"]').type('Aprender Cypress E2E');
-    cy.get('input[placeholder*="Disciplina"]').type('Testes de Software');
-    cy.contains('button', 'Salvar Tarefa').click();
-
-    cy.contains('Aprender Cypress E2E').should('be.visible');
-    cy.contains('#Testes de Software').should('be.visible');
+  it('deve listar projetos e subtarefas padrão', () => {
+    cy.contains('Projetos & Tarefas').should('be.visible');
+    cy.contains('FocusFlow: Plataforma & Engenharia').should('be.visible');
+    cy.contains('Arquitetura de Projetos e Time-Tracking por Subtask').should('be.visible');
   });
 
-  it('deve permitir marcar uma tarefa como concluída', () => {
-    cy.get('.task-check-btn').first().click();
-    cy.get('.task-item').first().should('have.class', 'completed');
+  it('deve permitir criar um novo projeto através do modal', () => {
+    cy.contains('button', 'Novo Projeto').click();
+    cy.get('.modal-title').should('contain', 'Novo Projeto');
+    cy.get('input[placeholder*="Engenharia de Software"]').type('Projeto Teste Cypress');
+    cy.get('textarea[placeholder*="Detalhes dos objetivos"]').type('Objetivos de validação automatizada');
+    cy.contains('button', 'Salvar Projeto').click();
+
+    cy.contains('Projeto Teste Cypress').should('be.visible');
+  });
+
+  it('deve permitir marcar uma subtarefa como concluída', () => {
+    cy.get('.task-checkbox').first().click();
+    cy.get('.subtask-item').first().should('have.class', 'completed');
   });
 });
