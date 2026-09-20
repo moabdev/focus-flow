@@ -46,11 +46,15 @@ export function useTasks() {
         setTasks(loaded);
         const firstPending = loaded.find((t) => !t.is_completed);
         if (firstPending) setActiveTaskId(firstPending.id);
-      } else {
-        // Inicializa com as tarefas de exemplo para melhor UX inicial
+      } else if (!storageService.isInitialized()) {
+        // Inicializa com as tarefas de exemplo apenas na primeiríssima visita
         storageService.saveLocalTasks(DEFAULT_TASKS);
+        storageService.markInitialized();
         setTasks(DEFAULT_TASKS);
         setActiveTaskId(DEFAULT_TASKS[0].id);
+      } else {
+        setTasks([]);
+        setActiveTaskId(null);
       }
     });
   }, []);

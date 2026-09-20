@@ -30,9 +30,14 @@ export class StorageCalendarService {
           .select('*')
           .order('start_time', { ascending: true });
 
-        if (!error && data && data.length > 0) {
-          this.saveLocalCalendarEvents(data as CalendarEvent[]);
-          return data as CalendarEvent[];
+        if (!error && data) {
+          if (data.length > 0) {
+            this.saveLocalCalendarEvents(data as CalendarEvent[]);
+            return data as CalendarEvent[];
+          } else if (localStorage.getItem(STORAGE_KEYS.INITIALIZED) === 'true') {
+            this.saveLocalCalendarEvents([]);
+            return [];
+          }
         }
       } catch (err) {
         console.warn('[FocusFlow] Erro ao sincronizar calendário no Supabase:', err);
@@ -91,6 +96,8 @@ export class StorageCalendarService {
   public async deleteCalendarEvent(eventId: string): Promise<void> {
     const events = this.getLocalCalendarEvents().filter((e) => e.id !== eventId);
     this.saveLocalCalendarEvents(events);
+
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
 
     const client = supabaseService.getClient();
     const user = await supabaseService.getUser();

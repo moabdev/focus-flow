@@ -17,16 +17,20 @@ export function useProjects() {
       storageService.fetchProjects(),
       storageService.fetchSubtasks(),
     ]).then(([loadedProjects, loadedSubtasks]) => {
-      if (loadedProjects.length === 0 && loadedSubtasks.length === 0) {
-        storageService.initDefaults();
-        const defProjects = storageService.getLocalProjects();
-        const defSubtasks = storageService.getLocalSubtasks();
-        setProjects(defProjects);
-        setSubtasks(defSubtasks);
-        if (defSubtasks.length > 0) {
-          setActiveSubtaskId(defSubtasks[0].id);
+      if (!storageService.isInitialized()) {
+        if (loadedProjects.length === 0 && loadedSubtasks.length === 0) {
+          storageService.initDefaults();
+          const defProjects = storageService.getLocalProjects();
+          const defSubtasks = storageService.getLocalSubtasks();
+          setProjects(defProjects);
+          setSubtasks(defSubtasks);
+          if (defSubtasks.length > 0) {
+            setActiveSubtaskId(defSubtasks[0].id);
+          }
+          return;
+        } else {
+          storageService.markInitialized();
         }
-        return;
       }
 
       setProjects(loadedProjects);
@@ -37,6 +41,8 @@ export function useProjects() {
         setActiveSubtaskId(firstPending.id);
       } else if (loadedSubtasks.length > 0) {
         setActiveSubtaskId(loadedSubtasks[0].id);
+      } else {
+        setActiveSubtaskId(null);
       }
     });
   }, []);

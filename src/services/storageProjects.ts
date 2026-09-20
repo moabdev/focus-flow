@@ -33,9 +33,14 @@ export class StorageProjectsService {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          this.saveLocalProjects(data as Project[]);
-          return data as Project[];
+        if (!error && data) {
+          if (data.length > 0) {
+            this.saveLocalProjects(data as Project[]);
+            return data as Project[];
+          } else if (localStorage.getItem(STORAGE_KEYS.INITIALIZED) === 'true') {
+            this.saveLocalProjects([]);
+            return [];
+          }
         }
       } catch (err) {
         console.warn('[FocusFlow] Erro ao sincronizar projetos do Supabase:', err);
@@ -46,6 +51,7 @@ export class StorageProjectsService {
   }
 
   public async saveProject(project: Project): Promise<Project> {
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
     const projects = this.getLocalProjects();
     const index = projects.findIndex((p) => p.id === project.id);
 
@@ -87,11 +93,14 @@ export class StorageProjectsService {
     const subtasks = this.getLocalSubtasks().filter((s) => s.project_id !== projectId);
     this.saveLocalSubtasks(subtasks);
 
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
+
     const client = supabaseService.getClient();
     const user = await supabaseService.getUser();
 
     if (client && user) {
       try {
+        await client.from('subtasks').delete().eq('project_id', projectId);
         await client.from('projects').delete().eq('id', projectId);
       } catch (err) {
         console.warn('[FocusFlow] Erro ao deletar projeto no Supabase:', err);
@@ -160,9 +169,14 @@ export class StorageProjectsService {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          this.saveLocalSubtasks(data as Subtask[]);
-          return data as Subtask[];
+        if (!error && data) {
+          if (data.length > 0) {
+            this.saveLocalSubtasks(data as Subtask[]);
+            return data as Subtask[];
+          } else if (localStorage.getItem(STORAGE_KEYS.INITIALIZED) === 'true') {
+            this.saveLocalSubtasks([]);
+            return [];
+          }
         }
       } catch (err) {
         console.warn('[FocusFlow] Erro ao sincronizar subtasks do Supabase:', err);
@@ -173,6 +187,7 @@ export class StorageProjectsService {
   }
 
   public async saveSubtask(subtask: Subtask): Promise<Subtask> {
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
     const subtasks = this.getLocalSubtasks();
     const index = subtasks.findIndex((s) => s.id === subtask.id);
 
@@ -213,6 +228,8 @@ export class StorageProjectsService {
   public async deleteSubtask(subtaskId: string): Promise<void> {
     const subtasks = this.getLocalSubtasks().filter((s) => s.id !== subtaskId);
     this.saveLocalSubtasks(subtasks);
+
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
 
     const client = supabaseService.getClient();
     const user = await supabaseService.getUser();

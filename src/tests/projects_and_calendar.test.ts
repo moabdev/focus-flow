@@ -126,4 +126,28 @@ describe('Projetos, Subtasks e Time-Tracking Acumulado', () => {
     await storageService.deleteCalendarEvent('cal-event-1');
     expect(storageService.getLocalCalendarEvents().length).toBe(0);
   });
+
+  it('deve persistir a exclusão de todos os projetos e não recriar os mocks ao reinicializar', async () => {
+    // 1. Inicializa os defaults
+    storageService.initDefaults();
+    expect(storageService.getLocalProjects().length).toBeGreaterThan(0);
+    expect(storageService.isInitialized()).toBe(true);
+
+    // 2. Deleta todos os projetos
+    const projects = storageService.getLocalProjects();
+    for (const p of projects) {
+      await storageService.deleteProject(p.id);
+    }
+
+    // 3. Garante que a lista local está vazia
+    expect(storageService.getLocalProjects().length).toBe(0);
+
+    // 4. Simula recarregar a página (chama initDefaults novamente)
+    storageService.initDefaults();
+
+    // 5. Os projetos mockados NÃO devem ter sido recriados!
+    expect(storageService.getLocalProjects().length).toBe(0);
+    const fetched = await storageService.fetchProjects();
+    expect(fetched.length).toBe(0);
+  });
 });

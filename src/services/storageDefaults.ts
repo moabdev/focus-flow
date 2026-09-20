@@ -1,6 +1,7 @@
 import { Project, Subtask, CalendarEvent, UserSettings } from '../types';
 
 export const STORAGE_KEYS = {
+  INITIALIZED: 'focusflow_defaults_initialized',
   PROJECTS: 'focusflow_projects',
   SUBTASKS: 'focusflow_subtasks',
   TASKS: 'focusflow_tasks', // legado

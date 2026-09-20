@@ -36,7 +36,20 @@ export class StorageService {
     });
   }
 
-  public initDefaults(): void {
+  public isInitialized(): boolean {
+    return localStorage.getItem(STORAGE_KEYS.INITIALIZED) === 'true';
+  }
+
+  public markInitialized(): void {
+    localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
+  }
+
+  public initDefaults(force: boolean = false): void {
+    if (this.isInitialized() && !force) {
+      return;
+    }
+    this.markInitialized();
+
     if (this.getLocalProjects().length === 0) {
       this.saveLocalProjects(DEFAULT_PROJECTS);
     }
