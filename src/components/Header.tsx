@@ -5,7 +5,6 @@ import {
   Moon,
   Menu,
   Timer,
-  ChevronRight,
   Search,
 } from 'lucide-react';
 import { ColorMode, SupabaseProfile, AppViewMode } from '../types';
@@ -86,37 +85,31 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="brand-logo">
           <img src="/logo.png" alt="FocusFlow" className="brand-logo-img" />
-          <span>FocusFlow</span>
+          <span className="brand-logo-text">FocusFlow</span>
         </div>
 
-        <div className="header-breadcrumbs" aria-current="page">
-          <span className="header-breadcrumb-root">FocusFlow</span>
-          <ChevronRight size={14} className="header-breadcrumb-arrow" />
-          <span className="header-breadcrumb-current">{getViewTitle()}</span>
+        <div className="header-view-badge" aria-current="page">
+          <span className="header-view-title">{getViewTitle()}</span>
         </div>
       </div>
 
-      {/* Centro: Indicador de Foco Ativo ao Vivo */}
-      <div className="header-center-widget">
-        {isTimerRunning ? (
+      {/* Centro: Indicador de Foco Ativo ao Vivo (renderizado apenas quando o timer está rodando) */}
+      {isTimerRunning && (
+        <div className="header-center-widget">
           <button
             className="header-live-focus-chip active"
             onClick={onOpenTimerTab}
             title="Sessão de foco ativa - clique para ir ao timer"
           >
             <span className="live-pulse-dot" />
-            <Timer size={15} />
+            <Timer size={14} />
             <span className="live-focus-time">{timerFormattedTime}</span>
             {activeTaskTitle && (
               <span className="live-focus-task">• {activeTaskTitle}</span>
             )}
           </button>
-        ) : (
-          <div className="header-idle-status">
-            <span>Produtividade & Foco Contínuo</span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Direita: Ofensiva, Alternador Dark/Light e Perfil */}
       <div className="nav-actions">
