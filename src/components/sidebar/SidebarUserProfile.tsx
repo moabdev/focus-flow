@@ -73,7 +73,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
           {!isCollapsed && <span>Entrar com Google</span>}
         </button>
       ) : (
-        <div style={{ position: 'relative', width: '100%' }}>
+        <div className="sidebar-profile-card-wrap" style={{ position: 'relative', width: '100%' }}>
           <button
             className="sidebar-profile-card"
             onClick={onToggleOpen}

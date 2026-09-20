@@ -47,7 +47,7 @@ export const SidebarAmbientMenu: React.FC<SidebarAmbientMenuProps> = ({
   }, [isOpen, onClose]);
 
   return (
-    <div style={{ position: 'relative' }} ref={menuRef}>
+    <div className="sidebar-ambient-wrap" style={{ position: 'relative' }} ref={menuRef}>
       <button
         className={`icon-btn ${ambientSound !== 'none' ? 'active-audio' : ''}`}
         onClick={onToggleOpen}

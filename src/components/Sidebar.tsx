@@ -136,9 +136,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onOpenStats();
               if (isMobileOpen) onCloseMobile();
             }}
-            title="Ver ofensiva de estudos e métricas"
+            title={streakDays > 0 ? `${streakDays} dias de ofensiva de estudos` : 'Ver ofensiva de estudos e métricas'}
+            data-tooltip={streakDays > 0 ? `${streakDays} dias de ofensiva` : 'Ofensiva de estudos'}
           >
             <Flame size={18} className="streak-flame-icon" />
+            {isCollapsed && streakDays > 0 && (
+              <span className="collapsed-streak-pill">{streakDays}</span>
+            )}
             {!isCollapsed && (
               <div className="streak-info-text">
                 <span className="streak-days-count">
@@ -158,6 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`sidebar-nav-item ${currentView === 'timer' ? 'active' : ''}`}
             onClick={() => handleNavClick('timer')}
             title="Cronômetro Pomodoro & Foco"
+            data-tooltip="Foco"
           >
             <Timer size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Foco</span>}
@@ -169,8 +174,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
             onClick={() => handleNavClick('projects')}
             title="Projetos e Subtarefas"
+            data-tooltip="Projetos"
           >
             <FolderKanban size={18} className="nav-icon" />
+            {isCollapsed && projects.length > 0 && (
+              <span className="collapsed-mini-badge">{projects.length}</span>
+            )}
             {!isCollapsed && (
               <>
                 <span className="nav-label">Projetos</span>
@@ -183,6 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`sidebar-nav-item ${currentView === 'calendar' ? 'active' : ''}`}
             onClick={() => handleNavClick('calendar')}
             title="Calendário e Time-Blocking"
+            data-tooltip="Calendário"
           >
             <Calendar size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Calendário</span>}
@@ -192,6 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`sidebar-nav-item ${currentView === 'groups' ? 'active' : ''}`}
             onClick={() => handleNavClick('groups')}
             title="Grupos de Estudo e Chat"
+            data-tooltip="Grupos"
           >
             <Users size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Grupos</span>}
@@ -201,6 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`sidebar-nav-item ${currentView === 'ranking' ? 'active' : ''}`}
             onClick={() => handleNavClick('ranking')}
             title="Ranking Semanal de Foco"
+            data-tooltip="Ranking"
           >
             <Trophy size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Ranking</span>}
@@ -213,6 +225,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (isMobileOpen) onCloseMobile();
             }}
             title="Relatórios e Estatísticas de Estudo"
+            data-tooltip="Estatísticas"
           >
             <BarChart2 size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Estatísticas</span>}
@@ -225,6 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               if (isMobileOpen) onCloseMobile();
             }}
             title="Bloco de Notas Rápidas (Scratchpad)"
+            data-tooltip="Rascunho"
           >
             <Edit3 size={18} className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Rascunho</span>}

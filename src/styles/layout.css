@@ -1,13 +1,24 @@
 /* ==========================================================================
    FocusFlow - Layout Principal & App Shell
+   Sidebar Fixa no Desktop & Área de Conteúdo com Rolagem Independente
    ========================================================================== */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   width: 100%;
   position: relative;
   background: var(--bg-gradient);
+  overflow: hidden;
 }
 
 .app-main-layout {
@@ -15,8 +26,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 .app-container {
