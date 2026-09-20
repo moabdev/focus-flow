@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { Calendar, Clock, Edit, Trash2, Plus, ExternalLink } from 'lucide-react';
 import { Project, Subtask, PriorityLevel } from '../../types';
 import { SubtaskItem, formatSeconds } from './SubtaskItem';
+import { CustomSelect, SelectOption } from '../common/CustomSelect';
+
+const PRIORITY_OPTIONS: SelectOption[] = [
+  { value: 'baixa', label: 'Baixa', badgeColor: '#10b981' },
+  { value: 'media', label: 'Média', badgeColor: '#f59e0b' },
+  { value: 'alta', label: 'Alta', badgeColor: '#ff2a5f' },
+];
 
 interface ProjectCardProps {
   project: Project;
@@ -212,14 +219,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
               <div className="form-mini-group">
                 <label>Prioridade:</label>
-                <select
+                <CustomSelect
                   value={subtaskPriority}
-                  onChange={(e) => setSubtaskPriority(e.target.value as PriorityLevel)}
-                >
-                  <option value="baixa">Baixa</option>
-                  <option value="media">Média</option>
-                  <option value="alta">Alta</option>
-                </select>
+                  options={PRIORITY_OPTIONS}
+                  onChange={(val) => setSubtaskPriority(val as PriorityLevel)}
+                  style={{ minWidth: '110px' }}
+                />
               </div>
 
               <div className="form-mini-group">

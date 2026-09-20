@@ -11,6 +11,13 @@ import {
 import { Project, Subtask, PriorityLevel } from '../../types';
 import { SubtaskItem } from './SubtaskItem';
 import { NotionNoteEditor } from '../NotionNoteEditor';
+import { CustomSelect, SelectOption } from '../common/CustomSelect';
+
+const DETAIL_PRIORITY_OPTIONS: SelectOption[] = [
+  { value: 'baixa', label: 'Baixa prioridade', badgeColor: '#10b981' },
+  { value: 'media', label: 'Média prioridade', badgeColor: '#f59e0b' },
+  { value: 'alta', label: 'Alta prioridade', badgeColor: '#ff2a5f' },
+];
 
 interface ProjectDetailViewProps {
   project: Project;
@@ -212,15 +219,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 className="subtask-input"
                 style={{ width: '130px' }}
               />
-              <select
+              <CustomSelect
                 value={newPriority}
-                onChange={(e) => setNewPriority(e.target.value as PriorityLevel)}
-                className="subtask-select"
-              >
-                <option value="baixa">Baixa prioridade</option>
-                <option value="media">Média prioridade</option>
-                <option value="alta">Alta prioridade</option>
-              </select>
+                options={DETAIL_PRIORITY_OPTIONS}
+                onChange={(val) => setNewPriority(val as PriorityLevel)}
+                style={{ width: '165px' }}
+              />
               <input
                 type="number"
                 min="1"

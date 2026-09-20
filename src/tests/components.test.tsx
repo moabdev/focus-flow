@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TimerCard } from '../components/TimerCard';
 import { QuoteBanner } from '../components/QuoteBanner';
+import { CustomSelect, SelectOption } from '../components/common/CustomSelect';
 import { Quote, Task } from '../types';
 
 describe('Componentes Principais da Interface', () => {
@@ -73,4 +74,40 @@ describe('Componentes Principais da Interface', () => {
     fireEvent.click(refreshBtn);
     expect(onRefreshQuote).toHaveBeenCalledTimes(1);
   });
+
+  it('deve renderizar o CustomSelect, abrir dropdown e disparar onChange na seleção', () => {
+    const onChange = vi.fn();
+    const options: SelectOption[] = [
+      { value: 'opt1', label: 'Opção 1', badgeColor: '#ff2a5f' },
+      { value: 'opt2', label: 'Opção 2', badgeColor: '#10b981' },
+    ];
+
+    render(
+      <CustomSelect
+        value="opt1"
+        options={options}
+        onChange={onChange}
+      />
+    );
+
+    // Deve exibir o label da opção selecionada
+    expect(screen.getByText('Opção 1')).toBeInTheDocument();
+
+    // Dropdown fechado inicialmente
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    // Clica para abrir o dropdown
+    const triggerBtn = screen.getByRole('button');
+    fireEvent.click(triggerBtn);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByText('Opção 2')).toBeInTheDocument();
+
+    // Clica na opção 2
+    fireEvent.click(screen.getByText('Opção 2'));
+    expect(onChange).toHaveBeenCalledWith('opt2');
+
+    // Dropdown fecha após seleção
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
 });
+

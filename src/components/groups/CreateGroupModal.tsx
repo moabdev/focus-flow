@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Users, Sparkles } from 'lucide-react';
+import { CustomSelect, SelectOption } from '../common/CustomSelect';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -13,13 +14,13 @@ interface CreateGroupModalProps {
 }
 
 const EMOJI_OPTIONS = ['💻', '⚖️', '🩺', '📚', '🎯', '🚀', '🧠', '⚡', '🔬', '🎨'];
-const CATEGORY_OPTIONS = [
-  'Tecnologia',
-  'Direito & Concursos',
-  'Saúde & Medicina',
-  'Idiomas & Linguagens',
-  'Exatas & Engenharia',
-  'Produtividade Geral',
+const CATEGORY_OPTIONS: SelectOption[] = [
+  { value: 'Tecnologia', label: 'Tecnologia', icon: '💻' },
+  { value: 'Direito & Concursos', label: 'Direito & Concursos', icon: '⚖️' },
+  { value: 'Saúde & Medicina', label: 'Saúde & Medicina', icon: '🩺' },
+  { value: 'Idiomas & Linguagens', label: 'Idiomas & Linguagens', icon: '🌍' },
+  { value: 'Exatas & Engenharia', label: 'Exatas & Engenharia', icon: '📐' },
+  { value: 'Produtividade Geral', label: 'Produtividade Geral', icon: '🚀' },
 ];
 
 export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
@@ -29,7 +30,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
+  const [category, setCategory] = useState(CATEGORY_OPTIONS[0].value);
   const [avatarIcon, setAvatarIcon] = useState(EMOJI_OPTIONS[0]);
 
   if (!isOpen) return null;
@@ -98,21 +99,15 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="group-category">
+            <label className="form-label">
               Categoria / Área
             </label>
-            <select
+            <CustomSelect
               id="group-category"
-              className="modal-input"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {CATEGORY_OPTIONS.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              options={CATEGORY_OPTIONS}
+              onChange={(val) => setCategory(val)}
+            />
           </div>
 
           <div className="form-group">

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { CalendarEvent, Project, Subtask } from '../../types';
+import { CustomSelect, SelectOption } from '../common/CustomSelect';
 
 interface CalendarEventModalProps {
   isOpen: boolean;
@@ -51,6 +52,25 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     if (!eventProjectId) return [];
     return subtasks.filter((s) => s.project_id === eventProjectId);
   }, [subtasks, eventProjectId]);
+
+  const projectOptions: SelectOption[] = useMemo(() => [
+    { value: '', label: 'Nenhum (Avulso)', icon: '📌' },
+    ...projects.map((p) => ({
+      value: p.id,
+      label: p.title,
+      icon: p.icon || '📁',
+      badgeColor: p.color,
+    })),
+  ], [projects]);
+
+  const subtaskOptions: SelectOption[] = useMemo(() => [
+    { value: '', label: 'Nenhuma' },
+    ...availableSubtasks.map((s) => ({
+      value: s.id,
+      label: `${s.title} (${s.priority})`,
+      badgeColor: s.priority === 'alta' ? '#ff2a5f' : s.priority === 'media' ? '#f59e0b' : '#10b981',
+    })),
+  ], [availableSubtasks]);
 
   if (!isOpen) return null;
 
@@ -166,57 +186,30 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
 
           <div>
             <label className="setting-label">Vincular a um Projeto</label>
-            <select
-              value={eventProjectId}
-              onChange={(e) => {
-                const pid = e.target.value;
-                setEventProjectId(pid);
-                const p = projects.find((proj) => proj.id === pid);
-                if (p && p.color) setEventColor(p.color);
-                setEventSubtaskId('');
-              }}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0,0,0,0.25)',
-                border: '1px solid var(--border-glass-subtle)',
-                color: 'var(--text-primary)',
-                marginTop: '0.4rem',
-              }}
-            >
-              <option value="">Nenhum (Avulso)</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.icon || '📁'} {p.title}
-                </option>
-              ))}
-            </select>
+            <div style={{ marginTop: '0.4rem' }}>
+              <CustomSelect
+                value={eventProjectId}
+                options={projectOptions}
+                onChange={(pid) => {
+                  setEventProjectId(pid);
+                  const p = projects.find((proj) => proj.id === pid);
+                  if (p && p.color) setEventColor(p.color);
+                  setEventSubtaskId('');
+                }}
+              />
+            </div>
           </div>
 
           {eventProjectId && (
             <div>
               <label className="setting-label">Vincular a uma Subtask do Projeto</label>
-              <select
-                value={eventSubtaskId}
-                onChange={(e) => setEventSubtaskId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid var(--border-glass-subtle)',
-                  color: 'var(--text-primary)',
-                  marginTop: '0.4rem',
-                }}
-              >
-                <option value="">Nenhuma</option>
-                {availableSubtasks.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title} ({s.priority})
-                  </option>
-                ))}
-              </select>
+              <div style={{ marginTop: '0.4rem' }}>
+                <CustomSelect
+                  value={eventSubtaskId}
+                  options={subtaskOptions}
+                  onChange={(sid) => setEventSubtaskId(sid)}
+                />
+              </div>
             </div>
           )}
 
