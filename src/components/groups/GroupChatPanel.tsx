@@ -1,8 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Users, Sparkles, Share2, Check, Trash2, LogOut, UserPlus } from 'lucide-react';
+import {
+  Send,
+  Users,
+  Sparkles,
+  Share2,
+  Check,
+  Trash2,
+  LogOut,
+  UserPlus,
+  BookOpen,
+  Mail,
+  Edit3,
+} from 'lucide-react';
 import { StudyGroup, GroupMessage, GroupMember } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { GroupRulesModal } from './GroupRulesModal';
+import { InviteEmailModal } from './InviteEmailModal';
+import { EditGroupModal } from './EditGroupModal';
 
 interface GroupChatPanelProps {
   group: StudyGroup;
@@ -10,10 +25,12 @@ interface GroupChatPanelProps {
   members: GroupMember[];
   isMember: boolean;
   isCreator: boolean;
+  isAdmin?: boolean;
   onSendMessage: (text: string) => void;
   onJoinGroup: (groupId: string) => void;
   onLeaveGroup: (groupId: string) => void;
   onDeleteGroup: (groupId: string) => void;
+  onUpdateGroup?: (groupId: string, data: Partial<StudyGroup>) => void;
   showMembersPanel?: boolean;
   onToggleMembersPanel?: () => void;
 }
@@ -33,10 +50,12 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   members,
   isMember,
   isCreator,
+  isAdmin: propIsAdmin,
   onSendMessage,
   onJoinGroup,
   onLeaveGroup,
   onDeleteGroup,
+  onUpdateGroup,
   showMembersPanel,
   onToggleMembersPanel,
 }) => {
@@ -44,8 +63,12 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
   const [copied, setCopied] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isEmailInviteModalOpen, setIsEmailInviteModalOpen] = useState(false);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const isAdmin = propIsAdmin ?? isCreator;
   const activeFocusingMembers = members.filter((m) => m.current_status === 'focusing');
 
   useEffect(() => {
@@ -93,10 +116,26 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
             <span className="group-chat-icon">{group.avatar_icon}</span>
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <h3 className="group-chat-name">{group.name}</h3>
               <span className="group-category-badge">{group.category}</span>
               <span className="group-code-pill" title="Código de Convite">{group.code}</span>
+
+              {/* Botão de Regras */}
+              <button
+                className="group-rules-btn"
+                onClick={() => setIsRulesModalOpen(true)}
+                title="Visualizar regras de convivência e foco"
+                type="button"
+              >
+                <BookOpen size={13} />
+                <span>Regras</span>
+                {group.rules && group.rules.length > 0 && (
+                  <span className="rules-count-pill">{group.rules.length}</span>
+                )}
+              </button>
+
+              {/* Botão de Copiar Convite */}
               <button
                 className="group-invite-btn"
                 onClick={handleCopyInvite}
@@ -105,6 +144,17 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
               >
                 {copied ? <Check size={13} color="#10b981" /> : <Share2 size={13} />}
                 <span>{copied ? 'Copiado!' : 'Convidar'}</span>
+              </button>
+
+              {/* Botão de Convite por E-mail */}
+              <button
+                className="group-invite-email-btn"
+                onClick={() => setIsEmailInviteModalOpen(true)}
+                title="Enviar convite por e-mail"
+                type="button"
+              >
+                <Mail size={13} />
+                <span>E-mail</span>
               </button>
             </div>
             <p className="group-chat-desc">{group.description}</p>
@@ -127,6 +177,20 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
               <Users size={15} />
               <span>{group.member_count}</span>
             </div>
+          )}
+
+          {/* Botão Editar Grupo (Apenas Administrador) */}
+          {isAdmin && onUpdateGroup && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem' }}
+              onClick={() => setIsEditGroupModalOpen(true)}
+              title="Editar título, descrição e regras do grupo"
+            >
+              <Edit3 size={13} />
+              <span>Editar Grupo</span>
+            </button>
           )}
 
           {isCreator ? (
@@ -275,6 +339,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         </div>
       )}
 
+      {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         title="Excluir Grupo de Estudos"
@@ -293,6 +358,7 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         onCancel={() => setIsDeleteModalOpen(false)}
       />
 
+      {/* Modal de Confirmação de Saída */}
       <ConfirmModal
         isOpen={isLeaveModalOpen}
         title="Sair do Grupo"
@@ -311,6 +377,32 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
         }}
         onCancel={() => setIsLeaveModalOpen(false)}
       />
+
+      {/* Modal de Visualização de Regras */}
+      <GroupRulesModal
+        isOpen={isRulesModalOpen}
+        group={group}
+        isAdmin={isAdmin}
+        onClose={() => setIsRulesModalOpen(false)}
+        onOpenEdit={() => setIsEditGroupModalOpen(true)}
+      />
+
+      {/* Modal de Convite por E-mail */}
+      <InviteEmailModal
+        isOpen={isEmailInviteModalOpen}
+        group={group}
+        onClose={() => setIsEmailInviteModalOpen(false)}
+      />
+
+      {/* Modal de Edição de Grupo */}
+      {onUpdateGroup && (
+        <EditGroupModal
+          isOpen={isEditGroupModalOpen}
+          group={group}
+          onClose={() => setIsEditGroupModalOpen(false)}
+          onUpdateGroup={onUpdateGroup}
+        />
+      )}
     </div>
   );
 };

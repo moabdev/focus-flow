@@ -143,6 +143,7 @@ export interface StudyGroup {
   member_count: number;
   created_at: string;
   created_by?: string;
+  rules?: string[];
 }
 
 export interface GroupMember {

@@ -16,6 +16,13 @@ const DEFAULT_GROUPS: StudyGroup[] = [
     code: 'DEV-2026',
     member_count: 8,
     created_at: '2026-01-10T10:00:00Z',
+    created_by: 'Lucas Code',
+    rules: [
+      'Manter foco absoluto nos blocos de Pomodoro',
+      'Compartilhar apenas dúvidas e artigos de engenharia/código',
+      'Sem conversas paralelas ou desrespeito',
+      'Registrar tarefas ativas no Pomodoro para acompanhar o time',
+    ],
   },
   {
     id: 'grp-concursos',
@@ -26,6 +33,13 @@ const DEFAULT_GROUPS: StudyGroup[] = [
     code: 'OAB-100',
     member_count: 12,
     created_at: '2026-01-15T14:30:00Z',
+    created_by: 'Renata Delegada',
+    rules: [
+      'Resolução mínima de 20 questões por dia',
+      'Debater gabaritos de forma respeitosa e fundamentada',
+      'Sem propagandas ou links externos suspeitos',
+      'Comemorar aprovações e apoiar colegas em ciclos difíceis',
+    ],
   },
   {
     id: 'grp-medicina',
@@ -36,6 +50,13 @@ const DEFAULT_GROUPS: StudyGroup[] = [
     code: 'MED-PRO',
     member_count: 6,
     created_at: '2026-02-01T08:00:00Z',
+    created_by: 'Dra. Beatriz',
+    rules: [
+      'Sigilo e respeito à ética médica em discussões de casos',
+      'Foco em estudos de internato e questões de residência',
+      'Pontualidade nas sessões de estudo em grupo',
+      'Compartilhar resumos e flashcards úteis',
+    ],
   },
 ];
 
@@ -167,6 +188,8 @@ export const isGroupCreator = (group: StudyGroup, members: GroupMember[], userNa
   return userMember?.role === 'admin';
 };
 
+export const isGroupAdmin = isGroupCreator;
+
 export const storageGroups = {
   getGroups(): StudyGroup[] {
     try {
@@ -184,7 +207,13 @@ export const storageGroups = {
   },
 
   createGroup(
-    data: { name: string; description: string; category: string; avatar_icon: string },
+    data: {
+      name: string;
+      description: string;
+      category: string;
+      avatar_icon: string;
+      rules?: string[];
+    },
     creatorName: string = 'Você'
   ): StudyGroup {
     const groups = this.getGroups();
@@ -199,6 +228,12 @@ export const storageGroups = {
       member_count: 1,
       created_at: new Date().toISOString(),
       created_by: creatorName,
+      rules: data.rules && data.rules.length > 0 ? data.rules : [
+        'Manter o foco e dedicação nas metas diárias de estudo',
+        'Respeitar todos os colegas e apoiar dúvidas com empatia',
+        'Sem conversas fora do propósito do grupo de estudos',
+        'Registrar subtarefas no Pomodoro para inspirar a comunidade',
+      ],
     };
     const updated = [newGroup, ...groups];
     this.saveGroups(updated);
@@ -224,6 +259,68 @@ export const storageGroups = {
     );
 
     return newGroup;
+  },
+
+  updateGroup(groupId: string, data: Partial<StudyGroup>): StudyGroup | null {
+    const groups = this.getGroups();
+    const index = groups.findIndex((g) => g.id === groupId);
+    if (index === -1) return null;
+
+    const existing = groups[index];
+    const updatedGroup: StudyGroup = {
+      ...existing,
+      ...data,
+      id: existing.id,
+      code: existing.code,
+      created_at: existing.created_at,
+      created_by: existing.created_by,
+      member_count: existing.member_count,
+    };
+
+    groups[index] = updatedGroup;
+    this.saveGroups(groups);
+
+    this.sendMessage(
+      groupId,
+      `✏️ Informações e regras do grupo foram atualizadas pelo administrador.`,
+      'FocusFlow Bot',
+      'system_focus'
+    );
+
+    return updatedGroup;
+  },
+
+  removeMember(
+    groupId: string,
+    memberId: string,
+    removedByUserName: string = 'Admin'
+  ): { success: boolean; error?: string } {
+    const groups = this.getGroups();
+    const targetGroup = groups.find((g) => g.id === groupId);
+    if (!targetGroup) return { success: false, error: 'Grupo não encontrado.' };
+
+    const members = this.getMembers(groupId);
+    const targetMember = members.find((m) => m.id === memberId);
+    if (!targetMember) return { success: false, error: 'Membro não encontrado.' };
+
+    // Não permite remover o criador do grupo
+    if (targetMember.role === 'admin' && targetGroup.created_by && isSameUser(targetMember.user_name, targetGroup.created_by)) {
+      return { success: false, error: 'Não é permitido remover o criador do grupo.' };
+    }
+
+    const remainingMembers = members.filter((m) => m.id !== memberId);
+    this.saveMembers(groupId, remainingMembers);
+    targetGroup.member_count = Math.max(1, (targetGroup.member_count || members.length) - 1);
+    this.saveGroups(groups);
+
+    this.sendMessage(
+      groupId,
+      `⚠️ ${targetMember.user_name} foi removido(a) do grupo por ${removedByUserName}.`,
+      'FocusFlow Bot',
+      'system_focus'
+    );
+
+    return { success: true };
   },
 
   deleteGroup(groupId: string): boolean {

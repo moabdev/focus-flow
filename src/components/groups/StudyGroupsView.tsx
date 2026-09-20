@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Sparkles, KeyRound } from 'lucide-react';
+import { Users, Plus, Search, Sparkles, KeyRound, UserMinus } from 'lucide-react';
 import { StudyGroup, GroupMember, GroupMessage, SupabaseProfile } from '../../types';
 import { storageGroups, isSameUser, isGroupCreator } from '../../services/storageGroups';
 import { GroupChatPanel } from './GroupChatPanel';
 import { CreateGroupModal } from './CreateGroupModal';
 import { JoinGroupModal } from './JoinGroupModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 
 interface StudyGroupsViewProps {
@@ -23,6 +24,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
   const toast = useToast();
 
   const currentUserName = userProfile?.full_name || 'Você';
@@ -39,7 +41,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   }, [activeGroupId]);
 
   const activeGroup = groups.find((g) => g.id === activeGroupId) || groups[0];
-  const isMember = members.some((m) => isSameUser(m.user_name, currentUserName));
+  const isMember = activeGroup ? members.some((m) => isSameUser(m.user_name, currentUserName)) : false;
   const isCreator = activeGroup ? isGroupCreator(activeGroup, members, currentUserName) : false;
 
   const handleCreateGroup = (data: {
@@ -47,12 +49,22 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
     description: string;
     category: string;
     avatar_icon: string;
+    rules?: string[];
   }) => {
     const newGroup = storageGroups.createGroup(data, currentUserName);
     const updated = storageGroups.getGroups();
     setGroups(updated);
     setActiveGroupId(newGroup.id);
     toast.success(`Grupo "${newGroup.name}" criado com sucesso!`, 'Grupo Criado');
+  };
+
+  const handleUpdateGroup = (groupId: string, data: Partial<StudyGroup>) => {
+    const updated = storageGroups.updateGroup(groupId, data);
+    if (updated) {
+      setGroups(storageGroups.getGroups());
+      setMessages(storageGroups.getMessages(groupId));
+      toast.success(`Grupo "${updated.name}" atualizado com sucesso!`, 'Grupo Atualizado');
+    }
   };
 
   const handleJoinGroup = (code: string) => {
@@ -101,6 +113,20 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
     toast.success(`Grupo "${target?.name || ''}" foi excluído.`, 'Grupo Excluído');
   };
 
+  const handleConfirmRemoveMember = () => {
+    if (!activeGroupId || !memberToRemove) return;
+    const res = storageGroups.removeMember(activeGroupId, memberToRemove.id, currentUserName);
+    if (res.success) {
+      setGroups(storageGroups.getGroups());
+      setMembers(storageGroups.getMembers(activeGroupId));
+      setMessages(storageGroups.getMessages(activeGroupId));
+      toast.success(`${memberToRemove.user_name} foi removido(a) do grupo.`, 'Membro Removido');
+    } else {
+      toast.error(res.error || 'Erro ao remover membro.', 'Erro');
+    }
+    setMemberToRemove(null);
+  };
+
   const handleSendMessage = (text: string) => {
     if (!activeGroupId) return;
     storageGroups.sendMessage(activeGroupId, text, currentUserName);
@@ -136,54 +162,116 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
   const breakMembers = members.filter((m) => m.current_status === 'break');
   const idleMembers = members.filter((m) => m.current_status === 'idle');
 
+  const renderMemberRow = (m: GroupMember, statusClass: string = '') => {
+    const isItemAdmin = m.role === 'admin' || (activeGroup && isSameUser(m.user_name, activeGroup.created_by));
+    const canRemove = isCreator && !isItemAdmin && !isSameUser(m.user_name, currentUserName);
+
+    return (
+      <div key={m.id} className={`member-item-row ${statusClass}`}>
+        <div className="member-avatar-wrap">
+          <div className="member-avatar-circle">
+            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
+          </div>
+          <span
+            className={`member-status-indicator ${m.current_status}`}
+            title={
+              m.current_status === 'focusing'
+                ? 'Em foco no Pomodoro'
+                : m.current_status === 'break'
+                ? 'Em pausa rápida'
+                : 'Disponível'
+            }
+          />
+        </div>
+        <div className="member-info">
+          <div className="member-name-row">
+            <span className="member-name">{m.user_name}</span>
+            {isItemAdmin && <span className="member-role-badge admin" title="Administrador do Grupo">👑 Admin</span>}
+          </div>
+          {m.current_task_title && (
+            <div className="member-task-sub" title={m.current_task_title}>
+              🎯 {m.current_task_title}
+            </div>
+          )}
+          <div className="member-weekly-time">
+            {m.current_status === 'break' ? '☕ Pausa • ' : ''}
+            ⏱️ {formatSeconds(m.weekly_seconds)} esta semana
+          </div>
+        </div>
+        {canRemove && (
+          <button
+            type="button"
+            className="member-remove-btn"
+            title={`Remover ${m.user_name} do grupo`}
+            onClick={() => setMemberToRemove(m)}
+          >
+            <UserMinus size={14} />
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="study-groups-container">
-      {/* Topo da Visão de Grupos */}
+      {/* Barra de Título Superior */}
       <div className="groups-header-bar">
-        <div>
-          <div className="groups-title-row">
-            <div className="groups-title-icon-halo">
-              <Users size={22} color="var(--accent-primary)" />
-            </div>
-            <h2 className="pm-title">Grupos de Estudo & Chat ao Vivo</h2>
-            <span className="groups-live-pulse-badge">
-              <span className="live-radar-dot" />
-              {groups.reduce((acc, g) => acc + getGroupFocusCount(g.id), 0)} focando agora
-            </span>
+        <div className="groups-title-row">
+          <div className="groups-title-icon-halo">
+            <Users size={22} color="var(--accent-primary)" />
           </div>
-          <p className="pm-subtitle">
-            Estude em comunidade, compartilhe metas de foco e motive seus colegas em tempo real.
-          </p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                Grupos de Estudo & Chat ao Vivo
+              </h2>
+              <span className="groups-live-pulse-badge">
+                <span className="live-dot-mini" /> Salas em Tempo Real
+              </span>
+            </div>
+            <p style={{ margin: '0.2rem 0 0', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+              Estude junto com colegas, compartilhe ciclos de Pomodoro e mantenha a consistência.
+            </p>
+          </div>
         </div>
 
         <div className="groups-header-actions-top">
           <button
-            className="filter-chip btn-enter-code"
+            className="btn-enter-code"
             onClick={() => setIsJoinModalOpen(true)}
+            title="Entrar em um grupo privado usando código"
           >
-            <KeyRound size={15} /> Entrar com Código
+            <KeyRound size={15} />
+            <span>Entrar com Código</span>
           </button>
-          <button className="btn btn-primary btn-new-group" onClick={() => setIsCreateModalOpen(true)}>
-            <Plus size={16} /> Novo Grupo
+          <button
+            className="btn btn-primary btn-new-group"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus size={16} />
+            <span>Criar Novo Grupo</span>
           </button>
         </div>
       </div>
 
-      {/* Seletor Mobile de Abas */}
+      {/* Barra de Navegação Mobile */}
       <div className="groups-mobile-nav-bar">
         <button
+          type="button"
           className={`mobile-tab-btn ${mobileTab === 'groups' ? 'active' : ''}`}
           onClick={() => setMobileTab('groups')}
         >
-          Salas ({groups.length})
+          Salas ({filteredGroups.length})
         </button>
         <button
+          type="button"
           className={`mobile-tab-btn ${mobileTab === 'chat' ? 'active' : ''}`}
           onClick={() => setMobileTab('chat')}
         >
-          Chat #{activeGroup?.name || 'Geral'}
+          Chat #{activeGroup?.name || 'Sala'}
         </button>
         <button
+          type="button"
           className={`mobile-tab-btn ${mobileTab === 'members' ? 'active' : ''}`}
           onClick={() => setMobileTab('members')}
         >
@@ -191,15 +279,16 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
         </button>
       </div>
 
-      {/* Grid Principal com 3 Colunas Fluidas */}
+      {/* Layout Fluido de Alta Amplitude (3 Colunas) */}
       <div className={`groups-layout ${!showMembersPanel ? 'hide-members' : ''} mobile-${mobileTab}`}>
-        {/* Coluna 1: Lista de Grupos */}
+        {/* Coluna 1: Lista de Grupos & Canais */}
         <div className="groups-sidebar-panel glass-panel">
+          {/* Caixa de Busca */}
           <div className="groups-search-box">
             <Search size={15} />
             <input
               type="text"
-              placeholder="Buscar por sala ou tema..."
+              placeholder="Buscar sala ou tema..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -208,13 +297,14 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                 type="button"
                 className="search-clear-btn"
                 onClick={() => setSearchQuery('')}
+                title="Limpar busca"
               >
                 ×
               </button>
             )}
           </div>
 
-          {/* Filtros de Categoria */}
+          {/* Filtro por Categorias */}
           <div className="groups-category-filter-bar">
             {categories.map((cat) => (
               <button
@@ -249,7 +339,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                     <div className="group-item-top-row">
                       <span className="group-item-name">{grp.name}</span>
                       {userIsCreator && (
-                        <span className="group-creator-mini-pill">Criador</span>
+                        <span className="group-creator-mini-pill admin">👑 Admin</span>
                       )}
                     </div>
                     <div className="group-item-meta">
@@ -258,7 +348,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                       <span>{grp.member_count} membros</span>
                       {groupFocusing > 0 && (
                         <span className="group-focusing-indicator">
-                          <span className="live-dot-mini" /> {groupFocusing} em foco
+                          <span className="live-dot-mini" /> {groupFocusing} focando
                         </span>
                       )}
                     </div>
@@ -269,13 +359,12 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
 
             {filteredGroups.length === 0 && (
               <div className="empty-groups-filter">
-                <Sparkles size={24} color="var(--text-muted)" />
                 <p>Nenhuma sala encontrada para esta busca.</p>
                 {selectedCategory !== 'Todas' && (
                   <button
                     type="button"
-                    className="filter-chip"
-                    style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.78rem', padding: '0.4rem 0.85rem' }}
                     onClick={() => setSelectedCategory('Todas')}
                   >
                     Ver todas as categorias
@@ -294,10 +383,12 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
             members={members}
             isMember={isMember}
             isCreator={isCreator}
+            isAdmin={isCreator}
             onSendMessage={handleSendMessage}
             onJoinGroup={handleJoinDirect}
             onLeaveGroup={handleLeaveGroup}
             onDeleteGroup={handleDeleteGroup}
+            onUpdateGroup={handleUpdateGroup}
             showMembersPanel={showMembersPanel}
             onToggleMembersPanel={() => setShowMembersPanel((prev) => !prev)}
           />
@@ -331,33 +422,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                   <div className="members-section-label focusing">
                     <span>Focando Agora — {focusingMembers.length}</span>
                   </div>
-                  {focusingMembers.map((m) => {
-                    const isItemCreator = m.role === 'admin';
-                    return (
-                      <div key={m.id} className="member-item-row focusing">
-                        <div className="member-avatar-wrap">
-                          <div className="member-avatar-circle">
-                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="member-status-indicator focusing" title="Em foco no Pomodoro" />
-                        </div>
-                        <div className="member-info">
-                          <div className="member-name-row">
-                            <span className="member-name">{m.user_name}</span>
-                            {isItemCreator && <span className="member-role-badge">Criador</span>}
-                          </div>
-                          {m.current_task_title && (
-                            <div className="member-task-sub" title={m.current_task_title}>
-                              🎯 {m.current_task_title}
-                            </div>
-                          )}
-                          <div className="member-weekly-time">
-                            ⏱️ {formatSeconds(m.weekly_seconds)} esta semana
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {focusingMembers.map((m) => renderMemberRow(m, 'focusing'))}
                 </div>
               )}
 
@@ -367,28 +432,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                   <div className="members-section-label break">
                     <span>Em Pausa — {breakMembers.length}</span>
                   </div>
-                  {breakMembers.map((m) => {
-                    const isItemCreator = m.role === 'admin';
-                    return (
-                      <div key={m.id} className="member-item-row">
-                        <div className="member-avatar-wrap">
-                          <div className="member-avatar-circle">
-                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="member-status-indicator break" title="Em pausa rápida" />
-                        </div>
-                        <div className="member-info">
-                          <div className="member-name-row">
-                            <span className="member-name">{m.user_name}</span>
-                            {isItemCreator && <span className="member-role-badge">Criador</span>}
-                          </div>
-                          <div className="member-weekly-time">
-                            ☕ Pausa • {formatSeconds(m.weekly_seconds)} semanais
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {breakMembers.map((m) => renderMemberRow(m))}
                 </div>
               )}
 
@@ -398,28 +442,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
                   <div className="members-section-label idle">
                     <span>Disponíveis — {idleMembers.length}</span>
                   </div>
-                  {idleMembers.map((m) => {
-                    const isItemCreator = m.role === 'admin';
-                    return (
-                      <div key={m.id} className="member-item-row">
-                        <div className="member-avatar-wrap">
-                          <div className="member-avatar-circle">
-                            {m.user_avatar ? <img src={m.user_avatar} alt={m.user_name} /> : m.user_name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="member-status-indicator idle" title="Disponível" />
-                        </div>
-                        <div className="member-info">
-                          <div className="member-name-row">
-                            <span className="member-name">{m.user_name}</span>
-                            {isItemCreator && <span className="member-role-badge">Criador</span>}
-                          </div>
-                          <div className="member-weekly-time">
-                            {formatSeconds(m.weekly_seconds)} semanais
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {idleMembers.map((m) => renderMemberRow(m))}
                 </div>
               )}
 
@@ -445,6 +468,23 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
         onJoinGroup={handleJoinGroup}
+      />
+
+      {/* Modal de Confirmação para Remover Membro (Apenas Admin) */}
+      <ConfirmModal
+        isOpen={!!memberToRemove}
+        title="Remover Membro da Sala"
+        message={
+          <>
+            Tem certeza que deseja remover <strong>"{memberToRemove?.user_name}"</strong> desta sala de estudos? O usuário perderá o acesso ao chat até que entre novamente com o código.
+          </>
+        }
+        confirmText="Remover Membro"
+        cancelText="Cancelar"
+        variant="danger"
+        confirmIcon={<UserMinus size={24} className="confirm-icon-danger" />}
+        onConfirm={handleConfirmRemoveMember}
+        onCancel={() => setMemberToRemove(null)}
       />
     </div>
   );

@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
-import { X, Users, Sparkles, BookOpen } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Edit3, Save, BookOpen } from 'lucide-react';
+import { StudyGroup } from '../../types';
 import { CustomSelect, SelectOption } from '../common/CustomSelect';
 
-interface CreateGroupModalProps {
+interface EditGroupModalProps {
   isOpen: boolean;
+  group: StudyGroup;
   onClose: () => void;
-  onCreateGroup: (data: {
-    name: string;
-    description: string;
-    category: string;
-    avatar_icon: string;
-    rules?: string[];
-  }) => void;
+  onUpdateGroup: (groupId: string, data: Partial<StudyGroup>) => void;
 }
 
 const EMOJI_OPTIONS = ['💻', '⚖️', '🩺', '📚', '🎯', '🚀', '🧠', '⚡', '🔬', '🎨', '📐', '💡'];
@@ -24,23 +20,25 @@ const CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Produtividade Geral', label: 'Produtividade Geral', icon: '🚀' },
 ];
 
-const DEFAULT_RULES_TEMPLATE = [
-  'Manter foco absoluto nos blocos de Pomodoro',
-  'Compartilhar dúvidas e materiais de estudo relevantes',
-  'Respeito mútuo entre todos os membros',
-  'Sem conversas paralelas ou desrespeito',
-].join('\n');
-
-export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
+export const EditGroupModal: React.FC<EditGroupModalProps> = ({
   isOpen,
+  group,
   onClose,
-  onCreateGroup,
+  onUpdateGroup,
 }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(CATEGORY_OPTIONS[0].value);
-  const [avatarIcon, setAvatarIcon] = useState(EMOJI_OPTIONS[0]);
-  const [rulesText, setRulesText] = useState(DEFAULT_RULES_TEMPLATE);
+  const [name, setName] = useState(group.name);
+  const [description, setDescription] = useState(group.description);
+  const [category, setCategory] = useState(group.category);
+  const [avatarIcon, setAvatarIcon] = useState(group.avatar_icon || EMOJI_OPTIONS[0]);
+  const [rulesText, setRulesText] = useState((group.rules || []).join('\n'));
+
+  useEffect(() => {
+    setName(group.name);
+    setDescription(group.description);
+    setCategory(group.category);
+    setAvatarIcon(group.avatar_icon || EMOJI_OPTIONS[0]);
+    setRulesText((group.rules || []).join('\n'));
+  }, [group, isOpen]);
 
   if (!isOpen) return null;
 
@@ -53,17 +51,14 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       .map((r) => r.trim())
       .filter(Boolean);
 
-    onCreateGroup({
+    onUpdateGroup(group.id, {
       name: name.trim(),
       description: description.trim(),
       category,
       avatar_icon: avatarIcon,
-      rules: parsedRules.length > 0 ? parsedRules : undefined,
+      rules: parsedRules,
     });
 
-    setName('');
-    setDescription('');
-    setRulesText(DEFAULT_RULES_TEMPLATE);
     onClose();
   };
 
@@ -72,8 +67,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       <div className="modal-card glass-panel" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={22} color="var(--accent-primary)" />
-            <h3 className="modal-title">Novo Grupo de Estudo</h3>
+            <Edit3 size={20} color="var(--accent-primary)" />
+            <h3 className="modal-title">Editar Grupo de Estudo</h3>
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Fechar">
             <X size={18} />
@@ -99,27 +94,25 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="group-name">
+            <label className="form-label" htmlFor="edit-group-name">
               Nome do Grupo *
             </label>
             <input
-              id="group-name"
+              id="edit-group-name"
               type="text"
               className="modal-input"
-              placeholder="Ex: Desenvolvedores Full-Stack..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              autoFocus
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="group-category">
+            <label className="form-label" htmlFor="edit-group-category">
               Categoria / Área
             </label>
             <CustomSelect
-              id="group-category"
+              id="edit-group-category"
               value={category}
               options={CATEGORY_OPTIONS}
               onChange={(val) => setCategory(val)}
@@ -127,14 +120,13 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="group-desc">
+            <label className="form-label" htmlFor="edit-group-desc">
               Descrição do Grupo
             </label>
             <textarea
-              id="group-desc"
+              id="edit-group-desc"
               className="modal-input"
               rows={2}
-              placeholder="Descreva o propósito do grupo e metas de estudo diárias..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -142,16 +134,16 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <label className="form-label" htmlFor="group-rules" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <label className="form-label" htmlFor="edit-group-rules" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <BookOpen size={14} color="var(--accent-primary)" />
                 <span>Regras de Convivência & Foco (1 por linha)</span>
               </label>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                Personalizável pelo Admin
+                Apenas Administradores
               </span>
             </div>
             <textarea
-              id="group-rules"
+              id="edit-group-rules"
               className="modal-input"
               rows={4}
               placeholder="Digite uma regra por linha..."
@@ -165,8 +157,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancelar
             </button>
-            <button type="submit" className="main-start-btn">
-              <Sparkles size={16} /> Criar Grupo
+            <button type="submit" className="btn btn-primary" style={{ padding: '0.65rem 1.3rem' }}>
+              <Save size={16} /> Salvar Alterações
             </button>
           </div>
         </form>
