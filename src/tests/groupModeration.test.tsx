@@ -127,7 +127,7 @@ describe('Moderação de Grupos: Regras, Admin, Convite por E-mail, Edição e R
     const emailInput = screen.getByLabelText(/E-mail do Destinatário/i);
     fireEvent.change(emailInput, { target: { value: 'amigo@concursos.com' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Abrir no E-mail/i });
+    const submitBtn = screen.getByRole('button', { name: /abrir no cliente de e-mail/i });
     fireEvent.click(submitBtn);
 
     expect(windowOpenSpy).toHaveBeenCalledWith(

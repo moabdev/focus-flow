@@ -1,6 +1,7 @@
-import React from 'react';
-import { LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { LogOut, Mail, ChevronDown, ChevronUp, Save, Check } from 'lucide-react';
 import { SupabaseProfile } from '../../types';
+import { emailService, EmailServiceConfig } from '../../services/emailService';
 
 interface SettingsCloudTabProps {
   userProfile: SupabaseProfile | null;
@@ -17,6 +18,17 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
   onSyncToCloud,
   syncStatus,
 }) => {
+  const [emailConfig, setEmailConfig] = useState<EmailServiceConfig>(() => emailService.getConfig());
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
+  const [savedEmailMsg, setSavedEmailMsg] = useState(false);
+
+  const handleSaveEmailConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    emailService.saveConfig(emailConfig);
+    setSavedEmailMsg(true);
+    setTimeout(() => setSavedEmailMsg(false), 3000);
+  };
+
   return (
     <>
       <div className="cloud-info-card">
@@ -115,6 +127,98 @@ export const SettingsCloudTab: React.FC<SettingsCloudTabProps> = ({
           {syncStatus}
         </div>
       )}
+
+      {/* Seção de Configuração do Serviço de E-mail (EmailJS / API) */}
+      <div className="glass-card" style={{ marginTop: '1.25rem', padding: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+          }}
+          onClick={() => setShowEmailSettings((prev) => !prev)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Mail size={16} color="var(--accent-primary)" />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Serviço de E-mail (EmailJS / API)</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {emailService.isConfigured() ? 'Provedor conectado' : 'Modo envio direto pronto'}
+              </div>
+            </div>
+          </div>
+          {showEmailSettings ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </div>
+
+        {showEmailSettings && (
+          <form onSubmit={handleSaveEmailConfig} style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
+              Configure o EmailJS para despachar e-mails reais de convite diretamente pelo navegador sem backend:
+            </p>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Service ID</label>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="service_xxxxx"
+                value={emailConfig.serviceId || ''}
+                onChange={(e) => setEmailConfig({ ...emailConfig, serviceId: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Template ID</label>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="template_xxxxx"
+                value={emailConfig.templateId || ''}
+                onChange={(e) => setEmailConfig({ ...emailConfig, templateId: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>EmailJS Public Key</label>
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="user_xxxxx ou public_key"
+                value={emailConfig.publicKey || ''}
+                onChange={(e) => setEmailConfig({ ...emailConfig, publicKey: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontSize: '0.78rem' }}>Endpoint Customizado / Webhook (Opcional)</label>
+              <input
+                type="url"
+                className="modal-input"
+                placeholder="https://api.meuservico.com/send-email"
+                value={emailConfig.customApiUrl || ''}
+                onChange={(e) => setEmailConfig({ ...emailConfig, customApiUrl: e.target.value })}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{
+                alignSelf: 'flex-start',
+                padding: '0.45rem 0.9rem',
+                fontSize: '0.8rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              {savedEmailMsg ? <Check size={14} color="#10b981" /> : <Save size={14} />}
+              <span>{savedEmailMsg ? 'Salvo com sucesso!' : 'Salvar Configurações de E-mail'}</span>
+            </button>
+          </form>
+        )}
+      </div>
     </>
   );
 };
