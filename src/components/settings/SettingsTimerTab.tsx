@@ -15,7 +15,7 @@ export const SettingsTimerTab: React.FC<SettingsTimerTabProps> = ({
       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
         DURAÇÕES DOS CICLOS (MINUTOS)
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+      <div className="timer-durations-grid">
         <div>
           <label className="setting-desc">Pomodoro</label>
           <input
@@ -138,6 +138,23 @@ export const SettingsTimerTab: React.FC<SettingsTimerTabProps> = ({
             textAlign: 'center',
           }}
         />
+      </div>
+
+      <div className="setting-row" style={{ marginTop: '0.5rem' }}>
+        <div>
+          <div className="setting-label">Modo Foco Rigoroso (Anti-Distração)</div>
+          <div className="setting-desc">Alerta no sistema se você trocar ou minimizar a aba durante o Pomodoro</div>
+        </div>
+        <label className="switch-label">
+          <input
+            type="checkbox"
+            checked={Boolean(settings.strict_focus_mode)}
+            onChange={(e) =>
+              onUpdateSettings({ ...settings, strict_focus_mode: e.target.checked })
+            }
+          />
+          <span className="switch-slider" />
+        </label>
       </div>
     </>
   );

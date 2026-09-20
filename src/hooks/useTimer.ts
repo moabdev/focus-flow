@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { TimerMode, UserSettings } from '../types';
 import { storageService } from '../services/storage';
+import { notificationService } from '../services/notificationService';
 
 interface UseTimerProps {
   settings: UserSettings;
@@ -9,6 +10,7 @@ interface UseTimerProps {
   playAlarm: () => void;
   setIsTimerRunningTheme?: (running: boolean) => void;
   onTickSecond?: (mode: TimerMode, elapsedSeconds: number) => void;
+  activeTaskTitle?: string;
 }
 
 export function useTimer({
@@ -17,6 +19,7 @@ export function useTimer({
   playAlarm,
   setIsTimerRunningTheme,
   onTickSecond,
+  activeTaskTitle,
 }: UseTimerProps) {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [cycleCount, setCycleCount] = useState<number>(0);
@@ -59,18 +62,44 @@ export function useTimer({
     }
   }, [isRunning, setIsTimerRunningTheme]);
 
-  // Atualização do título da aba
+  // Atualização do título da aba com tempo e subtarefa
   useEffect(() => {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const modeIcon = mode === 'pomodoro' ? '🍅' : '☕';
     const modeLabel = mode === 'pomodoro' ? 'Foco' : 'Pausa';
-    document.title = `${formatted} - ${modeLabel} | FocusFlow`;
+    const taskPart = activeTaskTitle ? ` • ${activeTaskTitle}` : '';
+
+    if (isRunning) {
+      document.title = `(${formatted}) ${modeIcon} ${modeLabel}${taskPart} | FocusFlow`;
+    } else {
+      document.title = `${formatted} [Pausado] | FocusFlow`;
+    }
 
     return () => {
       document.title = 'FocusFlow | Foco & Produtividade nos Estudos';
     };
-  }, [timeLeft, mode]);
+  }, [timeLeft, mode, isRunning, activeTaskTitle]);
+
+  // Alerta de Foco Rigoroso contra Distrações (troca de aba)
+  useEffect(() => {
+    if (!settings.strict_focus_mode || !isRunning || mode !== 'pomodoro') return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        notificationService.notify(
+          '⚠️ Alerta de Foco Rigoroso!',
+          'Você saiu da aba do FocusFlow! Mantenha a concentração para concluir o ciclo.'
+        );
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [settings.strict_focus_mode, isRunning, mode]);
 
   // Trata a conclusão do ciclo
   const handleCycleComplete = useCallback(() => {
@@ -78,14 +107,8 @@ export function useTimer({
     if (intervalRef.current) clearInterval(intervalRef.current);
     playAlarm();
 
-    // Notificação do navegador se permitida
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const title = mode === 'pomodoro' ? 'Pomodoro Concluído! 🎉' : 'Hora de Voltar ao Foco! 🚀';
-      const body = mode === 'pomodoro'
-        ? 'Excelente sessão de foco. Aproveite para descansar a mente.'
-        : 'Sua pausa terminou. Pronto para mais um ciclo produtivo?';
-      new Notification(title, { body, icon: '/vite.svg' });
-    }
+    // Notificação nativa do sistema
+    notificationService.notifyTimerComplete(mode, activeTaskTitle);
 
     if (mode === 'pomodoro') {
       try {
