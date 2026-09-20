@@ -10,6 +10,8 @@ import {
 } from './storageDefaults';
 import { storageProjectsService, StorageProjectsService } from './storageProjects';
 import { storageCalendarService, StorageCalendarService } from './storageCalendar';
+import { storageFlashcardsService, StorageFlashcardsService } from './storageFlashcards';
+import { storageMindMapsService, StorageMindMapsService } from './storageMindMaps';
 import { StorageBackupService } from './storageBackup';
 
 export { DEFAULT_SETTINGS, DEFAULT_PROJECTS, DEFAULT_SUBTASKS, DEFAULT_CALENDAR_EVENTS };
@@ -17,6 +19,8 @@ export { DEFAULT_SETTINGS, DEFAULT_PROJECTS, DEFAULT_SUBTASKS, DEFAULT_CALENDAR_
 export class StorageService {
   private projectsService: StorageProjectsService = storageProjectsService;
   private calendarService: StorageCalendarService = storageCalendarService;
+  public flashcardsService: StorageFlashcardsService = storageFlashcardsService;
+  public mindMapsService: StorageMindMapsService = storageMindMapsService;
   private backupService: StorageBackupService;
 
   constructor() {
@@ -33,6 +37,12 @@ export class StorageService {
       saveLocalSessions: (s) => this.saveLocalSessions(s),
       getQuickNotes: () => this.getQuickNotes(),
       saveQuickNotes: (n) => this.saveQuickNotes(n),
+      getFlashcardDecks: () => this.flashcardsService.getLocalDecks(),
+      saveFlashcardDecks: (d) => this.flashcardsService.saveLocalDecks(d),
+      getFlashcards: () => this.flashcardsService.getLocalCards(),
+      saveFlashcards: (c) => this.flashcardsService.saveLocalCards(c),
+      getMindMaps: () => this.mindMapsService.getLocalMindMaps(),
+      saveMindMaps: (m) => this.mindMapsService.saveLocalMindMaps(m),
     });
   }
 
@@ -58,6 +68,12 @@ export class StorageService {
     }
     if (this.getLocalCalendarEvents().length === 0) {
       this.saveLocalCalendarEvents(DEFAULT_CALENDAR_EVENTS);
+    }
+    if (this.flashcardsService.getLocalDecks().length === 0) {
+      this.flashcardsService.getLocalDecks(); // aciona os defaults
+    }
+    if (this.mindMapsService.getLocalMindMaps().length === 0) {
+      this.mindMapsService.getLocalMindMaps(); // aciona os defaults
     }
   }
 

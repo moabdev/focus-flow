@@ -15,6 +15,12 @@ export interface StorageContext {
   saveLocalSessions: (s: any[]) => void;
   getQuickNotes?: () => any[];
   saveQuickNotes?: (notes: any[]) => void;
+  getFlashcardDecks?: () => any[];
+  saveFlashcardDecks?: (decks: any[]) => void;
+  getFlashcards?: () => any[];
+  saveFlashcards?: (cards: any[]) => void;
+  getMindMaps?: () => any[];
+  saveMindMaps?: (maps: any[]) => void;
 }
 
 export class StorageBackupService {
@@ -22,7 +28,7 @@ export class StorageBackupService {
 
   public exportBackupJSON(): void {
     const backupData = {
-      version: '2.0.0',
+      version: '2.1.0',
       exportedAt: new Date().toISOString(),
       projects: this.ctx.projectsService.getLocalProjects(),
       subtasks: this.ctx.projectsService.getLocalSubtasks(),
@@ -32,6 +38,9 @@ export class StorageBackupService {
       settings: this.ctx.getSettings(),
       scratchpad: this.ctx.getScratchpad(),
       quickNotes: this.ctx.getQuickNotes ? this.ctx.getQuickNotes() : [],
+      flashcardDecks: this.ctx.getFlashcardDecks ? this.ctx.getFlashcardDecks() : [],
+      flashcards: this.ctx.getFlashcards ? this.ctx.getFlashcards() : [],
+      mindMaps: this.ctx.getMindMaps ? this.ctx.getMindMaps() : [],
       mantras: this.ctx.getMantras(),
     };
 
@@ -77,6 +86,15 @@ export class StorageBackupService {
           }
           if (data.quickNotes && Array.isArray(data.quickNotes) && this.ctx.saveQuickNotes) {
             this.ctx.saveQuickNotes(data.quickNotes);
+          }
+          if (data.flashcardDecks && Array.isArray(data.flashcardDecks) && this.ctx.saveFlashcardDecks) {
+            this.ctx.saveFlashcardDecks(data.flashcardDecks);
+          }
+          if (data.flashcards && Array.isArray(data.flashcards) && this.ctx.saveFlashcards) {
+            this.ctx.saveFlashcards(data.flashcards);
+          }
+          if (data.mindMaps && Array.isArray(data.mindMaps) && this.ctx.saveMindMaps) {
+            this.ctx.saveMindMaps(data.mindMaps);
           }
           if (data.mantras && Array.isArray(data.mantras)) {
             this.ctx.saveMantras(data.mantras);
