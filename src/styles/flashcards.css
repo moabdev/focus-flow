@@ -374,7 +374,7 @@
 .study-modal-content {
   width: 100%;
   max-width: 680px;
-  background: var(--bg-surface);
+  background: var(--bg-gradient);
   border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 1.75rem;

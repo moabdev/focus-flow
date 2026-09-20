@@ -19,8 +19,7 @@
 .modal-box {
   width: 100%;
   max-width: 580px;
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px);
+  background: var(--bg-gradient);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
@@ -166,9 +165,7 @@ input:checked + .switch-slider:before {
   bottom: 0;
   width: 100%;
   max-width: 480px;
-  background: var(--surface-glass);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--bg-gradient);
   border-left: 1px solid var(--border-glass);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
   z-index: 999;
@@ -648,9 +645,7 @@ input:checked + .switch-slider:before {
 .confirm-modal-box {
   width: 100%;
   max-width: 450px;
-  background: var(--surface-glass);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background: var(--bg-gradient);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
   box-shadow: 0 25px 60px var(--shadow-ambient), 0 0 0 1px var(--border-glass-subtle);

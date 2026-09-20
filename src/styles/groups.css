@@ -693,9 +693,7 @@
 .modal-card {
   width: 100%;
   max-width: 540px;
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--bg-gradient);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
