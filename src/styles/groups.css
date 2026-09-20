@@ -129,17 +129,16 @@
 /* Layout Principal em 3 Colunas Fluidas */
 .groups-layout {
   display: grid;
-  grid-template-columns: 320px 1fr 300px;
+  grid-template-columns: minmax(300px, 340px) 1fr minmax(280px, 320px);
   gap: 1.25rem;
   min-height: 640px;
-  height: calc(100vh - 200px);
-  max-height: 880px;
+  height: calc(100vh - 170px);
   width: 100%;
   align-items: stretch;
 }
 
 .groups-layout.hide-members {
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(300px, 340px) 1fr;
 }
 
 /* ==========================================================================
@@ -686,7 +685,7 @@
 /* ==========================================================================
    RESPONSIVIDADE WIDESCREEN & MOBILE
    ========================================================================== */
-@media (max-width: 1200px) {
+@media (max-width: 1060px) {
   .groups-layout {
     grid-template-columns: 290px 1fr;
   }

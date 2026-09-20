@@ -1,5 +1,5 @@
 /* ==========================================================================
-   FocusFlow - Layout Principal & App Shell
+   FocusFlow - Layout Principal & App Shell (Arquitetura Fluida Widescreen)
    Sidebar Fixa no Desktop & Área de Conteúdo com Rolagem Independente
    ========================================================================== */
 
@@ -35,41 +35,37 @@ body,
 }
 
 .app-container {
-  max-width: 1560px;
   width: 100%;
-  margin: 0 auto;
-  padding: 1.75rem 2rem 4rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 1.5rem 2.25rem 4rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.75rem;
   flex: 1;
   box-sizing: border-box;
 }
 
-/* No modo Timer mantemos largura focada e confortável */
-.app-container.view-timer {
-  max-width: 1040px;
-}
-
-/* Visões amplas: Grupos, Projetos, Detalhes, Calendário e Ranking */
+/* Todas as visões aproveitam a amplitude total da tela com design fluido */
+.app-container.view-timer,
 .app-container.view-groups,
 .app-container.view-projects,
 .app-container.view-project-detail,
 .app-container.view-calendar,
 .app-container.view-ranking {
-  max-width: 1600px;
-  padding: 1.5rem 2rem 3.5rem;
+  max-width: 100%;
+  width: 100%;
 }
 
 @media (max-width: 1024px) {
   .app-container {
-    padding: 1.5rem 1.25rem 3.5rem;
+    padding: 1.25rem 1.25rem 3.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .app-container {
-    padding: 1.25rem 0.85rem 3rem;
+    padding: 1rem 0.85rem 3rem;
     gap: 1.25rem;
   }
 }

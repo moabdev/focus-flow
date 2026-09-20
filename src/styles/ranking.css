@@ -4,8 +4,8 @@
 
 .ranking-view-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
@@ -36,9 +36,11 @@
 .ranking-podium-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: flex-end;
-  margin-top: 1rem;
+  margin: 1rem auto;
+  max-width: 980px;
+  width: 100%;
 }
 
 @media (max-width: 640px) {
