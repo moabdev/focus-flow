@@ -118,7 +118,7 @@ export const AIGenerateQuizModal: React.FC<AIGenerateQuizModalProps> = ({
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {currentQuestion.options.map((option, idx) => {
-                  let btnStyle = { 
+                  const btnStyle = { 
                     padding: '12px 16px', 
                     borderRadius: '8px', 
                     border: '1px solid var(--color-border)', 
