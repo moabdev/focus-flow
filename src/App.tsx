@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useTheme } from './hooks/useTheme';
-import { useAudio } from './hooks/useAudio';
-import { useProjects } from './hooks/useProjects';
-import { useCalendar } from './hooks/useCalendar';
-import { useQuotes } from './hooks/useQuotes';
-import { useStats } from './hooks/useStats';
-import { useTimer } from './hooks/useTimer';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { supabaseService } from './services/supabase';
-import { storageService } from './services/storage';
-import { badgeService } from './services/badgeService';
-import { storageGroupsService } from './services/storageGroups';
-import { syncService } from './services/syncService';
-import { useToast } from './context/ToastContext';
-import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode, CloudSyncInfo } from './types';
+import { useTheme } from '@/features/core/hooks/useTheme';
+import { useAudio } from '@/features/timer/hooks/useAudio';
+import { useProjects } from '@/features/projects/hooks/useProjects';
+import { useCalendar } from '@/features/calendar/hooks/useCalendar';
+import { useQuotes } from '@/features/quotes/hooks/useQuotes';
+import { useStats } from '@/features/stats/hooks/useStats';
+import { useTimer } from '@/features/timer/hooks/useTimer';
+import { useKeyboardShortcuts } from '@/features/core/hooks/useKeyboardShortcuts';
+import { supabaseService } from '@/features/core/api/supabase';
+import { storageService } from '@/features/core/api/storage';
+import { badgeService } from '@/features/stats/api/badgeService';
+import { storageGroupsService } from '@/features/groups/api/storageGroups';
+import { syncService } from '@/features/core/api/syncService';
+import { useToast } from '@/features/core/contexts/ToastContext';
+import type { SupabaseProfile, UserSettings, TimerMode, AppViewMode, CloudSyncInfo } from '@/features/core/types';
 
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
-import { AppViews } from './components/AppViews';
-import { AppModals } from './components/AppModals';
+import { Header } from '@/features/core/components/Header';
+import { Sidebar } from '@/features/core/components/Sidebar';
+import { AppViews } from '@/features/core/components/AppViews';
+import { AppModals } from '@/features/core/components/AppModals';
 
 export const App: React.FC = () => {
   const { colorMode, toggleColorMode, theme, setTheme, setIsTimerRunning } = useTheme();
