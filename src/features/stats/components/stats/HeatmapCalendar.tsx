@@ -13,6 +13,7 @@ interface DayData {
   count: number;
   level: number;
   isFuture: boolean;
+  isCurrentMonth: boolean;
 }
 
 export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) => {
@@ -40,54 +41,53 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
     return map;
   }, [sessions]);
 
-  // Gera as semanas (7 linhas x 5 colunas para 1 mês)
-  const WEEKS_TO_SHOW = 5;
-  const { weeks, monthLabels, totalActiveDays, totalMinutesPeriod } = useMemo(() => {
+  const { weeks, monthLabel, totalActiveDays, totalMinutesPeriod } = useMemo(() => {
     const now = new Date();
     const todayY = now.getFullYear();
     const todayM = now.getMonth();
-    const todayD = now.getDate();
-    const todayMidnight = new Date(todayY, todayM, todayD);
+    const todayMidnight = new Date(todayY, todayM, now.getDate());
 
-    const endOfWeek = new Date(todayMidnight);
-    endOfWeek.setDate(todayMidnight.getDate() + (6 - todayMidnight.getDay()));
+    const firstDayOfMonth = new Date(todayY, todayM, 1);
+    const lastDayOfMonth = new Date(todayY, todayM + 1, 0);
 
-    const startDate = new Date(endOfWeek);
-    startDate.setDate(endOfWeek.getDate() - WEEKS_TO_SHOW * 7 + 1);
+    const startDate = new Date(firstDayOfMonth);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+
+    const endDate = new Date(lastDayOfMonth);
+    endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
 
     const generatedWeeks: DayData[][] = [];
-    const months: { label: string; weekIndex: number }[] = [];
     let currentWeek: DayData[] = [];
-    let lastMonth = -1;
     let activeDays = 0;
     let totalMinutes = 0;
 
     const curr = new Date(startDate);
-    let weekIdx = 0;
 
-    while (curr <= endOfWeek) {
+    while (curr <= endDate) {
       const year = curr.getFullYear();
       const month = curr.getMonth();
       const day = curr.getDate();
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-      if (month !== lastMonth && curr.getDay() === 0) {
-        const monthShort = curr.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-        months.push({ label: monthShort, weekIndex: weekIdx });
-        lastMonth = month;
-      }
-
+      
+      const isCurrentMonth = month === todayM;
       const isFuture = curr > todayMidnight;
-      const data = sessionMap.get(dateStr) || { minutes: 0, count: 0 };
-
+      
+      let minutes = 0;
+      let count = 0;
       let level = 0;
-      if (!isFuture && data.minutes > 0) {
-        if (data.minutes <= 25) level = 1;
-        else if (data.minutes <= 60) level = 2;
-        else if (data.minutes <= 120) level = 3;
-        else level = 4;
-        activeDays++;
-        totalMinutes += data.minutes;
+      
+      if (isCurrentMonth && !isFuture) {
+        const data = sessionMap.get(dateStr) || { minutes: 0, count: 0 };
+        minutes = data.minutes;
+        count = data.count;
+        if (minutes > 0) {
+          if (minutes <= 25) level = 1;
+          else if (minutes <= 60) level = 2;
+          else if (minutes <= 120) level = 3;
+          else level = 4;
+          activeDays++;
+          totalMinutes += minutes;
+        }
       }
 
       const dayObj: DayData = {
@@ -99,10 +99,11 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
           month: 'short',
           year: 'numeric',
         }),
-        minutes: isFuture ? 0 : data.minutes,
-        count: isFuture ? 0 : data.count,
-        level: isFuture ? 0 : level,
+        minutes,
+        count,
+        level,
         isFuture,
+        isCurrentMonth,
       };
 
       currentWeek.push(dayObj);
@@ -110,15 +111,17 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
       if (currentWeek.length === 7) {
         generatedWeeks.push(currentWeek);
         currentWeek = [];
-        weekIdx++;
       }
 
       curr.setDate(curr.getDate() + 1);
     }
 
+    const mLabel = firstDayOfMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const capitalizedMonthLabel = mLabel.charAt(0).toUpperCase() + mLabel.slice(1);
+
     return {
       weeks: generatedWeeks,
-      monthLabels: months,
+      monthLabel: capitalizedMonthLabel,
       totalActiveDays: activeDays,
       totalMinutesPeriod: totalMinutes,
     };
@@ -155,16 +158,10 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
 
         {/* Coluna Direita: Trilho dos Meses + Grid */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="heatmap-months-track" style={{ height: '1.4rem' }}>
-            {monthLabels.map((m, i) => (
-              <span
-                key={i}
-                className="heatmap-month-label"
-                style={{ left: `${(m.weekIndex / WEEKS_TO_SHOW) * 100}%` }}
-              >
-                {m.label}
-              </span>
-            ))}
+          <div className="heatmap-months-track" style={{ height: '1.4rem', display: 'flex', justifyContent: 'center' }}>
+            <span className="heatmap-month-label" style={{ position: 'static' }}>
+              {monthLabel}
+            </span>
           </div>
 
           <div className="heatmap-grid" role="grid" aria-label="Heatmap de Estudos Mensal">
@@ -174,9 +171,10 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
                   <div
                     key={day.dateStr}
                     className={`heatmap-cell level-${day.level} ${day.isFuture ? 'future' : ''}`}
+                    style={{ visibility: day.isCurrentMonth ? 'visible' : 'hidden' }}
                     onMouseEnter={() => setHoveredDay(day)}
                     onMouseLeave={() => setHoveredDay(null)}
-                    title={`${day.formattedDate}: ${day.minutes} min`}
+                    title={day.isCurrentMonth ? `${day.formattedDate}: ${day.minutes} min` : undefined}
                     role="gridcell"
                   />
                 ))}
