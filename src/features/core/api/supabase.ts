@@ -77,6 +77,7 @@ class SupabaseService {
         provider: 'google',
         options: {
           redirectTo: window.location.origin,
+          scopes: 'https://www.googleapis.com/auth/calendar.events',
         },
       });
       return { error };
