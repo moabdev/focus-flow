@@ -5,7 +5,13 @@ import { NotionToolbar } from './notion/NotionToolbar';
 import { NotionMarkdownRenderer } from './notion/NotionMarkdownRenderer';
 import { NotionEditorHeader } from './notion/NotionEditorHeader';
 import { NotionDictationBanner } from './notion/NotionDictationBanner';
+import { AIGenerateFlashcardsModal } from './notion/AIGenerateFlashcardsModal';
+import { AIGenerateQuizModal } from './notion/AIGenerateQuizModal';
 import { useSpeechRecognition } from '@/features/zenmode/hooks/useSpeechRecognition';
+import { generateFlashcardsFromNotes, generateQuizFromNotes, GeneratedFlashcard, GeneratedQuiz } from '@/services/ai/geminiService';
+import { storageService } from '@/features/core/api/storage';
+import { useFlashcards } from '@/features/flashcards/hooks/useFlashcards';
+import { useToast } from '@/features/core/contexts/ToastContext';
 
 interface NotionNoteEditorProps {
   isOpen: boolean;
@@ -27,11 +33,90 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
   const [saveIndicator, setSaveIndicator] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // IA State
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedFlashcards, setGeneratedFlashcards] = useState<GeneratedFlashcard[]>([]);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
+  const [generatedQuiz, setGeneratedQuiz] = useState<GeneratedQuiz>([]);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+
+  const { createCard, decks, createDeck } = useFlashcards();
+  const toast = useToast();
+
   useEffect(() => {
     if (subtask) {
       setContent(subtask.notes || '');
     }
   }, [subtask]);
+
+  const handleGenerateQuiz = useCallback(async () => {
+    if (!content.trim()) {
+      toast.warning('A anotação está vazia. Adicione conteúdo para gerar o quiz.', 'Anotação Vazia');
+      return;
+    }
+
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      toast.error('Chave de API do Gemini não configurada pelo desenvolvedor (VITE_GEMINI_API_KEY).', 'Falta API Key');
+      return;
+    }
+
+    setIsGeneratingQuiz(true);
+    toast.info('Gerando quiz inteligente...', 'Gerando...');
+    try {
+      const q = await generateQuizFromNotes(content, apiKey, 5);
+      setGeneratedQuiz(q);
+      setIsQuizModalOpen(true);
+      toast.success(`Quiz gerado com sucesso!`, 'Concluído');
+    } catch (error: any) {
+      toast.error(`Falha ao gerar quiz: ${error.message}`, 'Erro na IA');
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
+  }, [content, toast]);
+
+  const handleGenerateFlashcards = useCallback(async () => {
+    if (!content.trim()) {
+      toast.warning('A anotação está vazia. Adicione conteúdo para gerar flashcards.', 'Anotação Vazia');
+      return;
+    }
+    
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      toast.error('Chave de API do Gemini não configurada pelo desenvolvedor (VITE_GEMINI_API_KEY).', 'Falta API Key');
+      return;
+    }
+
+    setIsGenerating(true);
+    toast.info('Gerando flashcards com Inteligência Artificial...', 'Gerando...');
+    try {
+      const cards = await generateFlashcardsFromNotes(content, apiKey, 5);
+      setGeneratedFlashcards(cards);
+      setIsAIModalOpen(true);
+      toast.success(`${cards.length} flashcards gerados com sucesso!`, 'Concluído');
+    } catch (error: any) {
+      toast.error(`Falha ao gerar flashcards: ${error.message}`, 'Erro na IA');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [content, toast]);
+
+  useEffect(() => {
+    const handleEvent = () => handleGenerateFlashcards();
+    const handleQuizEvent = () => handleGenerateQuiz();
+    
+    window.addEventListener('generate-ai-flashcards', handleEvent);
+    window.addEventListener('generate-ai-quiz', handleQuizEvent);
+    
+    return () => {
+      window.removeEventListener('generate-ai-flashcards', handleEvent);
+      window.removeEventListener('generate-ai-quiz', handleQuizEvent);
+    };
+  }, [handleGenerateFlashcards, handleGenerateQuiz]);
 
   const handleContentChange = (newVal: string) => {
     setContent(newVal);
@@ -115,6 +200,45 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
       stopSpeech();
     }
     onClose();
+  };
+
+  const handleSaveAIFlashcards = async (selectedCards: GeneratedFlashcard[]) => {
+    if (selectedCards.length === 0) {
+      setIsAIModalOpen(false);
+      return;
+    }
+
+    try {
+      // Find or create deck
+      let targetDeckId = '';
+      const projDeck = decks.find(d => d.project_id === subtask?.project_id);
+      
+      if (projDeck) {
+        targetDeckId = projDeck.id;
+      } else {
+        // Create new deck for this project or a generic one
+        const deckTitle = project ? `Anotações: ${project.title}` : 'Anotações Gerais';
+        const newDeck = createDeck({
+          title: deckTitle,
+          description: 'Flashcards gerados automaticamente por IA a partir das anotações.',
+          color: project ? project.color : '#3b82f6',
+          icon: '✨',
+          project_id: subtask?.project_id || undefined,
+          tags: ['IA', 'Anotações'],
+        });
+        targetDeckId = newDeck.id;
+      }
+
+      // Save cards
+      for (const card of selectedCards) {
+        createCard(targetDeckId, card.front, card.back, card.hint, card.tags);
+      }
+
+      toast.success(`${selectedCards.length} flashcards salvos no baralho com sucesso!`, 'Salvo!');
+      setIsAIModalOpen(false);
+    } catch (error) {
+      toast.error('Erro ao salvar os flashcards no baralho.', 'Erro de Salvamento');
+    }
   };
 
   if (!isOpen || !subtask) return null;
@@ -202,6 +326,19 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
           )}
         </div>
       </div>
+
+      <AIGenerateFlashcardsModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        flashcards={generatedFlashcards}
+        onSave={handleSaveAIFlashcards}
+        isSaving={false}
+      />
+      <AIGenerateQuizModal
+        isOpen={isQuizModalOpen}
+        onClose={() => setIsQuizModalOpen(false)}
+        quiz={generatedQuiz}
+      />
     </div>
   );
 };

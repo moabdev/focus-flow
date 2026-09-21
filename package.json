@@ -19,6 +19,7 @@
     "cypress:run": "cypress run"
   },
   "dependencies": {
+    "@google/genai": "^2.23.0",
     "@supabase/supabase-js": "^2.49.1",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.16.0",

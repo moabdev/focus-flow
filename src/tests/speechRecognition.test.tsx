@@ -5,6 +5,7 @@ import { useSpeechRecognition } from '@/features/zenmode/hooks/useSpeechRecognit
 import { NotionToolbar } from '@/features/notion/components/notion/NotionToolbar';
 import { NotionNoteEditor } from '@/features/notion/components/NotionNoteEditor';
 import { Subtask, Project } from '@/features/core/types';
+import { ToastProvider } from '@/features/core/contexts/ToastContext';
 
 describe('Sistema de Transcrição e Ditado por Voz (Speech Recognition)', () => {
   const originalWindow = { ...window };
@@ -169,13 +170,15 @@ describe('Sistema de Transcrição e Ditado por Voz (Speech Recognition)', () =>
     const onSaveNotes = vi.fn();
 
     render(
-      <NotionNoteEditor
-        isOpen={true}
-        onClose={vi.fn()}
-        subtask={mockSubtask}
-        project={mockProject}
-        onSaveNotes={onSaveNotes}
-      />
+      <ToastProvider>
+        <NotionNoteEditor
+          isOpen={true}
+          onClose={vi.fn()}
+          subtask={mockSubtask}
+          project={mockProject}
+          onSaveNotes={onSaveNotes}
+        />
+      </ToastProvider>
     );
 
     expect(screen.getByText('📝 Estudar Algoritmos de Ordenação')).toBeInTheDocument();

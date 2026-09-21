@@ -4,6 +4,7 @@ import { StudyMetrics, Project, Subtask } from '@/features/core/types';
 import { BadgesGallery } from './stats/BadgesGallery';
 import { OverviewTab } from './stats/OverviewTab';
 import { ExportTab } from './stats/ExportTab';
+import { CopilotTab } from './stats/CopilotTab';
 import { badgeService } from '@/features/stats/api/badgeService';
 import { reportExportService } from '@/features/stats/api/reportExportService';
 import { useToast } from '@/features/core/contexts/ToastContext';
@@ -25,7 +26,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({
   projects = [],
   userName,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'badges' | 'export'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'badges' | 'export' | 'copilot'>('overview');
   const toast = useToast();
 
   const completedTasksCount = useMemo(() => {
@@ -101,6 +102,31 @@ export const StatsModal: React.FC<StatsModalProps> = ({
             Visão Geral
           </button>
           <button
+            className={`modal-tab-btn ${activeTab === 'copilot' ? 'active' : ''}`}
+            onClick={() => setActiveTab('copilot')}
+            style={{ color: activeTab === 'copilot' ? 'var(--color-primary)' : '' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ display: 'inline', marginRight: '5px' }}
+            >
+              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+              <path d="M5 3v4"/>
+              <path d="M19 17v4"/>
+              <path d="M3 5h4"/>
+              <path d="M17 19h4"/>
+            </svg>
+            Co-piloto IA 🪄
+          </button>
+          <button
             className={`modal-tab-btn ${activeTab === 'badges' ? 'active' : ''}`}
             onClick={() => setActiveTab('badges')}
           >
@@ -118,6 +144,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({
 
         <div className="modal-content">
           {activeTab === 'overview' && <OverviewTab metrics={metrics} formatHoursMinutes={formatHoursMinutes} />}
+          {activeTab === 'copilot' && <CopilotTab history={metrics.history} />}
           {activeTab === 'badges' && <BadgesGallery badges={badges} />}
           {activeTab === 'export' && (
             <ExportTab
