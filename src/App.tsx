@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useAudio } from './hooks/useAudio';
 import { useProjects } from './hooks/useProjects';
@@ -96,16 +96,67 @@ export const App: React.FC = () => {
   const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
   const { metrics, addCompletedSession, clearStats } = useStats();
 
-  // Rastreamento de tempo Pomodoro
+  // Buffer de tempo em memória para evitar 1 gravação + 1 re-render da árvore inteira a cada 1 segundo
+  const pendingTimeRef = React.useRef<{ subtaskId: string; seconds: number } | null>(null);
+
+  const flushPendingTime = useCallback(() => {
+    if (pendingTimeRef.current && pendingTimeRef.current.seconds > 0) {
+      const { subtaskId, seconds } = pendingTimeRef.current;
+      pendingTimeRef.current = null;
+      addTimeSpent(subtaskId, seconds);
+    }
+  }, [addTimeSpent]);
+
+  // Rastreamento de tempo Pomodoro com agregação (flush a cada 15 segundos ou ao pausar/finalizar)
   const handleTickSecond = useCallback(
     (mode: TimerMode, elapsedSeconds: number) => {
-      if (mode === 'pomodoro' && activeSubtaskId) addTimeSpent(activeSubtaskId, elapsedSeconds);
+      if (mode !== 'pomodoro' || !activeSubtaskId || elapsedSeconds <= 0) return;
+
+      if (!pendingTimeRef.current || pendingTimeRef.current.subtaskId !== activeSubtaskId) {
+        flushPendingTime();
+        pendingTimeRef.current = { subtaskId: activeSubtaskId, seconds: elapsedSeconds };
+      } else {
+        pendingTimeRef.current.seconds += elapsedSeconds;
+      }
+
+      // Descarrega para o estado/storage a cada 15 segundos de foco contínuo
+      if (pendingTimeRef.current.seconds >= 15) {
+        flushPendingTime();
+      }
     },
-    [activeSubtaskId, addTimeSpent]
+    [activeSubtaskId, flushPendingTime]
   );
+
+  // Flush ao trocar subtarefa ativa
+  useEffect(() => {
+    return () => {
+      flushPendingTime();
+    };
+  }, [activeSubtaskId, flushPendingTime]);
+
+  // Flush em caso de fechamento ou ocultamento da aba
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      flushPendingTime();
+      storageService.flushPendingRemoteSync();
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        flushPendingTime();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      flushPendingTime();
+    };
+  }, [flushPendingTime]);
 
   const handlePomodoroComplete = useCallback(
     (durationMinutes: number) => {
+      flushPendingTime();
       const discipline = activeSubtask?.discipline || 'Geral';
       addCompletedSession(discipline, durationMinutes);
       if (activeSubtaskId) incrementPomodoro(activeSubtaskId);
@@ -122,7 +173,7 @@ export const App: React.FC = () => {
         });
       }, 500);
     },
-    [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro, subtasks, metrics, toast]
+    [activeSubtask, activeSubtaskId, addCompletedSession, incrementPomodoro, subtasks, metrics, toast, flushPendingTime]
   );
 
   const timer = useTimer({
@@ -196,9 +247,18 @@ export const App: React.FC = () => {
   };
 
   useKeyboardShortcuts({
-    onToggleTimer: () => timer.toggle(),
-    onSkipTimer: () => timer.skip(),
-    onResetTimer: () => timer.reset(),
+    onToggleTimer: () => {
+      flushPendingTime();
+      timer.toggle();
+    },
+    onSkipTimer: () => {
+      flushPendingTime();
+      timer.skip();
+    },
+    onResetTimer: () => {
+      flushPendingTime();
+      timer.reset();
+    },
     onToggleZenMode: () => setIsZenModeOpen((prev) => !prev),
     onToggleCommandPalette: () => setIsCommandPaletteOpen((prev) => !prev),
     onCloseModals: () => {
@@ -211,11 +271,77 @@ export const App: React.FC = () => {
     playClick,
   });
 
-  const handleUpdateSettings = (newSettings: UserSettings) => {
-    setSettings(newSettings);
-    storageService.saveSettings(newSettings);
-    if (newSettings.theme !== theme) setTheme(newSettings.theme);
-  };
+  const timerWithFlush = useMemo(
+    () => ({
+      ...timer,
+      toggle: () => {
+        flushPendingTime();
+        timer.toggle();
+      },
+      skip: () => {
+        flushPendingTime();
+        timer.skip();
+      },
+      reset: () => {
+        flushPendingTime();
+        timer.reset();
+      },
+      changeMode: (newMode: TimerMode) => {
+        flushPendingTime();
+        timer.changeMode(newMode);
+      },
+    }),
+    [timer, flushPendingTime]
+  );
+
+  const handleUpdateSettings = useCallback(
+    (newSettings: UserSettings) => {
+      setSettings(newSettings);
+      storageService.saveSettings(newSettings);
+      if (newSettings.theme !== theme) setTheme(newSettings.theme);
+    },
+    [theme, setTheme]
+  );
+
+  const handleSelectProject = useCallback(
+    (pId: string | 'todos') => {
+      if (pId !== 'todos') {
+        const firstSub = subtasks.find((s) => s.project_id === pId);
+        if (firstSub) setActiveSubtaskId(firstSub.id);
+      } else {
+        setActiveSubtaskId(null);
+      }
+    },
+    [subtasks, setActiveSubtaskId]
+  );
+
+  const handleCreateProjectNav = useCallback(() => setCurrentView('projects'), []);
+  const handleOpenStatsModal = useCallback(() => setIsStatsOpen(true), []);
+  const handleCloseStatsModal = useCallback(() => setIsStatsOpen(false), []);
+  const handleToggleScratchpad = useCallback(() => setIsScratchpadOpen((prev) => !prev), []);
+  const handleCloseScratchpad = useCallback(() => setIsScratchpadOpen(false), []);
+  const handleOpenZenMode = useCallback(() => setIsZenModeOpen(true), []);
+  const handleCloseZenMode = useCallback(() => setIsZenModeOpen(false), []);
+  const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
+  const handleOpenCommandPalette = useCallback(() => setIsCommandPaletteOpen(true), []);
+  const handleCloseCommandPalette = useCallback(() => setIsCommandPaletteOpen(false), []);
+  const handleOpenMobileSidebar = useCallback(() => setIsMobileSidebarOpen(true), []);
+  const handleCloseMobileSidebar = useCallback(() => setIsMobileSidebarOpen(false), []);
+  const handleNavigateTimerTab = useCallback(() => setCurrentView('timer'), []);
+  const handleNavigateGroups = useCallback(() => setCurrentView('groups'), []);
+  const handleToggleAmbient = useCallback(
+    () => setAmbient(ambient === 'rain' ? 'none' : 'rain'),
+    [ambient, setAmbient]
+  );
+
+  const handleManualSync = useCallback(async () => {
+    const success = await syncService.syncAll();
+    if (success) {
+      toast.success('Sincronização com o Supabase concluída com sucesso!', 'Nuvem Atualizada');
+    } else {
+      toast.error('Não foi possível sincronizar no momento. Verifique a conexão.', 'Falha de Sincronização');
+    }
+  }, [toast]);
 
   return (
     <div className="app-shell">
@@ -225,14 +351,9 @@ export const App: React.FC = () => {
         streakDays={metrics.streak.currentStreak}
         projects={projects}
         selectedProjectId={activeProject?.id || 'todos'}
-        onSelectProject={(pId) => {
-          if (pId !== 'todos') {
-            const firstSub = subtasks.find((s) => s.project_id === pId);
-            if (firstSub) setActiveSubtaskId(firstSub.id);
-          }
-        }}
+        onSelectProject={handleSelectProject}
         onOpenProjectDetail={handleOpenProjectDetail}
-        onCreateProject={() => setCurrentView('projects')}
+        onCreateProject={handleCreateProjectNav}
         colorMode={colorMode}
         onToggleColorMode={toggleColorMode}
         ambientSound={ambient}
@@ -243,13 +364,13 @@ export const App: React.FC = () => {
         onGoogleLogin={handleGoogleLogin}
         onSignOut={handleSignOut}
         onOpenSettings={handleOpenSettings}
-        onOpenStats={() => setIsStatsOpen(true)}
-        onToggleScratchpad={() => setIsScratchpadOpen((prev) => !prev)}
-        onEnterZenMode={() => setIsZenModeOpen(true)}
+        onOpenStats={handleOpenStatsModal}
+        onToggleScratchpad={handleToggleScratchpad}
+        onEnterZenMode={handleOpenZenMode}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebarCollapse}
         isMobileOpen={isMobileSidebarOpen}
-        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        onCloseMobile={handleCloseMobileSidebar}
       />
 
       <div className={`app-main-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -261,24 +382,17 @@ export const App: React.FC = () => {
           onGoogleLogin={handleGoogleLogin}
           onSignOut={handleSignOut}
           onOpenSettings={handleOpenSettings}
-          onOpenStats={() => setIsStatsOpen(true)}
-          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenStats={handleOpenStatsModal}
+          onOpenCommandPalette={handleOpenCommandPalette}
           currentView={currentView}
-          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          onOpenMobileSidebar={handleOpenMobileSidebar}
           isTimerRunning={timer.isRunning}
           timerFormattedTime={timer.formattedTime}
           activeTaskTitle={activeSubtask?.title}
           activeProjectTitle={activeProject?.title}
-          onOpenTimerTab={() => setCurrentView('timer')}
+          onOpenTimerTab={handleNavigateTimerTab}
           syncInfo={syncInfo}
-          onManualSync={async () => {
-            const success = await syncService.syncAll();
-            if (success) {
-              toast.success('Sincronização com o Supabase concluída com sucesso!', 'Nuvem Atualizada');
-            } else {
-              toast.error('Não foi possível sincronizar no momento. Verifique a conexão.', 'Falha de Sincronização');
-            }
-          }}
+          onManualSync={handleManualSync}
         />
 
         <main className={`app-container view-${currentView}`}>
@@ -289,7 +403,7 @@ export const App: React.FC = () => {
             getRandomQuote={getRandomQuote}
             addMantra={addMantra}
             isRotating={isRotating}
-            timer={timer}
+            timer={timerWithFlush}
             activeSubtask={activeSubtask}
             activeProject={activeProject}
             playClick={playClick}
@@ -323,24 +437,35 @@ export const App: React.FC = () => {
       </div>
 
       <AppModals
-        isScratchpadOpen={isScratchpadOpen} onCloseScratchpad={() => setIsScratchpadOpen(false)}
-        isStatsOpen={isStatsOpen} onCloseStats={() => setIsStatsOpen(false)}
+        isScratchpadOpen={isScratchpadOpen}
+        onCloseScratchpad={handleCloseScratchpad}
+        isStatsOpen={isStatsOpen}
+        onCloseStats={handleCloseStatsModal}
         metrics={metrics}
-        isSettingsOpen={isSettingsOpen} onCloseSettings={() => setIsSettingsOpen(false)}
-        settings={settings} onUpdateSettings={handleUpdateSettings}
+        isSettingsOpen={isSettingsOpen}
+        onCloseSettings={handleCloseSettings}
+        settings={settings}
+        onUpdateSettings={handleUpdateSettings}
         onPlayAlarm={playAlarm}
         userProfile={userProfile}
         settingsTab={settingsTab}
-        isZenModeOpen={isZenModeOpen} onCloseZenMode={() => setIsZenModeOpen(false)}
-        timer={timer}
+        isZenModeOpen={isZenModeOpen}
+        onCloseZenMode={handleCloseZenMode}
+        timer={timerWithFlush}
         activeSubtask={activeSubtask}
         activeQuote={activeQuote}
-        ambient={ambient} onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}
-        isCommandPaletteOpen={isCommandPaletteOpen} onCloseCommandPalette={() => setIsCommandPaletteOpen(false)}
-        onNavigate={setCurrentView} onOpenProjectDetail={handleOpenProjectDetail}
-        onOpenGroup={() => setCurrentView('groups')} onOpenZenMode={() => setIsZenModeOpen(true)}
-        onOpenSettings={handleOpenSettings} onOpenStats={() => setIsStatsOpen(true)}
-        onToggleTheme={toggleColorMode} projects={projects} subtasks={subtasks}
+        ambient={ambient}
+        onToggleAmbient={handleToggleAmbient}
+        isCommandPaletteOpen={isCommandPaletteOpen}
+        onCloseCommandPalette={handleCloseCommandPalette}
+        onNavigate={setCurrentView}
+        onOpenProjectDetail={handleOpenProjectDetail}
+        onOpenGroup={handleNavigateGroups}
+        onOpenZenMode={handleOpenZenMode}
+        onOpenSettings={handleOpenSettings}
+        onOpenStats={handleOpenStatsModal}
+        onToggleTheme={toggleColorMode}
+        projects={projects}
       />
     </div>
   );

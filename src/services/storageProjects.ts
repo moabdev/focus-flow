@@ -243,6 +243,25 @@ export class StorageProjectsService {
     }
   }
 
+  private remoteSyncTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingSubtaskSync: Subtask | null = null;
+  private pendingProjectSync: Project | null = null;
+
+  public flushPendingRemoteSync(): void {
+    if (this.remoteSyncTimeout) {
+      clearTimeout(this.remoteSyncTimeout);
+      this.remoteSyncTimeout = null;
+    }
+    if (this.pendingSubtaskSync) {
+      this.saveSubtask(this.pendingSubtaskSync).catch(() => {});
+      this.pendingSubtaskSync = null;
+    }
+    if (this.pendingProjectSync) {
+      this.saveProject(this.pendingProjectSync).catch(() => {});
+      this.pendingProjectSync = null;
+    }
+  }
+
   public async addTimeSpent(
     subtaskId: string,
     seconds: number
@@ -265,10 +284,18 @@ export class StorageProjectsService {
       targetProject = projects[projIndex];
       targetProject.total_elapsed_seconds = (targetProject.total_elapsed_seconds || 0) + seconds;
       this.saveLocalProjects(projects);
-      this.saveProject(targetProject).catch(() => {});
     }
 
-    this.saveSubtask(targetSubtask).catch(() => {});
+    // Debounce na sincronização remota com o Supabase para evitar enxurrada de requisições HTTP
+    this.pendingSubtaskSync = targetSubtask;
+    if (targetProject) {
+      this.pendingProjectSync = targetProject;
+    }
+
+    if (this.remoteSyncTimeout) clearTimeout(this.remoteSyncTimeout);
+    this.remoteSyncTimeout = setTimeout(() => {
+      this.flushPendingRemoteSync();
+    }, 2000);
 
     return { subtask: targetSubtask, project: targetProject };
   }

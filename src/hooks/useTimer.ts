@@ -162,8 +162,17 @@ export function useTimer({
   ]);
 
   const lastSecondRef = useRef<number>(timeLeft);
+  const onTickSecondRef = useRef(onTickSecond);
+  useEffect(() => {
+    onTickSecondRef.current = onTickSecond;
+  }, [onTickSecond]);
 
-  // Contagem regressiva compensada por delta
+  const handleCycleCompleteRef = useRef(handleCycleComplete);
+  useEffect(() => {
+    handleCycleCompleteRef.current = handleCycleComplete;
+  }, [handleCycleComplete]);
+
+  // Contagem regressiva compensada por delta (sem recriar o intervalo a cada tick)
   useEffect(() => {
     if (isRunning) {
       if (!endTimeRef.current) {
@@ -177,8 +186,8 @@ export function useTimer({
 
         if (diff >= 1) {
           lastSecondRef.current = remaining;
-          if (onTickSecond) {
-            onTickSecond(mode, diff);
+          if (onTickSecondRef.current) {
+            onTickSecondRef.current(mode, diff);
           }
         }
 
@@ -186,19 +195,25 @@ export function useTimer({
 
         if (remaining <= 0) {
           endTimeRef.current = null;
-          handleCycleComplete();
+          handleCycleCompleteRef.current();
         }
       }, 250);
     } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       endTimeRef.current = null;
       lastSecondRef.current = timeLeft;
     }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
-  }, [isRunning, timeLeft, handleCycleComplete, mode, onTickSecond]);
+  }, [isRunning, mode]);
 
   const start = (customTime?: number) => {
     const timeToSet = customTime !== undefined ? customTime : timeLeft;

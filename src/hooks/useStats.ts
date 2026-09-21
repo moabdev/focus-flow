@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { StudySession, StudyMetrics, StreakInfo } from '../types';
 import { storageService } from '../services/storage';
 import { syncService } from '../services/syncService';
@@ -144,8 +144,10 @@ export function useStats() {
     setSessions([]);
   }, []);
 
+  const metrics = useMemo(() => computeMetrics(), [sessions]);
+
   return {
-    metrics: computeMetrics(),
+    metrics,
     addCompletedSession,
     refreshStats: loadSessions,
     clearStats,

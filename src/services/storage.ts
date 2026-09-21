@@ -126,6 +126,10 @@ export class StorageService {
     return this.projectsService.addTimeSpent(subtaskId, seconds);
   }
 
+  public flushPendingRemoteSync(): void {
+    this.projectsService.flushPendingRemoteSync();
+  }
+
   public getLocalTasks(): Task[] {
     return this.projectsService.getLocalTasks();
   }

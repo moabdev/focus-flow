@@ -35,7 +35,7 @@ interface ProjectCardProps {
   onOpenNotes: (subtask: Subtask) => void;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
+export const ProjectCard: React.FC<ProjectCardProps> = React.memo(({
   project,
   projectSubtasks,
   visibleSubtasks,
@@ -340,4 +340,4 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       />
     </div>
   );
-};
+});

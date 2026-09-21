@@ -23,7 +23,7 @@ interface SubtaskItemProps {
   onDeleteSubtask: (id: string) => void;
 }
 
-export const SubtaskItem: React.FC<SubtaskItemProps> = ({
+export const SubtaskItem: React.FC<SubtaskItemProps> = React.memo(({
   subtask,
   isCurrentActive,
   onToggleCompleted,
@@ -190,4 +190,4 @@ export const SubtaskItem: React.FC<SubtaskItemProps> = ({
       </div>
     </div>
   );
-};
+});

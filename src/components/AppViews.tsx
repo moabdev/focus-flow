@@ -1,14 +1,53 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { QuoteBanner } from './QuoteBanner';
 import { TimerCard } from './TimerCard';
 import { ProjectManager } from './ProjectManager';
-import { CalendarView } from './CalendarView';
-import { ProjectDetailView } from './projects/ProjectDetailView';
-import { StudyGroupsView } from './groups/StudyGroupsView';
-import { WeeklyLeaderboardView } from './ranking/WeeklyLeaderboardView';
-import { DraftsView } from './drafts/DraftsView';
-import { FlashcardsView } from './flashcards/FlashcardsView';
-import { MindMapsView } from './mindmaps/MindMapsView';
+
+// Lazy loading de visões secundárias para reduzir bundle inicial
+const CalendarView = lazy(() => import('./CalendarView').then((m) => ({ default: m.CalendarView })));
+const ProjectDetailView = lazy(() =>
+  import('./projects/ProjectDetailView').then((m) => ({ default: m.ProjectDetailView }))
+);
+const StudyGroupsView = lazy(() =>
+  import('./groups/StudyGroupsView').then((m) => ({ default: m.StudyGroupsView }))
+);
+const WeeklyLeaderboardView = lazy(() =>
+  import('./ranking/WeeklyLeaderboardView').then((m) => ({ default: m.WeeklyLeaderboardView }))
+);
+const DraftsView = lazy(() => import('./drafts/DraftsView').then((m) => ({ default: m.DraftsView })));
+const FlashcardsView = lazy(() =>
+  import('./flashcards/FlashcardsView').then((m) => ({ default: m.FlashcardsView }))
+);
+const MindMapsView = lazy(() =>
+  import('./mindmaps/MindMapsView').then((m) => ({ default: m.MindMapsView }))
+);
+
+const ViewLoadingFallback: React.FC = () => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '320px',
+      gap: '1rem',
+      color: 'var(--text-muted)',
+    }}
+  >
+    <div
+      style={{
+        width: '36px',
+        height: '36px',
+        border: '3px solid var(--border-glass-subtle)',
+        borderTopColor: 'var(--accent-primary)',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }}
+    />
+    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Carregando módulo...</span>
+  </div>
+);
+
 import type {
   Quote,
   TimerMode,
@@ -88,7 +127,7 @@ export interface AppViewsProps {
   weekMinutes: number;
 }
 
-export const AppViews: React.FC<AppViewsProps> = ({
+export const AppViews: React.FC<AppViewsProps> = React.memo(({
   currentView,
   setCurrentView,
   activeQuote,
@@ -211,83 +250,86 @@ export const AppViews: React.FC<AppViewsProps> = ({
         />
       )}
 
-      {/* Visão 3: Página Individual de Detalhes do Projeto */}
-      {currentView === 'project-detail' && currentDetailProject && (
-        <ProjectDetailView
-          project={currentDetailProject}
-          subtasks={detailSubtasks}
-          activeSubtaskId={activeSubtaskId}
-          onSelectActiveSubtask={setActiveSubtaskId}
-          onBack={onBackFromProjectDetail}
-          onDeleteProject={deleteProject}
-          onCreateSubtask={onCreateSubtask}
-          onUpdateSubtask={onUpdateSubtask}
-          onDeleteSubtask={onDeleteSubtask}
-          onToggleSubtaskCompleted={onToggleSubtaskCompleted}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
+      {/* Visões Secundárias Carregadas Sob Demanda (Code Splitting) */}
+      <Suspense fallback={<ViewLoadingFallback />}>
+        {/* Visão 3: Página Individual de Detalhes do Projeto */}
+        {currentView === 'project-detail' && currentDetailProject && (
+          <ProjectDetailView
+            project={currentDetailProject}
+            subtasks={detailSubtasks}
+            activeSubtaskId={activeSubtaskId}
+            onSelectActiveSubtask={setActiveSubtaskId}
+            onBack={onBackFromProjectDetail}
+            onDeleteProject={deleteProject}
+            onCreateSubtask={onCreateSubtask}
+            onUpdateSubtask={onUpdateSubtask}
+            onDeleteSubtask={onDeleteSubtask}
+            onToggleSubtaskCompleted={onToggleSubtaskCompleted}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        )}
 
-      {/* Visão 4: Calendário & Time-Blocking */}
-      {currentView === 'calendar' && (
-        <CalendarView
-          events={events}
-          projects={projects}
-          subtasks={subtasks}
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-          calendarView={calendarView}
-          onChangeView={setCalendarView}
-          onAddEvent={addEvent}
-          onUpdateEvent={updateEvent}
-          onDeleteEvent={deleteEvent}
-          onToggleEventCompleted={toggleEventCompleted}
-          onSelectSubtaskForFocus={(sId) => setActiveSubtaskId(sId)}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
+        {/* Visão 4: Calendário & Time-Blocking */}
+        {currentView === 'calendar' && (
+          <CalendarView
+            events={events}
+            projects={projects}
+            subtasks={subtasks}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            calendarView={calendarView}
+            onChangeView={setCalendarView}
+            onAddEvent={addEvent}
+            onUpdateEvent={updateEvent}
+            onDeleteEvent={deleteEvent}
+            onToggleEventCompleted={toggleEventCompleted}
+            onSelectSubtaskForFocus={(sId) => setActiveSubtaskId(sId)}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        )}
 
-      {/* Visão 5: Grupos de Estudo & Chat */}
-      {currentView === 'groups' && (
-        <StudyGroupsView
-          userProfile={userProfile}
-          isUserStudying={timer.isRunning}
-          activeTaskTitle={activeSubtask?.title}
-        />
-      )}
+        {/* Visão 5: Grupos de Estudo & Chat */}
+        {currentView === 'groups' && (
+          <StudyGroupsView
+            userProfile={userProfile}
+            isUserStudying={timer.isRunning}
+            activeTaskTitle={activeSubtask?.title}
+          />
+        )}
 
-      {/* Visão 6: Ranking Semanal de Foco */}
-      {currentView === 'ranking' && (
-        <WeeklyLeaderboardView
-          currentUserMinutes={weekMinutes}
-          userProfile={userProfile}
-        />
-      )}
+        {/* Visão 6: Ranking Semanal de Foco */}
+        {currentView === 'ranking' && (
+          <WeeklyLeaderboardView
+            currentUserMinutes={weekMinutes}
+            userProfile={userProfile}
+          />
+        )}
 
-      {/* Visão 7: Rascunhos & Notas Rápidas */}
-      {currentView === 'drafts' && (
-        <DraftsView
-          projects={projects}
-          subtasks={subtasks}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
+        {/* Visão 7: Rascunhos & Notas Rápidas */}
+        {currentView === 'drafts' && (
+          <DraftsView
+            projects={projects}
+            subtasks={subtasks}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        )}
 
-      {/* Visão 8: Flashcards & Repetição Espaçada */}
-      {currentView === 'flashcards' && (
-        <FlashcardsView
-          projects={projects}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
+        {/* Visão 8: Flashcards & Repetição Espaçada */}
+        {currentView === 'flashcards' && (
+          <FlashcardsView
+            projects={projects}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        )}
 
-      {/* Visão 9: Mapas Mentais Interativos */}
-      {currentView === 'mindmaps' && (
-        <MindMapsView
-          projects={projects}
-          onOpenTimerTab={() => setCurrentView('timer')}
-        />
-      )}
+        {/* Visão 9: Mapas Mentais Interativos */}
+        {currentView === 'mindmaps' && (
+          <MindMapsView
+            projects={projects}
+            onOpenTimerTab={() => setCurrentView('timer')}
+          />
+        )}
+      </Suspense>
     </>
   );
-};
+});

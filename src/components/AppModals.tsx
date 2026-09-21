@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { UserSettings, SupabaseProfile, Subtask, AmbientSound, StudyMetrics, Quote, AppViewMode, Project, StudyGroup } from '../types';
 import { storageGroupsService } from '../services/storageGroups';
-import { Scratchpad } from './Scratchpad';
-import { StatsModal } from './StatsModal';
-import { SettingsModal } from './SettingsModal';
-import { ZenMode } from './ZenMode';
 import { CommandPalette } from './common/CommandPalette';
+
+// Lazy loading dos modais pesados para que só sejam carregados sob demanda
+const Scratchpad = lazy(() => import('./Scratchpad').then((m) => ({ default: m.Scratchpad })));
+const StatsModal = lazy(() => import('./StatsModal').then((m) => ({ default: m.StatsModal })));
+const SettingsModal = lazy(() => import('./SettingsModal').then((m) => ({ default: m.SettingsModal })));
+const ZenMode = lazy(() => import('./ZenMode').then((m) => ({ default: m.ZenMode })));
 
 interface AppModalsProps {
   isScratchpadOpen: boolean;
@@ -48,7 +50,7 @@ interface AppModalsProps {
   groups?: StudyGroup[];
 }
 
-export const AppModals: React.FC<AppModalsProps> = ({
+export const AppModals: React.FC<AppModalsProps> = React.memo(({
   isScratchpadOpen,
   onCloseScratchpad,
   isStatsOpen,
@@ -84,48 +86,64 @@ export const AppModals: React.FC<AppModalsProps> = ({
   return (
     <>
       {/* Gaveta Lateral de Anotações (Scratchpad) */}
-      <Scratchpad
-        isOpen={isScratchpadOpen}
-        onClose={onCloseScratchpad}
-        projects={projects}
-        subtasks={subtasks}
-      />
+      {isScratchpadOpen && (
+        <Suspense fallback={null}>
+          <Scratchpad
+            isOpen={isScratchpadOpen}
+            onClose={onCloseScratchpad}
+            projects={projects}
+            subtasks={subtasks}
+          />
+        </Suspense>
+      )}
 
       {/* Modal de Estatísticas, Conquistas & Exportação de Relatórios */}
-      <StatsModal
-        isOpen={isStatsOpen}
-        onClose={onCloseStats}
-        metrics={metrics}
-        subtasks={subtasks}
-        projects={projects}
-        userName={userProfile?.full_name}
-      />
+      {isStatsOpen && (
+        <Suspense fallback={null}>
+          <StatsModal
+            isOpen={isStatsOpen}
+            onClose={onCloseStats}
+            metrics={metrics}
+            subtasks={subtasks}
+            projects={projects}
+            userName={userProfile?.full_name}
+          />
+        </Suspense>
+      )}
 
       {/* Modal de Configurações Gerais */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={onCloseSettings}
-        settings={settings}
-        onUpdateSettings={onUpdateSettings}
-        onPlayAlarmPreview={onPlayAlarm}
-        userProfile={userProfile}
-        onRefreshTasks={() => window.location.reload()}
-        initialTab={settingsTab}
-      />
+      {isSettingsOpen && (
+        <Suspense fallback={null}>
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={onCloseSettings}
+            settings={settings}
+            onUpdateSettings={onUpdateSettings}
+            onPlayAlarmPreview={onPlayAlarm}
+            userProfile={userProfile}
+            onRefreshTasks={() => window.location.reload()}
+            initialTab={settingsTab}
+          />
+        </Suspense>
+      )}
 
       {/* Modo Zen (Fullscreen) */}
-      <ZenMode
-        isOpen={isZenModeOpen}
-        onExit={onCloseZenMode}
-        formattedTime={timer.formattedTime}
-        progressPercent={timer.progressPercent}
-        isRunning={timer.isRunning}
-        onToggleTimer={timer.toggle}
-        activeTask={activeSubtask}
-        quoteText={activeQuote.text}
-        ambientSound={ambient}
-        onToggleAmbient={onToggleAmbient}
-      />
+      {isZenModeOpen && (
+        <Suspense fallback={null}>
+          <ZenMode
+            isOpen={isZenModeOpen}
+            onExit={onCloseZenMode}
+            formattedTime={timer.formattedTime}
+            progressPercent={timer.progressPercent}
+            isRunning={timer.isRunning}
+            onToggleTimer={timer.toggle}
+            activeTask={activeSubtask}
+            quoteText={activeQuote.text}
+            ambientSound={ambient}
+            onToggleAmbient={onToggleAmbient}
+          />
+        </Suspense>
+      )}
 
       {/* Paleta Global de Comandos (Ctrl+K) */}
       <CommandPalette
@@ -147,4 +165,4 @@ export const AppModals: React.FC<AppModalsProps> = ({
       />
     </>
   );
-};
+});

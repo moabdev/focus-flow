@@ -31,7 +31,7 @@ interface HeaderProps {
   onManualSync?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps> = React.memo(({
   streakDays,
   colorMode,
   onToggleColorMode,
@@ -162,4 +162,4 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-};
+});

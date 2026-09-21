@@ -17,7 +17,7 @@ interface TimerCardProps {
   onOpenTasksScroll: () => void;
 }
 
-export const TimerCard: React.FC<TimerCardProps> = ({
+export const TimerCard: React.FC<TimerCardProps> = React.memo(({
   mode,
   onChangeMode,
   formattedTime,
@@ -189,4 +189,4 @@ export const TimerCard: React.FC<TimerCardProps> = ({
       )}
     </div>
   );
-};
+});
