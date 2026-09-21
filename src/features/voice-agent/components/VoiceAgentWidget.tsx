@@ -119,7 +119,7 @@ export const VoiceAgentWidget: React.FC<VoiceAgentWidgetProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           <button
             type="button"
             onClick={onToggleMute}
@@ -143,7 +143,7 @@ export const VoiceAgentWidget: React.FC<VoiceAgentWidgetProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="voice-header-btn ml-1"
+            className="voice-header-btn"
             title="Fechar widget"
             aria-label="Fechar"
           >

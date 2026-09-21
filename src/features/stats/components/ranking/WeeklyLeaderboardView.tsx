@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, Flame, Play, Clock, Sparkles } from 'lucide-react';
 import { LeaderboardUser } from '@/features/core/types';
+import { leaderboardService } from '../../api/leaderboardService';
 
 interface WeeklyLeaderboardViewProps {
   userWeekMinutes?: number;
@@ -8,54 +9,11 @@ interface WeeklyLeaderboardViewProps {
   userTotalPomodoros?: number;
   userStreakDays?: number;
   userName?: string;
-  userProfile?: { full_name?: string } | null;
+  userProfile?: { id?: string; full_name?: string } | null;
   onOpenTimerTab?: () => void;
 }
 
-const SEED_COMMUNITY_USERS: LeaderboardUser[] = [
-  {
-    id: 'u-1',
-    name: 'Renata Delegada',
-    weekly_seconds: 64800, // 18h
-    pomodoros_completed: 36,
-    streak_days: 21,
-  },
-  {
-    id: 'u-2',
-    name: 'Lucas Code',
-    weekly_seconds: 52200, // 14.5h
-    pomodoros_completed: 29,
-    streak_days: 14,
-  },
-  {
-    id: 'u-3',
-    name: 'Dra. Beatriz',
-    weekly_seconds: 43200, // 12h
-    pomodoros_completed: 24,
-    streak_days: 10,
-  },
-  {
-    id: 'u-4',
-    name: 'Mariana Concursos',
-    weekly_seconds: 37800, // 10.5h
-    pomodoros_completed: 21,
-    streak_days: 8,
-  },
-  {
-    id: 'u-5',
-    name: 'Carlos OAB',
-    weekly_seconds: 32400, // 9h
-    pomodoros_completed: 18,
-    streak_days: 7,
-  },
-  {
-    id: 'u-6',
-    name: 'Gabriel DevOps',
-    weekly_seconds: 27000, // 7.5h
-    pomodoros_completed: 15,
-    streak_days: 5,
-  },
-];
+
 
 export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
   userWeekMinutes = 0,
@@ -69,6 +27,33 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
   const actualMinutes = currentUserMinutes !== undefined ? currentUserMinutes : userWeekMinutes;
   const effectiveName = userName || userProfile?.full_name || 'Você';
   const [filterType, setFilterType] = useState<'geral' | 'grupos'>('geral');
+  const [rankingData, setRankingData] = useState<LeaderboardUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    const fetchRanking = async () => {
+      let data: LeaderboardUser[] = [];
+      if (filterType === 'geral') {
+        data = await leaderboardService.getCommunityRanking();
+      } else {
+        data = await leaderboardService.getMyGroupsRanking();
+      }
+
+      if (isMounted) {
+        setRankingData(data);
+        setIsLoading(false);
+      }
+    };
+
+    fetchRanking();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [filterType]);
 
   const formatSeconds = (totalSecs: number) => {
     const hours = Math.floor(totalSecs / 3600);
@@ -76,7 +61,7 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
     return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
   };
 
-  // Junta os usuários da comunidade com as métricas reais do usuário atual
+  // Junta os usuários do ranking dinâmico com as métricas reais do usuário atual local
   const rankedUsers = useMemo(() => {
     const currentUserEntry: LeaderboardUser = {
       id: 'current-user',
@@ -87,10 +72,15 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
       is_current_user: true,
     };
 
-    const list = [...SEED_COMMUNITY_USERS, currentUserEntry];
+    // Remove o usuário atual do fetched data para não duplicar, já que temos dados locais mais recentes (is_current_user)
+    const filteredData = rankingData.filter(
+      (u) => u.name.toLowerCase() !== effectiveName.toLowerCase() && u.id !== userProfile?.id
+    );
+
+    const list = [...filteredData, currentUserEntry];
     list.sort((a, b) => b.weekly_seconds - a.weekly_seconds);
     return list;
-  }, [actualMinutes, userTotalPomodoros, userStreakDays, effectiveName]);
+  }, [rankingData, actualMinutes, userTotalPomodoros, userStreakDays, effectiveName, userProfile]);
 
   const top1 = rankedUsers[0];
   const top2 = rankedUsers[1];
@@ -134,8 +124,15 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
         </div>
       </div>
 
-      {/* Pódio Visual Top 3 */}
-      <div className="ranking-podium-grid">
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
+          <Clock size={24} className="animate-spin" style={{ marginRight: '8px' }} />
+          <span>Carregando ranking...</span>
+        </div>
+      ) : (
+        <>
+          {/* Pódio Visual Top 3 */}
+          <div className="ranking-podium-grid">
         {/* 2º Lugar */}
         {top2 && (
           <div className="podium-card second rank-2 glass-panel">
@@ -228,6 +225,8 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };
