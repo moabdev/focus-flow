@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, CheckCircle, Play, Settings2, Trash2 } from 'lucide-react';
 import { FlashcardDeck, Project } from '@/features/core/types';
+import { ConfirmModal } from '@/features/core/components/common/ConfirmModal';
 
 interface FlashcardsDeckListProps {
   decks: FlashcardDeck[];
@@ -23,6 +24,8 @@ export const FlashcardsDeckList: React.FC<FlashcardsDeckListProps> = ({
   openEditDeckModal,
   deleteDeck,
 }) => {
+  const [deckToDelete, setDeckToDelete] = useState<FlashcardDeck | null>(null);
+
   if (decks.length === 0) {
     return (
       <div
@@ -49,90 +52,106 @@ export const FlashcardsDeckList: React.FC<FlashcardsDeckListProps> = ({
   }
 
   return (
-    <div className="decks-list">
-      {decks.map((deck) => {
-        const hasDue = (deck.due_count || 0) > 0;
-        const project = projects.find((p) => p.id === deck.project_id);
+    <>
+      <div className="decks-list">
+        {decks.map((deck) => {
+          const hasDue = (deck.due_count || 0) > 0;
+          const project = projects.find((p) => p.id === deck.project_id);
 
-        return (
-          <div key={deck.id} className="deck-list-item">
-            <div className="deck-list-item-color-bar" style={{ background: deck.color }} />
+          return (
+            <div key={deck.id} className="deck-list-item">
+              <div className="deck-list-item-color-bar" style={{ background: deck.color }} />
 
-            <div className="deck-list-item-icon">{deck.icon}</div>
+              <div className="deck-list-item-icon">{deck.icon}</div>
 
-            <div className="deck-list-item-content">
-              <div className="deck-list-item-header">
-                <h3 className="deck-list-item-title">{deck.title}</h3>
-                {project && (
-                  <span className="deck-list-project">
-                    {project.icon || '📁'} {project.title}
+              <div className="deck-list-item-content">
+                <div className="deck-list-item-header">
+                  <h3 className="deck-list-item-title">{deck.title}</h3>
+                  {project && (
+                    <span className="deck-list-project">
+                      {project.icon || '📁'} {project.title}
+                    </span>
+                  )}
+                </div>
+
+                {deck.description && <p className="deck-list-item-desc">{deck.description}</p>}
+
+                <div className="deck-list-item-meta">
+                  <span className="deck-list-count">
+                    <strong>{deck.card_count || 0}</strong> {deck.card_count === 1 ? 'cartão' : 'cartões'}
+                  </span>
+                  {deck.tags && deck.tags.length > 0 && (
+                    <div className="deck-tags-row" style={{ marginTop: 0 }}>
+                      {deck.tags.map((t, i) => (
+                        <span key={i} className="deck-tag-pill">
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="deck-list-item-status">
+                {hasDue ? (
+                  <span className="deck-due-badge">
+                    {deck.due_count} {deck.due_count === 1 ? 'pendente' : 'pendentes'}
+                  </span>
+                ) : (
+                  <span className="deck-done-badge">
+                    <CheckCircle size={13} /> Em dia
                   </span>
                 )}
               </div>
 
-              {deck.description && <p className="deck-list-item-desc">{deck.description}</p>}
+              <div className="deck-list-item-actions">
+                <button
+                  className="btn-study-deck"
+                  onClick={() => openStudyModal(deck.id)}
+                  title="Iniciar Sessão de Estudo"
+                >
+                  <Play size={16} /> Estudar
+                </button>
 
-              <div className="deck-list-item-meta">
-                <span className="deck-list-count">
-                  <strong>{deck.card_count || 0}</strong> {deck.card_count === 1 ? 'cartão' : 'cartões'}
-                </span>
-                {deck.tags && deck.tags.length > 0 && (
-                  <div className="deck-tags-row" style={{ marginTop: 0 }}>
-                    {deck.tags.map((t, i) => (
-                      <span key={i} className="deck-tag-pill">
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <button
+                  className="btn-deck-icon"
+                  onClick={() => openEditDeckModal(deck)}
+                  title="Gerenciar / Adicionar Cartões"
+                >
+                  <Settings2 size={16} />
+                </button>
+
+                <button
+                  className="btn-deck-icon"
+                  onClick={() => setDeckToDelete(deck)}
+                  title="Excluir Baralho"
+                  style={{ color: '#ef4444' }}
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="deck-list-item-status">
-              {hasDue ? (
-                <span className="deck-due-badge">
-                  {deck.due_count} {deck.due_count === 1 ? 'pendente' : 'pendentes'}
-                </span>
-              ) : (
-                <span className="deck-done-badge">
-                  <CheckCircle size={13} /> Em dia
-                </span>
-              )}
-            </div>
-
-            <div className="deck-list-item-actions">
-              <button
-                className="btn-study-deck"
-                onClick={() => openStudyModal(deck.id)}
-                title="Iniciar Sessão de Estudo"
-              >
-                <Play size={16} /> Estudar
-              </button>
-
-              <button
-                className="btn-deck-icon"
-                onClick={() => openEditDeckModal(deck)}
-                title="Gerenciar / Adicionar Cartões"
-              >
-                <Settings2 size={16} />
-              </button>
-
-              <button
-                className="btn-deck-icon"
-                onClick={() => {
-                  if (window.confirm(`Tem certeza que deseja excluir o baralho "${deck.title}" e todos os seus cartões?`)) {
-                    deleteDeck(deck.id);
-                  }
-                }}
-                title="Excluir Baralho"
-                style={{ color: '#ef4444' }}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+      <ConfirmModal
+        isOpen={!!deckToDelete}
+        title="Excluir Baralho"
+        message={
+          <>
+            Tem certeza que deseja excluir o baralho <strong>"{deckToDelete?.title}"</strong> e todos os seus cartões? Esta ação não pode ser desfeita.
+          </>
+        }
+        confirmText="Excluir Baralho"
+        onConfirm={() => {
+          if (deckToDelete) {
+            deleteDeck(deckToDelete.id);
+            setDeckToDelete(null);
+          }
+        }}
+        onCancel={() => setDeckToDelete(null)}
+      />
+    </>
   );
 };
