@@ -30,6 +30,7 @@ export const getGoogleAccessToken = async (): Promise<string | null> => {
     if (!client) return null;
 
     const { data } = await client.auth.getSession();
+    if (data?.session?.user.app_metadata.provider !== 'google') return null;
     const token = data?.session?.provider_token || null;
     return token;
   } catch {

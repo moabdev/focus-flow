@@ -9,11 +9,18 @@ import {
   updateGoogleCalendarEvent,
   deleteGoogleCalendarEvent,
 } from '@/services/calendar/googleCalendarService';
+import {
+  getMicrosoftAccessToken,
+  fetchOutlookCalendarEvents,
+  createOutlookCalendarEvent,
+  updateOutlookCalendarEvent,
+  deleteOutlookCalendarEvent,
+} from '@/services/calendar/outlookCalendarService';
 
-/** How often to auto-pull from Google Calendar (in milliseconds) */
-const GOOGLE_SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+/** How often to auto-pull from Google/Outlook Calendar (in milliseconds) */
+const SYNC_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-export type GoogleSyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'disconnected';
+export type CloudCalendarSyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'disconnected';
 
 export function useCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -21,8 +28,12 @@ export function useCalendar() {
     return new Date().toISOString().split('T')[0];
   });
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
-  const [googleSyncStatus, setGoogleSyncStatus] = useState<GoogleSyncStatus>('idle');
+  
+  const [googleSyncStatus, setGoogleSyncStatus] = useState<CloudCalendarSyncStatus>('idle');
   const [lastGoogleSync, setLastGoogleSync] = useState<Date | null>(null);
+  
+  const [outlookSyncStatus, setOutlookSyncStatus] = useState<CloudCalendarSyncStatus>('idle');
+  const [lastOutlookSync, setLastOutlookSync] = useState<Date | null>(null);
 
   // Use a ref to always have the latest events inside async callbacks without stale closures
   const eventsRef = useRef<CalendarEvent[]>([]);
@@ -53,11 +64,6 @@ export function useCalendar() {
 
   // ─── Google Calendar Pull (bidirectional: Google → FocusFlow) ───────────────
 
-  /**
-   * Pulls events from Google Calendar for a 3-month window and merges them
-   * into the local state. Events with the same google_event_id are updated
-   * in place rather than duplicated.
-   */
   const pullFromGoogle = useCallback(async (silent = false) => {
     const token = await getGoogleAccessToken();
     if (!token) {
@@ -69,33 +75,28 @@ export function useCalendar() {
 
     try {
       const now = new Date();
-      // Pull 1 month back and 3 months forward for a good overview window
       const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
       const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
 
       const googleEvents = await fetchGoogleCalendarEvents(token, timeMin, timeMax);
 
       setEvents((prev) => {
-        // Build a map of google_event_id → local event for fast lookup
         const localByGoogleId = new Map<string, CalendarEvent>();
         prev.forEach((e) => {
           if (e.google_event_id) localByGoogleId.set(e.google_event_id, e);
         });
 
-        // Remove stale Google events not returned in this pull
         const pulledGoogleIds = new Set(googleEvents.map((e) => e.google_event_id!));
         const withoutStale = prev.filter(
           (e) => e.source !== 'google' || (e.google_event_id && pulledGoogleIds.has(e.google_event_id))
         );
 
-        // Merge: update existing, add new
         const merged = [...withoutStale];
         for (const ge of googleEvents) {
           const existingIdx = merged.findIndex(
             (e) => e.google_event_id === ge.google_event_id
           );
           if (existingIdx >= 0) {
-            // Update metadata (title, times) in case they changed on Google
             merged[existingIdx] = { ...merged[existingIdx], ...ge };
           } else {
             merged.push(ge);
@@ -114,33 +115,89 @@ export function useCalendar() {
     }
   }, []);
 
+  // ─── Outlook Calendar Pull (bidirectional: Outlook → FocusFlow) ───────────────
+
+  const pullFromOutlook = useCallback(async (silent = false) => {
+    const token = await getMicrosoftAccessToken();
+    if (!token) {
+      setOutlookSyncStatus('disconnected');
+      return;
+    }
+
+    if (!silent) setOutlookSyncStatus('syncing');
+
+    try {
+      const now = new Date();
+      const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+      const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
+
+      const outlookEvents = await fetchOutlookCalendarEvents(token, timeMin, timeMax);
+
+      setEvents((prev) => {
+        const localByOutlookId = new Map<string, CalendarEvent>();
+        prev.forEach((e) => {
+          if (e.outlook_event_id) localByOutlookId.set(e.outlook_event_id, e);
+        });
+
+        const pulledOutlookIds = new Set(outlookEvents.map((e) => e.outlook_event_id!));
+        const withoutStale = prev.filter(
+          (e) => e.source !== 'outlook' || (e.outlook_event_id && pulledOutlookIds.has(e.outlook_event_id))
+        );
+
+        const merged = [...withoutStale];
+        for (const oe of outlookEvents) {
+          const existingIdx = merged.findIndex(
+            (e) => e.outlook_event_id === oe.outlook_event_id
+          );
+          if (existingIdx >= 0) {
+            merged[existingIdx] = { ...merged[existingIdx], ...oe };
+          } else {
+            merged.push(oe);
+          }
+        }
+
+        storageService.saveLocalCalendarEvents(merged);
+        return merged;
+      });
+
+      setOutlookSyncStatus('synced');
+      setLastOutlookSync(new Date());
+    } catch (err) {
+      console.warn('[OutlookSync] Pull failed:', err);
+      setOutlookSyncStatus('error');
+    }
+  }, []);
+
   // Auto-pull on mount
   useEffect(() => {
     pullFromGoogle(true);
-  }, [pullFromGoogle]);
+    pullFromOutlook(true);
+  }, [pullFromGoogle, pullFromOutlook]);
 
   // Auto-pull every 5 minutes
   useEffect(() => {
-    const interval = setInterval(() => pullFromGoogle(true), GOOGLE_SYNC_INTERVAL_MS);
+    const interval = setInterval(() => {
+      pullFromGoogle(true);
+      pullFromOutlook(true);
+    }, SYNC_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [pullFromGoogle]);
+  }, [pullFromGoogle, pullFromOutlook]);
 
   // Auto-pull when the browser tab regains focus
   useEffect(() => {
-    const onFocus = () => pullFromGoogle(true);
+    const onFocus = () => {
+      pullFromGoogle(true);
+      pullFromOutlook(true);
+    };
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-  }, [pullFromGoogle]);
+  }, [pullFromGoogle, pullFromOutlook]);
 
   // ─── Google Calendar Push helpers ───────────────────────────────────────────
 
-  /**
-   * Attempts to push a new local event to Google Calendar.
-   * Returns the updated event with google_event_id attached, or the original on failure.
-   */
   const pushNewToGoogle = useCallback(async (event: CalendarEvent): Promise<CalendarEvent> => {
     const token = await getGoogleAccessToken();
-    if (!token || event.source === 'google') return event;
+    if (!token || event.source === 'google' || event.source === 'outlook') return event;
 
     try {
       const googleId = await createGoogleCalendarEvent(token, event);
@@ -151,9 +208,6 @@ export function useCalendar() {
     }
   }, []);
 
-  /**
-   * Attempts to update an existing event on Google Calendar.
-   */
   const pushUpdateToGoogle = useCallback(async (event: CalendarEvent): Promise<void> => {
     if (!event.google_event_id || event.source === 'google') return;
     const token = await getGoogleAccessToken();
@@ -166,9 +220,6 @@ export function useCalendar() {
     }
   }, []);
 
-  /**
-   * Attempts to delete an event from Google Calendar.
-   */
   const pushDeleteToGoogle = useCallback(async (googleEventId: string): Promise<void> => {
     const token = await getGoogleAccessToken();
     if (!token) return;
@@ -177,6 +228,44 @@ export function useCalendar() {
       await deleteGoogleCalendarEvent(token, googleEventId);
     } catch (err) {
       console.warn('[GoogleSync] Push (delete) failed:', err);
+    }
+  }, []);
+
+  // ─── Outlook Calendar Push helpers ──────────────────────────────────────────
+
+  const pushNewToOutlook = useCallback(async (event: CalendarEvent): Promise<CalendarEvent> => {
+    const token = await getMicrosoftAccessToken();
+    if (!token || event.source === 'outlook' || event.source === 'google') return event;
+
+    try {
+      const outlookId = await createOutlookCalendarEvent(token, event);
+      return { ...event, outlook_event_id: outlookId };
+    } catch (err) {
+      console.warn('[OutlookSync] Push (create) failed:', err);
+      return event;
+    }
+  }, []);
+
+  const pushUpdateToOutlook = useCallback(async (event: CalendarEvent): Promise<void> => {
+    if (!event.outlook_event_id || event.source === 'outlook') return;
+    const token = await getMicrosoftAccessToken();
+    if (!token) return;
+
+    try {
+      await updateOutlookCalendarEvent(token, event.outlook_event_id, event);
+    } catch (err) {
+      console.warn('[OutlookSync] Push (update) failed:', err);
+    }
+  }, []);
+
+  const pushDeleteToOutlook = useCallback(async (outlookEventId: string): Promise<void> => {
+    const token = await getMicrosoftAccessToken();
+    if (!token) return;
+
+    try {
+      await deleteOutlookCalendarEvent(token, outlookEventId);
+    } catch (err) {
+      console.warn('[OutlookSync] Push (delete) failed:', err);
     }
   }, []);
 
@@ -190,20 +279,26 @@ export function useCalendar() {
         source: eventData.source || 'local',
       };
 
-      // Optimistic local update
       setEvents((prev) => [...prev, newEvent]);
       await storageService.saveCalendarEvent(newEvent);
 
-      // Push to Google and persist google_event_id if created
+      // Push to Google (if connected)
       newEvent = await pushNewToGoogle(newEvent);
       if (newEvent.google_event_id) {
         setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? newEvent : e)));
         await storageService.saveCalendarEvent(newEvent);
       }
 
+      // Push to Outlook (if connected)
+      newEvent = await pushNewToOutlook(newEvent);
+      if (newEvent.outlook_event_id) {
+        setEvents((prev) => prev.map((e) => (e.id === newEvent.id ? newEvent : e)));
+        await storageService.saveCalendarEvent(newEvent);
+      }
+
       return newEvent;
     },
-    [pushNewToGoogle]
+    [pushNewToGoogle, pushNewToOutlook]
   );
 
   const updateEvent = useCallback(
@@ -216,10 +311,10 @@ export function useCalendar() {
       setEvents((prev) => prev.map((e) => (e.id === id ? updatedEvent : e)));
       await storageService.saveCalendarEvent(updatedEvent);
 
-      // Push update to Google
       await pushUpdateToGoogle(updatedEvent);
+      await pushUpdateToOutlook(updatedEvent);
     },
-    [pushUpdateToGoogle]
+    [pushUpdateToGoogle, pushUpdateToOutlook]
   );
 
   const deleteEvent = useCallback(
@@ -228,12 +323,14 @@ export function useCalendar() {
       setEvents((prev) => prev.filter((e) => e.id !== id));
       await storageService.deleteCalendarEvent(id);
 
-      // Delete from Google if it was synced
       if (target?.google_event_id) {
         await pushDeleteToGoogle(target.google_event_id);
       }
+      if (target?.outlook_event_id) {
+        await pushDeleteToOutlook(target.outlook_event_id);
+      }
     },
-    [pushDeleteToGoogle]
+    [pushDeleteToGoogle, pushDeleteToOutlook]
   );
 
   const toggleEventCompleted = useCallback(
@@ -244,9 +341,11 @@ export function useCalendar() {
       const updatedEvent: CalendarEvent = { ...target, is_completed: !target.is_completed };
       setEvents((prev) => prev.map((e) => (e.id === id ? updatedEvent : e)));
       await storageService.saveCalendarEvent(updatedEvent);
+      
       await pushUpdateToGoogle(updatedEvent);
+      await pushUpdateToOutlook(updatedEvent);
     },
-    [pushUpdateToGoogle]
+    [pushUpdateToGoogle, pushUpdateToOutlook]
   );
 
   // Eventos do dia selecionado
@@ -293,5 +392,9 @@ export function useCalendar() {
     googleSyncStatus,
     lastGoogleSync,
     pullFromGoogle,
+    // Outlook sync state (for UI)
+    outlookSyncStatus,
+    lastOutlookSync,
+    pullFromOutlook,
   };
 }

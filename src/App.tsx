@@ -36,6 +36,7 @@ export const App: React.FC = () => {
     addEvent, updateEvent, deleteEvent, toggleEventCompleted, clearEvents,
     importGoogleEvents, bulkUpdateEvents,
     googleSyncStatus, lastGoogleSync, pullFromGoogle,
+    outlookSyncStatus, lastOutlookSync, pullFromOutlook,
   } = useCalendar();
 
   const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
@@ -241,6 +242,9 @@ export const App: React.FC = () => {
             googleSyncStatus={googleSyncStatus}
             lastGoogleSync={lastGoogleSync}
             onManualGoogleSync={pullFromGoogle}
+            outlookSyncStatus={outlookSyncStatus}
+            lastOutlookSync={lastOutlookSync}
+            onManualOutlookSync={pullFromOutlook}
             userProfile={authAndSync.userProfile}
             weekMinutes={metrics.weekMinutes}
             metrics={metrics}

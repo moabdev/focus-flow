@@ -11,6 +11,8 @@ import { CalendarWeekView } from './calendar/CalendarWeekView';
 import { CalendarMonthView } from './calendar/CalendarMonthView';
 import { CalendarEventModal } from './calendar/CalendarEventModal';
 import { GoogleCalendarSyncPanel } from './calendar/GoogleCalendarSyncPanel';
+import { OutlookCalendarSyncPanel } from './calendar/OutlookCalendarSyncPanel';
+import { CloudCalendarSyncStatus } from '@/features/calendar/hooks/useCalendar';
 
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -28,9 +30,12 @@ interface CalendarViewProps {
   onOpenTimerTab?: () => void;
   onImportGoogleEvents: (events: CalendarEvent[]) => void;
   onBulkUpdateEvents: (events: CalendarEvent[]) => void;
-  googleSyncStatus: import('@/features/calendar/hooks/useCalendar').GoogleSyncStatus;
+  googleSyncStatus: CloudCalendarSyncStatus;
   lastGoogleSync: Date | null;
-  onManualSync: () => void;
+  onManualGoogleSync: () => void;
+  outlookSyncStatus: CloudCalendarSyncStatus;
+  lastOutlookSync: Date | null;
+  onManualOutlookSync: () => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -50,7 +55,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onBulkUpdateEvents,
   googleSyncStatus,
   lastGoogleSync,
-  onManualSync,
+  onManualGoogleSync,
+  outlookSyncStatus,
+  lastOutlookSync,
+  onManualOutlookSync,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalHour, setModalHour] = useState(9);
@@ -112,18 +120,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </p>
         </div>
 
-        <button
-          className="main-start-btn"
-          onClick={() => handleOpenCreateAtHour(9)}
-        >
-          <Plus size={16} /> Novo Agendamento
-        </button>
-
-        <GoogleCalendarSyncPanel
-          syncStatus={googleSyncStatus}
-          lastSyncTime={lastGoogleSync}
-          onManualSync={onManualSync}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <GoogleCalendarSyncPanel
+            syncStatus={googleSyncStatus}
+            lastSyncTime={lastGoogleSync}
+            onManualSync={onManualGoogleSync}
+          />
+          <OutlookCalendarSyncPanel
+            syncStatus={outlookSyncStatus}
+            lastSyncTime={lastOutlookSync}
+            onManualSync={onManualOutlookSync}
+          />
+          
+          <button
+            className="main-start-btn"
+            onClick={() => handleOpenCreateAtHour(9)}
+          >
+            <Plus size={16} /> Novo Agendamento
+          </button>
+        </div>
       </div>
 
       {/* Controles de Navegação e Seletor de Visão (Dia / Semana / Mês) */}

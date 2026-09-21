@@ -67,6 +67,9 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   googleSyncStatus,
   lastGoogleSync,
   onManualGoogleSync,
+  outlookSyncStatus,
+  lastOutlookSync,
+  onManualOutlookSync,
   userProfile,
   weekMinutes,
   metrics,
@@ -202,7 +205,10 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             onBulkUpdateEvents={bulkUpdateEvents}
             googleSyncStatus={googleSyncStatus}
             lastGoogleSync={lastGoogleSync}
-            onManualSync={onManualGoogleSync}
+            onManualGoogleSync={onManualGoogleSync}
+            outlookSyncStatus={outlookSyncStatus}
+            lastOutlookSync={lastOutlookSync}
+            onManualOutlookSync={onManualOutlookSync}
           />
         </Suspense>
       } />

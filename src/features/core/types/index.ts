@@ -74,7 +74,8 @@ export interface CalendarEvent {
   color?: string;
   is_completed?: boolean;
   google_event_id?: string; // ID do evento no Google Calendar (se sincronizado)
-  source?: 'local' | 'google'; // Origem do evento
+  outlook_event_id?: string; // ID do evento no Outlook Calendar (se sincronizado)
+  source?: 'local' | 'google' | 'outlook'; // Origem do evento
 }
 
 export interface StudySession {

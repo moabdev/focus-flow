@@ -90,6 +90,25 @@ class SupabaseService {
     }
   }
 
+  public async signInWithMicrosoft(): Promise<{ error: Error | null }> {
+    if (!this.client) {
+      return { error: new Error('O Supabase ainda não foi configurado. Insira a URL e a Chave Anon nas configurações.') };
+    }
+
+    try {
+      const { error } = await this.client.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          redirectTo: window.location.origin,
+          scopes: 'Calendars.ReadWrite',
+        },
+      });
+      return { error };
+    } catch (err) {
+      return { error: err as Error };
+    }
+  }
+
   public async signOut(): Promise<void> {
     if (this.client) {
       await this.client.auth.signOut();
