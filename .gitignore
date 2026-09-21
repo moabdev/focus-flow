@@ -37,10 +37,7 @@ lerna-debug.log*
 *.sw?
 
 # Arquivos internos e protótipos
-DOCUMENTO_DE_REQUISITOS.md
-PROTOTIPO_VISUAL.md
-QA_STRATEGY.md
-assets/
+
 
 # Scripts de banco de dados locais
 supabase-schema.sql
