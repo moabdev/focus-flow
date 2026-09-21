@@ -62,6 +62,9 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   toggleEventCompleted,
   importGoogleEvents,
   bulkUpdateEvents,
+  googleSyncStatus,
+  lastGoogleSync,
+  onManualGoogleSync,
   userProfile,
   weekMinutes,
 }) => {
@@ -188,6 +191,9 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             onOpenTimerTab={() => setCurrentView('timer')}
             onImportGoogleEvents={importGoogleEvents}
             onBulkUpdateEvents={bulkUpdateEvents}
+            googleSyncStatus={googleSyncStatus}
+            lastGoogleSync={lastGoogleSync}
+            onManualSync={onManualGoogleSync}
           />
         )}
 

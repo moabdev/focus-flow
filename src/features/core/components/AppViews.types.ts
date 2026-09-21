@@ -74,6 +74,9 @@ export interface AppViewsProps {
   toggleEventCompleted: (id: string) => Promise<void>;
   importGoogleEvents: (events: CalendarEvent[]) => void;
   bulkUpdateEvents: (events: CalendarEvent[]) => void;
+  googleSyncStatus: import('@/features/calendar/hooks/useCalendar').GoogleSyncStatus;
+  lastGoogleSync: Date | null;
+  onManualGoogleSync: () => void;
   // User & Ranking props
   userProfile: SupabaseProfile | null;
   weekMinutes: number;

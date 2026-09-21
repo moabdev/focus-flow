@@ -173,3 +173,50 @@ export const deleteGoogleCalendarEvent = async (
     throw new Error(`Falha ao deletar evento do Google Calendar: ${response.statusText}`);
   }
 };
+
+/**
+ * Atualiza um evento existente no Google Calendar.
+ * @param accessToken - Token OAuth do Google
+ * @param googleEventId - ID do evento no Google Calendar
+ * @param event - Dados atualizados do evento
+ */
+export const updateGoogleCalendarEvent = async (
+  accessToken: string,
+  googleEventId: string,
+  event: CalendarEvent
+): Promise<void> => {
+  const body = {
+    summary: event.title,
+    description: event.description || 'Atualizado pelo FocusFlow',
+    start: {
+      dateTime: event.start_time.includes('T')
+        ? event.start_time
+        : `${event.start_time}T09:00:00`,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+    end: {
+      dateTime: event.end_time.includes('T')
+        ? event.end_time
+        : `${event.end_time}T10:00:00`,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+  };
+
+  const response = await fetch(
+    `${GOOGLE_CALENDAR_API_BASE}/calendars/primary/events/${googleEventId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(`Falha ao atualizar evento no Google Calendar: ${err?.error?.message || response.statusText}`);
+  }
+};
+

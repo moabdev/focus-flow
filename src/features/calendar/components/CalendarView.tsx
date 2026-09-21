@@ -28,6 +28,9 @@ interface CalendarViewProps {
   onOpenTimerTab?: () => void;
   onImportGoogleEvents: (events: CalendarEvent[]) => void;
   onBulkUpdateEvents: (events: CalendarEvent[]) => void;
+  googleSyncStatus: import('@/features/calendar/hooks/useCalendar').GoogleSyncStatus;
+  lastGoogleSync: Date | null;
+  onManualSync: () => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -45,6 +48,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onOpenTimerTab,
   onImportGoogleEvents,
   onBulkUpdateEvents,
+  googleSyncStatus,
+  lastGoogleSync,
+  onManualSync,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalHour, setModalHour] = useState(9);
@@ -114,9 +120,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
 
         <GoogleCalendarSyncPanel
-          localEvents={events}
-          onImportEvents={onImportGoogleEvents}
-          onExportComplete={onBulkUpdateEvents}
+          syncStatus={googleSyncStatus}
+          lastSyncTime={lastGoogleSync}
+          onManualSync={onManualSync}
         />
       </div>
 
