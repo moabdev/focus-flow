@@ -23,6 +23,9 @@ const FlashcardsView = lazy(() =>
 const MindMapsView = lazy(() =>
   import('@/features/mindmaps/components/mindmaps/MindMapsView').then((m) => ({ default: m.MindMapsView }))
 );
+const StatsView = lazy(() =>
+  import('@/features/stats/components/StatsView').then((m) => ({ default: m.StatsView }))
+);
 
 
 
@@ -67,6 +70,7 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   onManualGoogleSync,
   userProfile,
   weekMinutes,
+  metrics,
 }) => {
   const currentDetailProject = projects.find((p) => p.id === selectedProjectDetailId);
   const detailSubtasks = subtasks.filter((s) => s.project_id === selectedProjectDetailId);
@@ -211,6 +215,16 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
           <WeeklyLeaderboardView
             currentUserMinutes={weekMinutes}
             userProfile={userProfile}
+          />
+        )}
+
+        {/* Visão de Estatísticas (nova) */}
+        {currentView === 'stats' && (
+          <StatsView
+            metrics={metrics}
+            subtasks={subtasks}
+            projects={projects}
+            userName={userProfile?.full_name}
           />
         )}
 

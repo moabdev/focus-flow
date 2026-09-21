@@ -8,6 +8,7 @@ import {
   AppViewMode,
   CalendarViewMode,
   SupabaseProfile,
+  StudyMetrics,
 } from '@/features/core/types';
 
 export interface AppViewsProps {
@@ -80,4 +81,5 @@ export interface AppViewsProps {
   // User & Ranking props
   userProfile: SupabaseProfile | null;
   weekMinutes: number;
+  metrics: StudyMetrics;
 }

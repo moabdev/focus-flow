@@ -80,7 +80,6 @@ export const App: React.FC = () => {
     onCloseModals: () => {
       nav.setIsZenModeOpen(false);
       nav.setIsSettingsOpen(false);
-      nav.setIsStatsOpen(false);
       nav.setIsScratchpadOpen(false);
       nav.setIsCommandPaletteOpen(false);
     },
@@ -171,7 +170,7 @@ export const App: React.FC = () => {
         onGoogleLogin={authAndSync.handleGoogleLogin}
         onSignOut={authAndSync.handleSignOut}
         onOpenSettings={() => nav.handleOpenSettings('timer', playClick)}
-        onOpenStats={() => nav.setIsStatsOpen(true)}
+        onOpenStats={() => nav.setCurrentView('stats')}
         onToggleScratchpad={() => nav.setIsScratchpadOpen((prev) => !prev)}
         onEnterZenMode={() => nav.setIsZenModeOpen(true)}
         isCollapsed={nav.isSidebarCollapsed}
@@ -189,7 +188,7 @@ export const App: React.FC = () => {
           onGoogleLogin={authAndSync.handleGoogleLogin}
           onSignOut={authAndSync.handleSignOut}
           onOpenSettings={() => nav.handleOpenSettings('timer', playClick)}
-          onOpenStats={() => nav.setIsStatsOpen(true)}
+          onOpenStats={() => nav.setCurrentView('stats')}
           onOpenCommandPalette={() => nav.setIsCommandPaletteOpen(true)}
           currentView={nav.currentView}
           onOpenMobileSidebar={() => nav.setIsMobileSidebarOpen(true)}
@@ -244,6 +243,7 @@ export const App: React.FC = () => {
             onManualGoogleSync={pullFromGoogle}
             userProfile={authAndSync.userProfile}
             weekMinutes={metrics.weekMinutes}
+            metrics={metrics}
           />
         </main>
       </div>
@@ -251,9 +251,6 @@ export const App: React.FC = () => {
       <AppModals
         isScratchpadOpen={nav.isScratchpadOpen}
         onCloseScratchpad={() => nav.setIsScratchpadOpen(false)}
-        isStatsOpen={nav.isStatsOpen}
-        onCloseStats={() => nav.setIsStatsOpen(false)}
-        metrics={metrics}
         isSettingsOpen={nav.isSettingsOpen}
         onCloseSettings={() => nav.setIsSettingsOpen(false)}
         settings={settings}
@@ -275,7 +272,7 @@ export const App: React.FC = () => {
         onOpenGroup={() => nav.setCurrentView('groups')}
         onOpenZenMode={() => nav.setIsZenModeOpen(true)}
         onOpenSettings={(tab) => nav.handleOpenSettings(tab, playClick)}
-        onOpenStats={() => nav.setIsStatsOpen(true)}
+        onOpenStats={() => nav.setCurrentView('stats')}
         onToggleTheme={toggleColorMode}
         projects={projects}
       />

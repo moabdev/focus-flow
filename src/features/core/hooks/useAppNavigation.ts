@@ -18,7 +18,6 @@ export function useAppNavigation() {
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'timer' | 'theme' | 'sounds' | 'cloud' | 'backup'>('timer');
-  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isZenModeOpen, setIsZenModeOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -49,7 +48,6 @@ export function useAppNavigation() {
   
   const resetNavigation = useCallback(() => {
     setIsSettingsOpen(false);
-    setIsStatsOpen(false);
     setIsScratchpadOpen(false);
     setIsZenModeOpen(false);
     setIsCommandPaletteOpen(false);
@@ -64,7 +62,6 @@ export function useAppNavigation() {
     isMobileSidebarOpen, setIsMobileSidebarOpen,
     isSettingsOpen, setIsSettingsOpen,
     settingsTab, setSettingsTab,
-    isStatsOpen, setIsStatsOpen,
     isScratchpadOpen, setIsScratchpadOpen,
     isZenModeOpen, setIsZenModeOpen,
     isCommandPaletteOpen, setIsCommandPaletteOpen,

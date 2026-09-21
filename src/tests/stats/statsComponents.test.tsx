@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { StatsModal } from '@/features/stats/components/StatsModal';
+import { StatsView } from '@/features/stats/components/StatsView';
 import { badgeService } from '@/features/stats/api/badgeService';
 import { reportExportService } from '@/features/stats/api/reportExportService';
 import { useToast } from '@/features/core/contexts/ToastContext';
@@ -24,7 +24,7 @@ vi.mock('@/features/core/contexts/ToastContext', () => ({
   useToast: vi.fn(),
 }));
 
-describe('StatsModal Component', () => {
+describe('StatsView Component', () => {
   const mockToast = {
     success: vi.fn(),
     error: vi.fn(),
@@ -32,8 +32,6 @@ describe('StatsModal Component', () => {
   };
 
   const defaultProps = {
-    isOpen: true,
-    onClose: vi.fn(),
     metrics: {
       totalFocusTime: 120,
       totalSessions: 5,
@@ -65,34 +63,24 @@ describe('StatsModal Component', () => {
     ]);
   });
 
-  it('não deve renderizar se isOpen for falso', () => {
-    const { container } = render(<StatsModal {...defaultProps} isOpen={false} />);
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('deve renderizar o modal com os dados corretos', () => {
-    render(<StatsModal {...defaultProps} />);
+  it('deve renderizar a página com os dados corretos', () => {
+    render(<StatsView {...defaultProps} />);
     
     // Verifica título
     expect(screen.getByText('Estatísticas, Conquistas & Relatórios')).toBeInTheDocument();
     
     // Verifica abas
     expect(screen.getByText(/Visão Geral/i)).toBeInTheDocument();
-    expect(screen.getByText(/Co-piloto IA/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Conquistas/i })).toBeInTheDocument();
     expect(screen.getByText(/Exportar Relatórios/i)).toBeInTheDocument();
   });
 
   it('deve alternar entre as abas', () => {
-    render(<StatsModal {...defaultProps} />);
+    render(<StatsView {...defaultProps} />);
     
     // Aba inicial
     // Visão geral content
     expect(screen.getByText('Distribuição de Estudo por Disciplina')).toBeInTheDocument();
-
-    // Clicar Co-piloto
-    fireEvent.click(screen.getByRole('button', { name: /Co-piloto IA/i }));
-    expect(screen.getByText(/Co-piloto de Produtividade/i)).toBeInTheDocument(); 
 
     // Clicar Conquistas
     fireEvent.click(screen.getByRole('button', { name: /Conquistas/i }));
@@ -103,16 +91,9 @@ describe('StatsModal Component', () => {
     expect(screen.getByText(/Baixar Sessões CSV/i)).toBeInTheDocument(); 
   });
 
-  it('deve chamar onClose ao clicar no botão fechar', () => {
-    render(<StatsModal {...defaultProps} />);
-    const closeBtn = screen.getByLabelText('Fechar');
-    fireEvent.click(closeBtn);
-    expect(defaultProps.onClose).toHaveBeenCalled();
-  });
-
   describe('Tab: Export', () => {
     it('deve exportar CSV de sessões com sucesso', () => {
-      render(<StatsModal {...defaultProps} />);
+      render(<StatsView {...defaultProps} />);
       fireEvent.click(screen.getByText(/Exportar Relatórios/i));
       
       const exportSessionsBtn = screen.getByText(/Baixar Sessões CSV/i);
@@ -123,7 +104,7 @@ describe('StatsModal Component', () => {
     });
 
     it('deve exportar CSV de tarefas com sucesso', () => {
-      render(<StatsModal {...defaultProps} />);
+      render(<StatsView {...defaultProps} />);
       fireEvent.click(screen.getByText(/Exportar Relatórios/i));
       
       const exportTasksBtn = screen.getByText(/Baixar Tarefas CSV/i); 
@@ -134,7 +115,7 @@ describe('StatsModal Component', () => {
     });
 
     it('deve imprimir relatório em PDF com sucesso', () => {
-      render(<StatsModal {...defaultProps} />);
+      render(<StatsView {...defaultProps} />);
       fireEvent.click(screen.getByText(/Exportar Relatórios/i));
       
       const printBtn = screen.getByText(/Gerar PDF \/ Imprimir/i);

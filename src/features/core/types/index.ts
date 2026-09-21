@@ -11,6 +11,7 @@ export type AppViewMode =
   | 'calendar'
   | 'groups'
   | 'ranking'
+  | 'stats'
   | 'drafts'
   | 'flashcards'
   | 'mindmaps';

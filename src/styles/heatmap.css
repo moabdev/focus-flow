@@ -66,7 +66,7 @@
 .heatmap-months-track {
   position: relative;
   flex: 1;
-  min-width: 680px;
+  min-width: max-content;
   height: 100%;
 }
 
@@ -99,7 +99,7 @@
 .heatmap-grid {
   display: flex;
   gap: 3px;
-  min-width: 680px;
+  min-width: max-content;
 }
 
 .heatmap-week-column {

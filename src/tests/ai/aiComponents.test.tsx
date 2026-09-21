@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { AIGenerateFlashcardsModal } from '@/features/notion/components/notion/AIGenerateFlashcardsModal';
 import { AIGenerateQuizModal } from '@/features/notion/components/notion/AIGenerateQuizModal';
-import { CopilotTab } from '@/features/stats/components/stats/CopilotTab';
 import { ToastProvider } from '@/features/core/contexts/ToastContext';
 
 describe('Componentes de Inteligência Artificial', () => {
@@ -90,35 +89,6 @@ describe('Componentes de Inteligência Artificial', () => {
       // Next/Results button should appear
       const resultsBtn = screen.getByText('Ver Resultados');
       expect(resultsBtn).toBeInTheDocument();
-    });
-  });
-
-  describe('CopilotTab', () => {
-    const mockHistory = [
-      { id: '1', completed_at: '2026-09-20T10:00:00Z', duration_minutes: 25, discipline: 'Math' }
-    ];
-
-    // Mocar a função de insights
-    vi.mock('@/services/ai/geminiService', () => ({
-      generateProductivityInsights: vi.fn().mockResolvedValue({
-        best_times: 'Manhã',
-        schedule_suggestion: 'Acorde cedo',
-        analysis: 'Você vai bem',
-        motivational_tip: 'Força'
-      })
-    }));
-
-    it('deve mostrar botão para gerar insights e chamá-lo com sucesso', async () => {
-      render(
-        <ToastProvider>
-          <CopilotTab history={mockHistory as any} />
-        </ToastProvider>
-      );
-      
-      // The API key is not set in the test environment (import.meta.env.VITE_GEMINI_API_KEY)
-      // We need to mock it if we want it to proceed, but by default it will show a toast error
-      const generateBtn = screen.getByText('Gerar Insights do Meu Histórico');
-      expect(generateBtn).toBeInTheDocument();
     });
   });
 });

@@ -40,8 +40,9 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
     return map;
   }, [sessions]);
 
-  // Gera as 52 semanas (7 linhas x 52 colunas)
-  const { weeks, monthLabels, totalActiveDays, totalMinutesYear } = useMemo(() => {
+  // Gera as semanas (7 linhas x 5 colunas para 1 mês)
+  const WEEKS_TO_SHOW = 5;
+  const { weeks, monthLabels, totalActiveDays, totalMinutesPeriod } = useMemo(() => {
     const now = new Date();
     const todayY = now.getFullYear();
     const todayM = now.getMonth();
@@ -52,7 +53,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
     endOfWeek.setDate(todayMidnight.getDate() + (6 - todayMidnight.getDay()));
 
     const startDate = new Date(endOfWeek);
-    startDate.setDate(endOfWeek.getDate() - 52 * 7 + 1);
+    startDate.setDate(endOfWeek.getDate() - WEEKS_TO_SHOW * 7 + 1);
 
     const generatedWeeks: DayData[][] = [];
     const months: { label: string; weekIndex: number }[] = [];
@@ -119,7 +120,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
       weeks: generatedWeeks,
       monthLabels: months,
       totalActiveDays: activeDays,
-      totalMinutesYear: totalMinutes,
+      totalMinutesPeriod: totalMinutes,
     };
   }, [sessionMap]);
 
@@ -127,9 +128,9 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
     <div className="heatmap-container glass-panel">
       <div className="heatmap-header">
         <div className="heatmap-title-wrap">
-          <span className="heatmap-title">Mapa Anual de Consistência</span>
+          <span className="heatmap-title">Mapa Mensal de Consistência</span>
           <span className="heatmap-subtitle">
-            {totalActiveDays} {totalActiveDays === 1 ? 'dia ativo' : 'dias ativos'} • {Math.round(totalMinutesYear / 60)}h no último ano
+            {totalActiveDays} {totalActiveDays === 1 ? 'dia ativo' : 'dias ativos'} • {Math.round(totalMinutesPeriod / 60)}h no último mês
           </span>
         </div>
 
@@ -149,7 +150,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
               <span
                 key={i}
                 className="heatmap-month-label"
-                style={{ left: `${(m.weekIndex / 52) * 100}%` }}
+                style={{ left: `${(m.weekIndex / WEEKS_TO_SHOW) * 100}%` }}
               >
                 {m.label}
               </span>
@@ -166,7 +167,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
             <span>Sáb</span>
           </div>
 
-          <div className="heatmap-grid" role="grid" aria-label="Heatmap de Estudos Anual">
+          <div className="heatmap-grid" role="grid" aria-label="Heatmap de Estudos Mensal">
             {weeks.map((week, wIdx) => (
               <div key={wIdx} className="heatmap-week-column">
                 {week.map((day) => (

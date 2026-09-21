@@ -5,16 +5,12 @@ import { CommandPalette } from './common/CommandPalette';
 
 // Lazy loading dos modais pesados para que só sejam carregados sob demanda
 const Scratchpad = lazy(() => import('@/features/scratchpad/components/Scratchpad').then((m) => ({ default: m.Scratchpad })));
-const StatsModal = lazy(() => import('@/features/stats/components/StatsModal').then((m) => ({ default: m.StatsModal })));
 const SettingsModal = lazy(() => import('@/features/settings/components/SettingsModal').then((m) => ({ default: m.SettingsModal })));
 const ZenMode = lazy(() => import('@/features/zenmode/components/ZenMode').then((m) => ({ default: m.ZenMode })));
 
 interface AppModalsProps {
   isScratchpadOpen: boolean;
   onCloseScratchpad: () => void;
-  isStatsOpen: boolean;
-  onCloseStats: () => void;
-  metrics: StudyMetrics;
   isSettingsOpen: boolean;
   onCloseSettings: () => void;
   settings: UserSettings;
@@ -53,9 +49,6 @@ interface AppModalsProps {
 export const AppModals: React.FC<AppModalsProps> = React.memo(({
   isScratchpadOpen,
   onCloseScratchpad,
-  isStatsOpen,
-  onCloseStats,
-  metrics,
   isSettingsOpen,
   onCloseSettings,
   settings,
@@ -93,20 +86,6 @@ export const AppModals: React.FC<AppModalsProps> = React.memo(({
             onClose={onCloseScratchpad}
             projects={projects}
             subtasks={subtasks}
-          />
-        </Suspense>
-      )}
-
-      {/* Modal de Estatísticas, Conquistas & Exportação de Relatórios */}
-      {isStatsOpen && (
-        <Suspense fallback={null}>
-          <StatsModal
-            isOpen={isStatsOpen}
-            onClose={onCloseStats}
-            metrics={metrics}
-            subtasks={subtasks}
-            projects={projects}
-            userName={userProfile?.full_name}
           />
         </Suspense>
       )}

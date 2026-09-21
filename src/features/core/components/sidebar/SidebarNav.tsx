@@ -96,7 +96,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       </button>
 
       <button
-        className="sidebar-nav-item"
+        className={`sidebar-nav-item ${currentView === 'stats' ? 'active' : ''}`}
         onClick={() => {
           onOpenStats();
           if (isMobileOpen) onCloseMobile();
