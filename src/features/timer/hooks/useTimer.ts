@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { TimerMode, UserSettings } from '@/features/core/types';
 import { notificationService } from '@/features/core/api/notificationService';
+import { supabaseService } from '@/features/core/api/supabase';
+import { storageGroups } from '@/features/groups/api/storageGroups';
 
 interface UseTimerProps {
   settings: UserSettings;
@@ -82,24 +84,66 @@ export function useTimer({
     };
   }, [timeLeft, mode, isRunning, activeTaskTitle]);
 
-  // Alerta de Foco Rigoroso contra Distrações (troca de aba)
+  // Alerta de Foco Rigoroso contra Distrações (troca de aba e saída de fullscreen)
   useEffect(() => {
     if (!settings.strict_focus_mode || !isRunning || mode !== 'pomodoro') return;
 
+    let distractionHandled = false;
+
+    const handleDistraction = async () => {
+      if (distractionHandled) return;
+      distractionHandled = true;
+
+      // Play alert sound
+      playAlarm();
+
+      notificationService.notify(
+        '⚠️ Alerta de Foco Rigoroso!',
+        'Você se distraiu do FocusFlow! Mantenha a concentração para concluir o ciclo.'
+      );
+
+      // Notificar grupos de estudo via Supabase
+      const client = supabaseService.getClient();
+      if (client) {
+        const user = await supabaseService.getUser();
+        if (user) {
+          const myGroups = storageGroups.getGroups();
+          for (const group of myGroups) {
+            await client.from('group_messages').insert({
+              id: crypto.randomUUID(),
+              group_id: group.id,
+              user_id: user.id,
+              user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário',
+              text: '⚠️ Perdeu o foco e saiu da aba/tela cheia!',
+              type: 'system_focus'
+            });
+          }
+        }
+      }
+
+      // Reset para permitir futuras distrações se ele voltar
+      setTimeout(() => { distractionHandled = false; }, 5000);
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        notificationService.notify(
-          '⚠️ Alerta de Foco Rigoroso!',
-          'Você saiu da aba do FocusFlow! Mantenha a concentração para concluir o ciclo.'
-        );
+        handleDistraction();
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        handleDistraction();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [settings.strict_focus_mode, isRunning, mode]);
+  }, [settings.strict_focus_mode, isRunning, mode, playAlarm]);
 
   // Trata a conclusão do ciclo
   const handleCycleComplete = useCallback(() => {

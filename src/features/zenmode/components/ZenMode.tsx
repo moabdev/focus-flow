@@ -13,7 +13,9 @@ interface ZenModeProps {
   quoteText: string;
   ambientSound: AmbientSound;
   onToggleAmbient: () => void;
+  strictFocusMode?: boolean;
 }
+
 
 export const ZenMode: React.FC<ZenModeProps> = ({
   isOpen,
@@ -26,8 +28,34 @@ export const ZenMode: React.FC<ZenModeProps> = ({
   quoteText,
   ambientSound,
   onToggleAmbient,
+  strictFocusMode,
 }) => {
   if (!isOpen) return null;
+
+  const handleToggleTimer = async () => {
+    onToggleTimer();
+    // Se estivermos iniciando o timer e o modo estrito estiver ativo, tentamos entrar em fullscreen
+    if (!isRunning && strictFocusMode) {
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (err) {
+        console.warn('Não foi possível entrar em modo tela cheia:', err);
+      }
+    }
+  };
+
+  const handleExit = async () => {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn('Erro ao sair da tela cheia:', err);
+    }
+    onExit();
+  };
 
   const radius = 150;
   const circumference = 2 * Math.PI * radius;
@@ -40,7 +68,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({
       {/* Botão Sair no Topo */}
       <button
         className="icon-btn"
-        onClick={onExit}
+        onClick={handleExit}
         title="Sair do Modo Zen (Esc)"
         style={{
           position: 'absolute',
@@ -77,7 +105,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({
       <div
         className="timer-circle-wrap"
         style={{ width: '360px', height: '360px', zIndex: 10, cursor: 'pointer' }}
-        onClick={onToggleTimer}
+        onClick={handleToggleTimer}
         title="Clique para pausar/iniciar"
       >
         <svg className="timer-svg" viewBox="0 0 360 360">
