@@ -10,6 +10,7 @@ import {
   SupabaseProfile,
   StudyMetrics,
 } from '@/features/core/types';
+import { MicrosoftCalendarResource } from '@/services/calendar/outlookCalendarService';
 
 export interface AppViewsProps {
   currentView: AppViewMode;
@@ -81,6 +82,9 @@ export interface AppViewsProps {
   outlookSyncStatus: import('@/features/calendar/hooks/useCalendar').CloudCalendarSyncStatus;
   lastOutlookSync: Date | null;
   onManualOutlookSync: () => void;
+  availableOutlookCalendars: MicrosoftCalendarResource[];
+  selectedOutlookCalendars: string[];
+  toggleOutlookCalendarSelection: (id: string) => void;
   // User & Ranking props
   userProfile: SupabaseProfile | null;
   weekMinutes: number;

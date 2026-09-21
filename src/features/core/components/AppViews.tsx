@@ -70,6 +70,9 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   outlookSyncStatus,
   lastOutlookSync,
   onManualOutlookSync,
+  availableOutlookCalendars,
+  selectedOutlookCalendars,
+  toggleOutlookCalendarSelection,
   userProfile,
   weekMinutes,
   metrics,
@@ -209,6 +212,9 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             outlookSyncStatus={outlookSyncStatus}
             lastOutlookSync={lastOutlookSync}
             onManualOutlookSync={onManualOutlookSync}
+            availableOutlookCalendars={availableOutlookCalendars}
+            selectedOutlookCalendars={selectedOutlookCalendars}
+            toggleOutlookCalendarSelection={toggleOutlookCalendarSelection}
           />
         </Suspense>
       } />

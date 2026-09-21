@@ -37,6 +37,7 @@ export const App: React.FC = () => {
     importGoogleEvents, bulkUpdateEvents,
     googleSyncStatus, lastGoogleSync, pullFromGoogle,
     outlookSyncStatus, lastOutlookSync, pullFromOutlook,
+    availableOutlookCalendars, selectedOutlookCalendars, toggleOutlookCalendarSelection,
   } = useCalendar();
 
   const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
@@ -245,6 +246,9 @@ export const App: React.FC = () => {
             outlookSyncStatus={outlookSyncStatus}
             lastOutlookSync={lastOutlookSync}
             onManualOutlookSync={pullFromOutlook}
+            availableOutlookCalendars={availableOutlookCalendars}
+            selectedOutlookCalendars={selectedOutlookCalendars}
+            toggleOutlookCalendarSelection={toggleOutlookCalendarSelection}
             userProfile={authAndSync.userProfile}
             weekMinutes={metrics.weekMinutes}
             metrics={metrics}

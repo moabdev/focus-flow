@@ -1,6 +1,5 @@
 import { CalendarEvent } from '@/features/core/types';
 
-/** Estrutura retornada pela Microsoft Graph API para um evento */
 interface MicrosoftCalendarEventResource {
   id: string;
   subject?: string;
@@ -12,6 +11,19 @@ interface MicrosoftCalendarEventResource {
 
 interface MicrosoftCalendarListResponse {
   value: MicrosoftCalendarEventResource[];
+}
+
+export interface MicrosoftCalendarResource {
+  id: string;
+  name: string;
+  color?: string;
+  hexColor?: string;
+  isDefaultCalendar?: boolean;
+  canEdit?: boolean;
+}
+
+interface MicrosoftCalendarsResponse {
+  value: MicrosoftCalendarResource[];
 }
 
 const MICROSOFT_GRAPH_API_BASE = 'https://graph.microsoft.com/v1.0';
@@ -44,15 +56,38 @@ export const isOutlookCalendarConnected = async (): Promise<boolean> => {
 };
 
 /**
- * Busca eventos do Outlook Calendar padrão do usuário.
+ * Busca a lista de todos os calendários do Outlook do usuário.
+ * @param accessToken - Token OAuth da Microsoft
+ */
+export const fetchOutlookCalendars = async (accessToken: string): Promise<MicrosoftCalendarResource[]> => {
+  const response = await fetch(`${MICROSOFT_GRAPH_API_BASE}/me/calendars`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(`Failed to fetch Outlook calendars: ${err?.error?.message || response.statusText}`);
+  }
+
+  const data: MicrosoftCalendarsResponse = await response.json();
+  return data.value || [];
+};
+
+/**
+ * Busca eventos do Outlook Calendar padrão do usuário ou de calendários específicos.
  * @param accessToken - Token OAuth da Microsoft
  * @param timeMin - Data de início (ISO string)
  * @param timeMax - Data de fim (ISO string)
+ * @param calendarIds - Lista de IDs de calendários para buscar (opcional)
  */
 export const fetchOutlookCalendarEvents = async (
   accessToken: string,
   timeMin: string,
-  timeMax: string
+  timeMax: string,
+  calendarIds?: string[]
 ): Promise<CalendarEvent[]> => {
   const params = new URLSearchParams({
     startDateTime: timeMin,
@@ -61,24 +96,47 @@ export const fetchOutlookCalendarEvents = async (
     $orderby: 'start/dateTime',
   });
 
-  const response = await fetch(
-    `${MICROSOFT_GRAPH_API_BASE}/me/calendarview?${params.toString()}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const fetchEventsForCalendar = async (calendarId?: string): Promise<MicrosoftCalendarEventResource[]> => {
+    const url = calendarId 
+      ? `${MICROSOFT_GRAPH_API_BASE}/me/calendars/${calendarId}/calendarview?${params.toString()}`
+      : `${MICROSOFT_GRAPH_API_BASE}/me/calendarview?${params.toString()}`;
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(`Microsoft Graph API error: ${err?.error?.message || response.statusText}`);
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch events for calendar ${calendarId || 'default'}: ${response.statusText}`);
+        return [];
+      }
+
+      const data: MicrosoftCalendarListResponse = await response.json();
+      return data.value || [];
+    } catch (err) {
+      console.warn(`Error fetching events for calendar ${calendarId || 'default'}:`, err);
+      return [];
+    }
+  };
+
+  let allEvents: MicrosoftCalendarEventResource[] = [];
+
+  if (!calendarIds || calendarIds.length === 0) {
+    allEvents = await fetchEventsForCalendar();
+  } else {
+    const results = await Promise.all(calendarIds.map(id => fetchEventsForCalendar(id)));
+    allEvents = results.flat();
   }
 
-  const data: MicrosoftCalendarListResponse = await response.json();
+  // Deduplicate by ID just in case
+  const uniqueEventsMap = new Map<string, MicrosoftCalendarEventResource>();
+  allEvents.forEach(e => uniqueEventsMap.set(e.id, e));
+  const uniqueEvents = Array.from(uniqueEventsMap.values());
 
-  return (data.value || []).map((item): CalendarEvent => {
+  return uniqueEvents.map((item): CalendarEvent => {
     // Microsoft Graph retorna dateTime em UTC sem o Z no final se for especificado timeZone, mas geralmente vem como UTC.
     // Vamos garantir o formato compatível com FocusFlow.
     const startStr = item.start.dateTime ? `${item.start.dateTime.split('.')[0]}Z` : new Date().toISOString();

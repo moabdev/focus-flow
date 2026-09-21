@@ -11,10 +11,12 @@ import {
 } from '@/services/calendar/googleCalendarService';
 import {
   getMicrosoftAccessToken,
+  fetchOutlookCalendars,
   fetchOutlookCalendarEvents,
   createOutlookCalendarEvent,
   updateOutlookCalendarEvent,
   deleteOutlookCalendarEvent,
+  MicrosoftCalendarResource,
 } from '@/services/calendar/outlookCalendarService';
 
 /** How often to auto-pull from Google/Outlook Calendar (in milliseconds) */
@@ -34,6 +36,24 @@ export function useCalendar() {
   
   const [outlookSyncStatus, setOutlookSyncStatus] = useState<CloudCalendarSyncStatus>('idle');
   const [lastOutlookSync, setLastOutlookSync] = useState<Date | null>(null);
+  const [availableOutlookCalendars, setAvailableOutlookCalendars] = useState<MicrosoftCalendarResource[]>([]);
+  const [selectedOutlookCalendars, setSelectedOutlookCalendars] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('focusflow_selected_outlook_calendars');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleOutlookCalendarSelection = useCallback((calendarId: string) => {
+    setSelectedOutlookCalendars(prev => {
+      const isSelected = prev.includes(calendarId);
+      const newSelection = isSelected ? prev.filter(id => id !== calendarId) : [...prev, calendarId];
+      localStorage.setItem('focusflow_selected_outlook_calendars', JSON.stringify(newSelection));
+      return newSelection;
+    });
+  }, []);
 
   // Use a ref to always have the latest events inside async callbacks without stale closures
   const eventsRef = useRef<CalendarEvent[]>([]);
@@ -127,11 +147,33 @@ export function useCalendar() {
     if (!silent) setOutlookSyncStatus('syncing');
 
     try {
+      const calendars = await fetchOutlookCalendars(token);
+      setAvailableOutlookCalendars(calendars);
+
       const now = new Date();
       const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
       const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
 
-      const outlookEvents = await fetchOutlookCalendarEvents(token, timeMin, timeMax);
+      // We read from the ref to ensure we use the current selection, avoiding stale closures.
+      // But wait, we can just use the state variable `selectedOutlookCalendars` 
+      // if we ensure `pullFromOutlook` dependencies are updated, 
+      // but `pullFromOutlook` is in `useEffect` and it's better not to trigger loops.
+      // I'll grab it directly from localStorage here or use the state.
+      // It's safer to use the state if we put it in the dependency array, 
+      // but it could cause re-fetches. I'll read from localStorage for this pull if it's auto-pulled.
+      let calendarsToFetch = selectedOutlookCalendars;
+      if (!silent) {
+        // if manual, just use the current state
+      } else {
+        try {
+          const stored = localStorage.getItem('focusflow_selected_outlook_calendars');
+          calendarsToFetch = stored ? JSON.parse(stored) : selectedOutlookCalendars;
+        } catch { /* ignore */ }
+      }
+
+      // Se o usuário não selecionou nenhum, a gente pode puxar o padrão?
+      // O fetchOutlookCalendarEvents vai puxar o calendário padrão se a lista for vazia.
+      const outlookEvents = await fetchOutlookCalendarEvents(token, timeMin, timeMax, calendarsToFetch);
 
       setEvents((prev) => {
         const localByOutlookId = new Map<string, CalendarEvent>();
@@ -166,7 +208,7 @@ export function useCalendar() {
       console.warn('[OutlookSync] Pull failed:', err);
       setOutlookSyncStatus('error');
     }
-  }, []);
+  }, [selectedOutlookCalendars]);
 
   // Auto-pull on mount
   useEffect(() => {
@@ -396,5 +438,8 @@ export function useCalendar() {
     outlookSyncStatus,
     lastOutlookSync,
     pullFromOutlook,
+    availableOutlookCalendars,
+    selectedOutlookCalendars,
+    toggleOutlookCalendarSelection,
   };
 }

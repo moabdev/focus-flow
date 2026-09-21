@@ -13,6 +13,7 @@ import { CalendarEventModal } from './calendar/CalendarEventModal';
 import { GoogleCalendarSyncPanel } from './calendar/GoogleCalendarSyncPanel';
 import { OutlookCalendarSyncPanel } from './calendar/OutlookCalendarSyncPanel';
 import { CloudCalendarSyncStatus } from '@/features/calendar/hooks/useCalendar';
+import { MicrosoftCalendarResource } from '@/services/calendar/outlookCalendarService';
 
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -36,6 +37,9 @@ interface CalendarViewProps {
   outlookSyncStatus: CloudCalendarSyncStatus;
   lastOutlookSync: Date | null;
   onManualOutlookSync: () => void;
+  availableOutlookCalendars: MicrosoftCalendarResource[];
+  selectedOutlookCalendars: string[];
+  toggleOutlookCalendarSelection: (id: string) => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -59,6 +63,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   outlookSyncStatus,
   lastOutlookSync,
   onManualOutlookSync,
+  availableOutlookCalendars,
+  selectedOutlookCalendars,
+  toggleOutlookCalendarSelection,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalHour, setModalHour] = useState(9);
@@ -130,6 +137,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             syncStatus={outlookSyncStatus}
             lastSyncTime={lastOutlookSync}
             onManualSync={onManualOutlookSync}
+            availableCalendars={availableOutlookCalendars}
+            selectedCalendars={selectedOutlookCalendars}
+            onToggleCalendar={toggleOutlookCalendarSelection}
           />
           
           <button
