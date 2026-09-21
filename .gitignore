@@ -40,3 +40,6 @@ lerna-debug.log*
 DOCUMENTO_DE_REQUISITOS.md
 PROTOTIPO_VISUAL.md
 assets/
+
+# Scripts de banco de dados locais
+supabase-schema.sql
