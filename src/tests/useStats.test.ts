@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useStats } from '../hooks/useStats';
-import { storageService } from '../services/storage';
-import { StudySession } from '../types';
+import { useStats } from '@/features/stats/hooks/useStats';
+import { storageService } from '@/features/core/api/storage';
+import { StudySession } from '@/features/core/types';
 
 describe('useStats Hook (Cálculo de Ofensiva / Streaks e Métricas)', () => {
   beforeEach(() => {

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
-import { storageService } from '../services/storage';
-import { Scratchpad } from '../components/Scratchpad';
-import { Project, Subtask } from '../types';
+import { storageService } from '@/features/core/api/storage';
+import { Scratchpad } from '@/features/scratchpad/components/Scratchpad';
+import { Project, Subtask } from '@/features/core/types';
 
 describe('Sistema de Notas Rápidas / Rascunhos Vinculados (CRUD & Linking)', () => {
   const mockProjects: Project[] = [

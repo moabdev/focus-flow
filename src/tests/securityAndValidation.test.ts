@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { storageService } from '../services/storage';
-import { QuickNote, Task, Project } from '../types';
+import { storageService } from '@/features/core/api/storage';
+import { QuickNote, Task, Project } from '@/features/core/types';
 
 describe('Segurança, Sanitização e Validação de Dados (Fase 3 QA)', () => {
   beforeEach(() => {

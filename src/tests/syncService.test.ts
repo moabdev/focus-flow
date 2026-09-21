@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { syncService } from '../services/syncService';
-import { supabaseService } from '../services/supabase';
-import { storageService } from '../services/storage';
-import { Project, SupabaseProfile } from '../types';
+import { syncService } from '@/features/core/api/syncService';
+import { supabaseService } from '@/features/core/api/supabase';
+import { storageService } from '@/features/core/api/storage';
+import { Project, SupabaseProfile } from '@/features/core/types';
 
 describe('SyncService (Sincronização Automática em Background com Supabase)', () => {
   const mockUser: SupabaseProfile = {

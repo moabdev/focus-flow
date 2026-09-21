@@ -6,8 +6,8 @@ import {
   createDefaultCard,
   formatDateToISOString,
   addDaysToDate,
-} from '../services/spacedRepetition';
-import { Flashcard } from '../types';
+} from '@/features/flashcards/api/spacedRepetition';
+import { Flashcard } from '@/features/core/types';
 
 describe('Algoritmo SM-2 de Repetição Espaçada', () => {
   const baseCard: Flashcard = {

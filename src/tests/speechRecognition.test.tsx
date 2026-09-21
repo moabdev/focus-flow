@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
-import { NotionToolbar } from '../components/notion/NotionToolbar';
-import { NotionNoteEditor } from '../components/NotionNoteEditor';
-import { Subtask, Project } from '../types';
+import { useSpeechRecognition } from '@/features/zenmode/hooks/useSpeechRecognition';
+import { NotionToolbar } from '@/features/notion/components/notion/NotionToolbar';
+import { NotionNoteEditor } from '@/features/notion/components/NotionNoteEditor';
+import { Subtask, Project } from '@/features/core/types';
 
 describe('Sistema de Transcrição e Ditado por Voz (Speech Recognition)', () => {
   const originalWindow = { ...window };

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SubtaskItem } from '../components/projects/SubtaskItem';
-import { storageService } from '../services/storage';
-import { Subtask, Project } from '../types';
+import { SubtaskItem } from '@/features/projects/components/projects/SubtaskItem';
+import { storageService } from '@/features/core/api/storage';
+import { Subtask, Project } from '@/features/core/types';
 
 describe('Ações de Subtarefas (Interações na UI e Time-Tracking)', () => {
   beforeEach(() => {

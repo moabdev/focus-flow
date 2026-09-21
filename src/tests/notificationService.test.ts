@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { notificationService } from '../services/notificationService';
+import { notificationService } from '@/features/core/api/notificationService';
 
 describe('NotificationService (Notificações Nativas)', () => {
   beforeEach(() => {

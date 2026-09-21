@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Sidebar } from '../components/Sidebar';
-import { Project } from '../types';
+import { Sidebar } from '@/features/core/components/Sidebar';
+import { Project } from '@/features/core/types';
 
 describe('Sidebar Component & Modos Expandido e Colapsado', () => {
   const mockProjects: Project[] = [

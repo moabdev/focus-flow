@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { reportExportService } from '../services/reportExportService';
-import { StudySession, Subtask, Project } from '../types';
+import { reportExportService } from '@/features/stats/api/reportExportService';
+import { StudySession, Subtask, Project } from '@/features/core/types';
 
 describe('ReportExportService (Exportação CSV e Relatórios)', () => {
   beforeEach(() => {

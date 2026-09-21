@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { storageService } from '../services/storage';
-import { CalendarEvent, Project, Subtask } from '../types';
+import { storageService } from '@/features/core/api/storage';
+import { CalendarEvent, Project, Subtask } from '@/features/core/types';
 
 describe('Ações de Calendário & Time-Blocking (Agendamentos e Conclusão)', () => {
   beforeEach(() => {

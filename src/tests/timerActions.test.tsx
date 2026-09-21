@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { TimerCard } from '../components/TimerCard';
-import { Task } from '../types';
+import { TimerCard } from '@/features/timer/components/TimerCard';
+import { Task } from '@/features/core/types';
 
 describe('Ações de Timer & Pomodoro (Controles, Modos e Vinculação de Tarefa)', () => {
   const mockTask: Task = {

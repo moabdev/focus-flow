@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { storageService, DEFAULT_SETTINGS } from '../services/storage';
-import { UserSettings } from '../types';
+import { storageService, DEFAULT_SETTINGS } from '@/features/core/api/storage';
+import { UserSettings } from '@/features/core/types';
 
 describe('Ações de Configurações do Usuário (Timer, Sons, Modo Estrito e Temas)', () => {
   beforeEach(() => {

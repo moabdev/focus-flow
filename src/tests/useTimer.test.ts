@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useTimer } from '../hooks/useTimer';
-import { DEFAULT_SETTINGS } from '../services/storage';
+import { useTimer } from '@/features/timer/hooks/useTimer';
+import { DEFAULT_SETTINGS } from '@/features/core/api/storage';
 
 describe('useTimer Hook (Regras do Timer e Ciclos Pomodoro)', () => {
   it('deve inicializar no modo pomodoro com o tempo configurado', () => {

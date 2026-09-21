@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { DraftsView } from '../components/drafts/DraftsView';
-import { ToastProvider } from '../context/ToastContext';
-import { storageService } from '../services/storage';
-import { Project, Subtask } from '../types';
+import { DraftsView } from '@/features/drafts/components/drafts/DraftsView';
+import { ToastProvider } from '@/features/core/contexts/ToastContext';
+import { storageService } from '@/features/core/api/storage';
+import { Project, Subtask } from '@/features/core/types';
 
 describe('Tela de Listagem de Rascunhos & Notas Rápidas (DraftsView)', () => {
   const mockProjects: Project[] = [

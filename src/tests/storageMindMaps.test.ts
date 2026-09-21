@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { StorageMindMapsService } from '../services/storageMindMaps';
+import { StorageMindMapsService } from '@/features/mindmaps/api/storageMindMaps';
 
 describe('StorageMindMapsService', () => {
   let service: StorageMindMapsService;

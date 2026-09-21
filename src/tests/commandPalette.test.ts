@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { buildCommandPaletteItems } from '../components/common/commandPaletteActions';
-import { Project, StudyGroup } from '../types';
+import { buildCommandPaletteItems } from '@/features/core/components/common/commandPaletteActions';
+import { Project, StudyGroup } from '@/features/core/types';
 
 describe('CommandPalette (Ações Globais e Busca Rápida)', () => {
   const mockProjects: Project[] = [

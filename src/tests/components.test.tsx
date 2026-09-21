@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { TimerCard } from '../components/TimerCard';
-import { QuoteBanner } from '../components/QuoteBanner';
-import { CustomSelect, SelectOption } from '../components/common/CustomSelect';
-import { Quote, Task } from '../types';
+import { TimerCard } from '@/features/timer/components/TimerCard';
+import { QuoteBanner } from '@/features/quotes/components/QuoteBanner';
+import { CustomSelect, SelectOption } from '@/features/core/components/common/CustomSelect';
+import { Quote, Task } from '@/features/core/types';
 
 describe('Componentes Principais da Interface', () => {
   it('deve renderizar o TimerCard com dígitos e botão de iniciar', () => {

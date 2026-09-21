@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ProjectCard } from '../components/projects/ProjectCard';
-import { ProjectDetailView } from '../components/projects/ProjectDetailView';
-import { Project, Subtask } from '../types';
+import { ProjectCard } from '@/features/projects/components/projects/ProjectCard';
+import { ProjectDetailView } from '@/features/projects/components/projects/ProjectDetailView';
+import { Project, Subtask } from '@/features/core/types';
 
 describe('Ações de Projetos (CRUD, Confirmação Customizada e Detalhes)', () => {
   const mockProject: Project = {

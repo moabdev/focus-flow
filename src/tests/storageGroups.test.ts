@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { storageGroups } from '../services/storageGroups';
+import { storageGroups } from '@/features/groups/api/storageGroups';
 
 describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
   beforeEach(() => {

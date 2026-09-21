@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ConfirmModal } from '../components/common/ConfirmModal';
+import { ConfirmModal } from '@/features/core/components/common/ConfirmModal';
 
 describe('ConfirmModal Component (Modal de Confirmação Acessível & Glassmorphism)', () => {
   it('não deve renderizar nada quando isOpen for false', () => {

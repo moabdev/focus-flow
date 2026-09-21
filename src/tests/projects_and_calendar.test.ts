@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { storageService } from '../services/storage';
-import { Project, Subtask, CalendarEvent } from '../types';
+import { storageService } from '@/features/core/api/storage';
+import { Project, Subtask, CalendarEvent } from '@/features/core/types';
 
 describe('Projetos, Subtasks e Time-Tracking Acumulado', () => {
   beforeEach(() => {

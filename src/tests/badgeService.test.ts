@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { badgeService, BADGE_DEFINITIONS } from '../services/badgeService';
-import { StudyMetrics } from '../types';
+import { badgeService, BADGE_DEFINITIONS } from '@/features/stats/api/badgeService';
+import { StudyMetrics } from '@/features/core/types';
 
 describe('BadgeService (Gamificação & Conquistas)', () => {
   beforeEach(() => {

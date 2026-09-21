@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { HeatmapCalendar } from '../components/stats/HeatmapCalendar';
-import { StudySession } from '../types';
+import { HeatmapCalendar } from '@/features/stats/components/stats/HeatmapCalendar';
+import { StudySession } from '@/features/core/types';
 
 describe('HeatmapCalendar (Mapa Anual de Consistência)', () => {
   it('deve renderizar o container do heatmap e título', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { storageService, DEFAULT_SETTINGS } from '../services/storage';
-import { Task, StudySession } from '../types';
+import { storageService, DEFAULT_SETTINGS } from '@/features/core/api/storage';
+import { Task, StudySession } from '@/features/core/types';
 
 describe('StorageService (Persistência Offline LocalStorage)', () => {
   beforeEach(() => {

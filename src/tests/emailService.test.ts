@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { emailService } from '../services/emailService';
-import { StudyGroup } from '../types';
+import { emailService } from '@/features/core/api/emailService';
+import { StudyGroup } from '@/features/core/types';
 
 describe('EmailService (Envio de Convites de Grupo com 1 Clique - Provedor Brevo)', () => {
   const mockGroup: StudyGroup = {

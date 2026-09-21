@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { GroupChatPanel } from '../components/groups/GroupChatPanel';
-import { ToastProvider } from '../context/ToastContext';
-import { storageGroupsService } from '../services/storageGroups';
-import { StudyGroup, GroupMessage, GroupMember } from '../types';
+import { GroupChatPanel } from '@/features/groups/components/groups/GroupChatPanel';
+import { ToastProvider } from '@/features/core/contexts/ToastContext';
+import { storageGroupsService } from '@/features/groups/api/storageGroups';
+import { StudyGroup, GroupMessage, GroupMember } from '@/features/core/types';
 
 describe('Ações de Grupos de Estudos (Chat, Convites, Saída e Exclusão com Modal)', () => {
   beforeEach(() => {

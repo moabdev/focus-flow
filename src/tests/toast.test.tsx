@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { ToastProvider, useToast } from '../context/ToastContext';
-import { ToastContainer } from '../components/common/ToastContainer';
+import { ToastProvider, useToast } from '@/features/core/contexts/ToastContext';
+import { ToastContainer } from '@/features/core/components/common/ToastContainer';
 
 const TestComponent: React.FC = () => {
   const toast = useToast();

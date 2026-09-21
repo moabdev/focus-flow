@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useTimer } from '../hooks/useTimer';
-import { notificationService } from '../services/notificationService';
-import { DEFAULT_SETTINGS } from '../services/storageDefaults';
+import { useTimer } from '@/features/timer/hooks/useTimer';
+import { notificationService } from '@/features/core/api/notificationService';
+import { DEFAULT_SETTINGS } from '@/features/core/api/storageDefaults';
 
 describe('Modo Foco Rigoroso (Anti-Distração)', () => {
   beforeEach(() => {

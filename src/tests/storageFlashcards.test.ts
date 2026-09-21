@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { StorageFlashcardsService } from '../services/storageFlashcards';
+import { StorageFlashcardsService } from '@/features/flashcards/api/storageFlashcards';
 
 describe('StorageFlashcardsService', () => {
   let service: StorageFlashcardsService;
