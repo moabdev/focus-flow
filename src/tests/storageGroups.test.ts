@@ -6,13 +6,9 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
     localStorage.clear();
   });
 
-  it('deve retornar grupos padrão pré-semeados', () => {
+  it('deve iniciar com 0 grupos (mocks removidos)', () => {
     const groups = storageGroups.getGroups();
-    expect(groups.length).toBeGreaterThanOrEqual(3);
-    const names = groups.map((g) => g.name);
-    expect(names).toContain('Devs & Engenharia de Software');
-    expect(names).toContain('Concursos Públicos & OAB');
-    expect(names).toContain('Medicina & Residência');
+    expect(groups.length).toBe(0);
   });
 
   it('deve permitir a criação de um novo grupo de estudos', () => {
@@ -31,10 +27,14 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
     expect(allGroups.some((g) => g.id === newGroup.id)).toBe(true);
   });
 
-  it('deve recuperar a lista de membros de um grupo', () => {
-    const groups = storageGroups.getGroups();
-    const firstGroup = groups[0];
-    const members = storageGroups.getMembers(firstGroup.id);
+  it('deve recuperar a lista de membros de um grupo recém-criado', () => {
+    const newGroup = storageGroups.createGroup({
+      name: 'Grupo A',
+      description: '',
+      category: 'Testes',
+      avatar_icon: '🧪',
+    });
+    const members = storageGroups.getMembers(newGroup.id);
 
     expect(members.length).toBeGreaterThan(0);
     expect(members[0].user_name).toBeDefined();
@@ -42,8 +42,7 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
   });
 
   it('deve enviar e persistir mensagens no chat do grupo', () => {
-    const groups = storageGroups.getGroups();
-    const targetGroup = groups[0];
+    const targetGroup = storageGroups.createGroup({ name: 'Chat Test', description: '', category: 'Testes', avatar_icon: '🧪' });
 
     const messageText = 'Olá a todos! Começando agora meu bloco de 50 minutos de foco.';
     const sent = storageGroups.sendMessage(targetGroup.id, messageText, 'Dev Ana');
@@ -57,8 +56,7 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
   });
 
   it('deve permitir que um usuário entre no grupo usando um código de convite válido', () => {
-    const groups = storageGroups.getGroups();
-    const targetGroup = groups[0];
+    const targetGroup = storageGroups.createGroup({ name: 'Invite Test', description: '', category: 'Testes', avatar_icon: '🧪' });
     const initialCount = targetGroup.member_count;
 
     const result = storageGroups.joinGroupByCode(targetGroup.code, 'Lucas Silva');
@@ -104,8 +102,7 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
   });
 
   it('deve permitir que membros entrem e saiam do grupo livremente', () => {
-    const groups = storageGroups.getGroups();
-    const targetGroup = groups[0];
+    const targetGroup = storageGroups.createGroup({ name: 'Leave Test', description: '', category: 'Testes', avatar_icon: '🧪' });
 
     // Entrar no grupo
     const joinRes = storageGroups.joinGroup(targetGroup.id, 'Mariana Aluna');
@@ -124,4 +121,3 @@ describe('Grupos de Estudo & Chat ao Vivo (storageGroups)', () => {
     expect(messages.some((m) => m.text.includes('Mariana Aluna saiu do grupo'))).toBe(true);
   });
 });
-

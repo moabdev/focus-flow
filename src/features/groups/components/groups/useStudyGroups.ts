@@ -29,6 +29,16 @@ export const useStudyGroups = (userProfile?: SupabaseProfile | null) => {
     }
   }, [activeGroupId]);
 
+  // Limpa os dados de exemplo (mocks) se eles ainda estiverem no cache do localStorage do usuário
+  useEffect(() => {
+    const hasMocks = groups.some((g) => ['grp-devs', 'grp-concursos', 'grp-medicina'].includes(g.id));
+    if (hasMocks) {
+      storageGroups.resetGroupsData();
+      setGroups([]);
+      setActiveGroupId('');
+    }
+  }, [groups]);
+
   const activeGroup = groups.find((g) => g.id === activeGroupId) || groups[0];
   const isMember = activeGroup ? members.some((m) => isSameUser(m.user_name, currentUserName)) : false;
   const isCreator = activeGroup ? isGroupCreator(activeGroup, members, currentUserName) : false;
