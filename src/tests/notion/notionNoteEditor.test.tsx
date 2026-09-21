@@ -11,20 +11,20 @@ describe('NotionNoteEditor Component', () => {
     project_id: 'p1',
     title: 'Subtask 1',
     discipline: 'Test',
-    estimated_pomodoros: 2,
+    pomodoros_estimated: 2,
     priority: 'alta',
     is_completed: false,
-    completed_pomodoros: 0,
+    pomodoros_completed: 0,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
     notes: 'Alguma nota',
   };
 
   const mockProject: Project = {
     id: 'p1',
     title: 'Project 1',
+    color: '#000000',
+    total_elapsed_seconds: 0,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
   };
 
   const defaultProps = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProjectModal } from '../../features/projects/components/projects/ProjectModal';
 import { Project } from '../../features/core/types';
 
@@ -23,8 +23,8 @@ describe('ProjectModal Component', () => {
     end_date: '2023-12-31',
     color: '#0ea5e9',
     icon: '🚀',
+    total_elapsed_seconds: 0,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
   };
 
   beforeEach(() => {
