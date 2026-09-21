@@ -138,7 +138,7 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({ userProfile })
             onRemoveMember={(m) => setMemberToRemove(m)}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center group-chat-panel glass-panel empty-selection">
+          <div className="group-chat-panel glass-panel empty-selection">
             <Sparkles size={36} color="var(--accent-primary)" />
             <h3>Selecione um grupo de estudos</h3>
             <p>Escolha uma sala ao lado ou crie uma nova para estudar em comunidade.</p>

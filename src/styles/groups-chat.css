@@ -16,6 +16,14 @@
   position: relative;
 }
 
+.empty-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 /* Header Superior do Chat */
 /* Header Superior do Chat - Ultra Compacto, Widescreen & Slim */
 .group-chat-header {
