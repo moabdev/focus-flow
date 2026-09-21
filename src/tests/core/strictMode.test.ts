@@ -44,7 +44,7 @@ describe('Modo Foco Rigoroso (Anti-Distração)', () => {
 
     expect(notifySpy).toHaveBeenCalledWith(
       '⚠️ Alerta de Foco Rigoroso!',
-      expect.stringContaining('Você saiu da aba do FocusFlow')
+      expect.stringContaining('Você se distraiu do FocusFlow! Mantenha a concentração para concluir o ciclo.')
     );
   });
 
