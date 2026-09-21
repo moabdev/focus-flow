@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import confetti from 'canvas-confetti';
-import { X, Sparkles, HelpCircle, RotateCw, CheckCircle2, Play, Flame, Brain } from 'lucide-react';
+import { X, Sparkles, HelpCircle, RotateCw } from 'lucide-react';
 import { Flashcard, FlashcardDeck, FlashcardReviewRating } from '@/features/core/types';
 import { isCardDue } from '@/features/flashcards/api/spacedRepetition';
+import { FlashcardStudySessionFinished } from './FlashcardStudySessionFinished';
+import { FlashcardStudyRatings } from './FlashcardStudyRatings';
 
 interface FlashcardStudyModalProps {
   deck: FlashcardDeck;
@@ -21,7 +23,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
   onRecordReview,
   onStartPomodoroForDeck,
 }) => {
-  // Fila de estudo: prioriza cartões pendentes de hoje; se todos estiverem em dia, permite revisar todo o baralho
   const studyQueue = useMemo(() => {
     const due = cards.filter((c) => isCardDue(c));
     return due.length > 0 ? due : cards;
@@ -32,7 +33,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
   const [showHint, setShowHint] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Estatísticas da sessão atual
   const [sessionStats, setSessionStats] = useState({
     again: 0,
     hard: 0,
@@ -40,7 +40,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
     easy: 0,
   });
 
-  // Reinicia a sessão quando o modal abre
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(0);
@@ -72,7 +71,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
         easy: rating === 3 ? prev.easy + 1 : prev.easy,
       }));
 
-      // Próximo cartão ou finalizar sessão
       if (currentIndex + 1 < totalInSession) {
         setIsFlipped(false);
         setShowHint(false);
@@ -93,7 +91,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
     [currentCard, currentIndex, onRecordReview, totalInSession]
   );
 
-  // Teclas de atalho para estudo ativo ágil
   useEffect(() => {
     if (!isOpen || isFinished) return;
 
@@ -132,7 +129,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
   return (
     <div className="study-modal-overlay" onClick={onClose}>
       <div className="study-modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Header do Estudo */}
         <div className="study-header">
           <div className="study-deck-badge">
             <span style={{ fontSize: '1.25rem' }}>{deck.icon}</span>
@@ -154,22 +150,18 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
           </div>
         </div>
 
-        {/* Barra de Progresso */}
         <div className="study-progress-bar">
           <div className="study-progress-fill" style={{ width: `${progressPercent}%` }} />
         </div>
 
-        {/* Conteúdo Principal do Estudo */}
         {!isFinished && currentCard ? (
           <>
-            {/* Cartão 3D com Flip */}
             <div
               className={`flip-card-wrapper ${isFlipped ? 'flipped' : ''}`}
               onClick={handleFlip}
               title="Clique para virar o cartão (Espaço)"
             >
               <div className="flip-card-inner">
-                {/* Frente */}
                 <div className="flip-card-front">
                   <div className="card-face-tag">
                     <span>Pergunta / Conceito</span>
@@ -205,7 +197,6 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
                   </div>
                 </div>
 
-                {/* Verso */}
                 <div className="flip-card-back">
                   <div className="card-face-tag">
                     <span style={{ color: 'var(--accent-primary)' }}>Resposta / Solução</span>
@@ -221,45 +212,8 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
               </div>
             </div>
 
-            {/* Ações de Avaliação SM-2 */}
             {isFlipped ? (
-              <div className="study-ratings-bar">
-                <button
-                  className="btn-rating btn-rating-again"
-                  onClick={() => handleAnswer(0)}
-                  title="Atalho: Tecla 1"
-                >
-                  <span className="btn-rating-title">Errei [1]</span>
-                  <span className="btn-rating-sub">1 dia</span>
-                </button>
-
-                <button
-                  className="btn-rating btn-rating-hard"
-                  onClick={() => handleAnswer(1)}
-                  title="Atalho: Tecla 2"
-                >
-                  <span className="btn-rating-title">Difícil [2]</span>
-                  <span className="btn-rating-sub">Crescimento lento</span>
-                </button>
-
-                <button
-                  className="btn-rating btn-rating-good"
-                  onClick={() => handleAnswer(2)}
-                  title="Atalho: Tecla 3"
-                >
-                  <span className="btn-rating-title">Bom [3]</span>
-                  <span className="btn-rating-sub">Intervalo normal</span>
-                </button>
-
-                <button
-                  className="btn-rating btn-rating-easy"
-                  onClick={() => handleAnswer(3)}
-                  title="Atalho: Tecla 4"
-                >
-                  <span className="btn-rating-title">Fácil [4]</span>
-                  <span className="btn-rating-sub">Intervalo longo</span>
-                </button>
-              </div>
+              <FlashcardStudyRatings onAnswer={(rating) => handleAnswer(rating as FlashcardReviewRating)} />
             ) : (
               <div style={{ textAlign: 'center' }}>
                 <button className="btn-study-deck" onClick={handleFlip}>
@@ -269,54 +223,14 @@ export const FlashcardStudyModal: React.FC<FlashcardStudyModalProps> = ({
             )}
           </>
         ) : (
-          /* Tela de Parabéns / Resumo da Sessão */
-          <div className="study-finished-view">
-            <div className="study-trophy-icon">🏆</div>
-            <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>Sessão de Revisão Concluída!</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: '0.25rem 0 1rem 0' }}>
-              Excelente esforço! Você reforçou sua memória de longo prazo com repetição espaçada.
-            </p>
-
-            <div className="study-finished-stats">
-              <div className="finished-stat-box">
-                <div className="finished-stat-val">{totalInSession}</div>
-                <div className="finished-stat-lbl">Cartões Revisados</div>
-              </div>
-
-              <div className="finished-stat-box">
-                <div className="finished-stat-val" style={{ color: '#10b981' }}>
-                  {retentionRate}%
-                </div>
-                <div className="finished-stat-lbl">Taxa de Acertos</div>
-              </div>
-
-              <div className="finished-stat-box">
-                <div className="finished-stat-val" style={{ color: '#0ea5e9' }}>
-                  {sessionStats.good + sessionStats.easy}
-                </div>
-                <div className="finished-stat-lbl">Memorizados</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', width: '100%', maxWidth: '480px' }}>
-              {onStartPomodoroForDeck && (
-                <button
-                  className="btn-study-deck"
-                  style={{ background: 'var(--accent-secondary, #0ea5e9)' }}
-                  onClick={() => {
-                    onClose();
-                    onStartPomodoroForDeck(deck);
-                  }}
-                >
-                  <Play size={16} /> Focar no Pomodoro
-                </button>
-              )}
-
-              <button className="btn-study-deck" onClick={onClose}>
-                <CheckCircle2 size={16} /> Concluir
-              </button>
-            </div>
-          </div>
+          <FlashcardStudySessionFinished
+            totalInSession={totalInSession}
+            retentionRate={retentionRate}
+            sessionStats={sessionStats}
+            deck={deck}
+            onClose={onClose}
+            onStartPomodoroForDeck={onStartPomodoroForDeck}
+          />
         )}
       </div>
     </div>

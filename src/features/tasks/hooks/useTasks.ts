@@ -80,8 +80,10 @@ export function useTasks() {
       created_at: new Date().toISOString(),
     };
 
-    const updated = [newTask, ...tasks];
-    setTasks(updated);
+    setTasks((prev) => {
+      const updated = [newTask, ...prev];
+      return updated;
+    });
     if (!activeTaskId) {
       setActiveTaskId(newTask.id);
     }
@@ -109,16 +111,15 @@ export function useTasks() {
       }
     }
 
-    const updatedList = tasks.map((t) => (t.id === id ? updatedTask : t));
-    setTasks(updatedList);
+    setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
     await storageService.saveTask(updatedTask);
   }, [tasks]);
 
   const deleteTask = useCallback(async (id: string) => {
-    const updated = tasks.filter((t) => t.id !== id);
-    setTasks(updated);
+    setTasks((prev) => prev.filter((t) => t.id !== id));
     if (activeTaskId === id) {
-      const remaining = updated.find((t) => !t.is_completed);
+      // Find remaining without relying on old state (safely)
+      const remaining = tasks.find((t) => t.id !== id && !t.is_completed);
       setActiveTaskId(remaining ? remaining.id : null);
     }
     await storageService.deleteTask(id);
@@ -136,8 +137,7 @@ export function useTasks() {
       pomodoros_completed: target.pomodoros_completed + 1,
     };
 
-    const updatedList = tasks.map((t) => (t.id === targetId ? updatedTask : t));
-    setTasks(updatedList);
+    setTasks((prev) => prev.map((t) => (t.id === targetId ? updatedTask : t)));
     await storageService.saveTask(updatedTask);
   }, [tasks, activeTaskId]);
 

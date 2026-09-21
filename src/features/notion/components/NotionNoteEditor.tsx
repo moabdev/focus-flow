@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Subtask, Project } from '@/features/core/types';
 import { NotionToolbar } from './notion/NotionToolbar';
 import { NotionMarkdownRenderer } from './notion/NotionMarkdownRenderer';
+import { NotionEditorHeader } from './notion/NotionEditorHeader';
+import { NotionDictationBanner } from './notion/NotionDictationBanner';
 import { useSpeechRecognition } from '@/features/zenmode/hooks/useSpeechRecognition';
 
 interface NotionNoteEditorProps {
@@ -40,7 +42,6 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
     }
   };
 
-  // Callback de inserção de texto transcrito via voz
   const handleSpeechResult = useCallback(
     (transcript: string, isFinal: boolean) => {
       if (!isFinal || !transcript.trim() || !subtask) return;
@@ -96,7 +97,6 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
     onResult: handleSpeechResult,
   });
 
-  // Atalho de teclado Alt+D para iniciar/parar ditado por voz
   useEffect(() => {
     if (!isOpen) return;
 
@@ -110,7 +110,6 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, toggleSpeech]);
 
-  // Encerra a gravação caso o modal seja fechado
   const handleClose = () => {
     if (isListening) {
       stopSpeech();
@@ -150,44 +149,13 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
         style={{ maxWidth: '840px', height: '85vh', maxHeight: '900px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header do Editor */}
-        <div className="modal-header notion-editor-header">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-              {project && (
-                <span
-                  className="discipline-tag"
-                  style={{
-                    backgroundColor: `${project.color}20`,
-                    borderColor: `${project.color}40`,
-                    color: project.color,
-                  }}
-                >
-                  {project.icon || '📁'} {project.title}
-                </span>
-              )}
-              <span className={`priority-pill priority-${subtask.priority}`}>
-                {subtask.priority}
-              </span>
-            </div>
-            <h3 className="modal-title" style={{ fontSize: '1.2rem' }}>
-              📝 {subtask.title}
-            </h3>
-          </div>
+        <NotionEditorHeader
+          project={project}
+          subtask={subtask}
+          saveIndicator={saveIndicator}
+          onClose={handleClose}
+        />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {saveIndicator && (
-              <span style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Save size={14} /> Salvo
-              </span>
-            )}
-            <button className="icon-btn" onClick={handleClose} aria-label="Fechar editor">
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* Barra de Ferramentas Estilo Notion */}
         <NotionToolbar
           onInsertText={insertTextAtCursor}
           viewMode={viewMode}
@@ -197,28 +165,12 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
           isSpeechSupported={isSpeechSupported}
         />
 
-        {/* Banner Flutuante de Ditado por Voz em Andamento */}
-        {isListening && (
-          <div className="notion-dictation-banner">
-            <div className="dictation-left">
-              <span className="dictation-pulse-dot" />
-              <span className="dictation-label">🎙️ Ditando em tempo real:</span>
-              <span className="dictation-preview">
-                {interimTranscript ? `"${interimTranscript}"` : 'Fale suas anotações... sua voz será transcrita no cursor.'}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="dictation-stop-btn"
-              onClick={stopSpeech}
-              title="Parar ditado por voz"
-            >
-              Parar Ditado
-            </button>
-          </div>
-        )}
+        <NotionDictationBanner
+          isListening={isListening}
+          interimTranscript={interimTranscript}
+          onStopSpeech={stopSpeech}
+        />
 
-        {/* Mensagem de Erro de Reconhecimento de Voz */}
         {speechError && (
           <div className="notion-speech-error">
             <AlertCircle size={14} />
@@ -226,7 +178,6 @@ export const NotionNoteEditor: React.FC<NotionNoteEditorProps> = ({
           </div>
         )}
 
-        {/* Corpo do Editor */}
         <div className={`notion-editor-body view-${viewMode}`}>
           {(viewMode === 'edit' || viewMode === 'split') && (
             <div className="notion-pane editor-pane">

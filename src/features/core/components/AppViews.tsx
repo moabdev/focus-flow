@@ -2,6 +2,8 @@ import React, { Suspense, lazy } from 'react';
 import { QuoteBanner } from '@/features/quotes/components/QuoteBanner';
 import { TimerCard } from '@/features/timer/components/TimerCard';
 import { ProjectManager } from '@/features/projects/components/ProjectManager';
+import { AppViewsProps } from './AppViews.types';
+import { ViewLoadingFallback } from './ViewLoadingFallback';
 
 // Lazy loading de visões secundárias para reduzir bundle inicial
 const CalendarView = lazy(() => import('@/features/calendar/components/CalendarView').then((m) => ({ default: m.CalendarView })));
@@ -22,110 +24,7 @@ const MindMapsView = lazy(() =>
   import('@/features/mindmaps/components/mindmaps/MindMapsView').then((m) => ({ default: m.MindMapsView }))
 );
 
-const ViewLoadingFallback: React.FC = () => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '320px',
-      gap: '1rem',
-      color: 'var(--text-muted)',
-    }}
-  >
-    <div
-      style={{
-        width: '36px',
-        height: '36px',
-        border: '3px solid var(--border-glass-subtle)',
-        borderTopColor: 'var(--accent-primary)',
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite',
-      }}
-    />
-    <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Carregando módulo...</span>
-  </div>
-);
 
-import type {
-  Quote,
-  TimerMode,
-  Subtask,
-  Project,
-  PriorityLevel,
-  CalendarEvent,
-  AppViewMode,
-  CalendarViewMode,
-  SupabaseProfile,
-} from '@/features/core/types';
-
-export interface AppViewsProps {
-  currentView: AppViewMode;
-  setCurrentView: (view: AppViewMode) => void;
-  // Quote & Timer props
-  activeQuote: Quote;
-  getRandomQuote: () => void;
-  addMantra: (text: string, author?: string) => void;
-  isRotating: boolean;
-  timer: {
-    mode: TimerMode;
-    formattedTime: string;
-    progressPercent: number;
-    isRunning: boolean;
-    cycleCount: number;
-    changeMode: (mode: TimerMode) => void;
-    toggle: () => void;
-    skip: () => void;
-    reset: () => void;
-  };
-  activeSubtask: Subtask | null;
-  activeProject: Project | null;
-  playClick: () => void;
-  // Project & Subtask props
-  projects: Project[];
-  subtasks: Subtask[];
-  activeSubtaskId: string | null;
-  setActiveSubtaskId: (id: string | null) => void;
-  selectedProjectDetailId: string | null;
-  onOpenProjectDetail: (id: string) => void;
-  onBackFromProjectDetail: () => void;
-  createProject: (data: {
-    title: string;
-    description?: string;
-    start_date?: string;
-    end_date?: string;
-    color?: string;
-    icon?: string;
-  }) => Promise<Project>;
-  updateProject: (id: string, data: Partial<Project>) => Promise<void>;
-  deleteProject: (id: string) => Promise<void>;
-  onCreateSubtask: (
-    projectId: string,
-    title: string,
-    discipline?: string,
-    estimated?: number,
-    priority?: PriorityLevel,
-    notes?: string,
-    due_date?: string
-  ) => Promise<Subtask | null>;
-  onUpdateSubtask: (id: string, data: Partial<Subtask>) => Promise<void>;
-  onDeleteSubtask: (id: string) => Promise<void>;
-  onToggleSubtaskCompleted: (id: string) => Promise<void>;
-  // Calendar props
-  events: CalendarEvent[];
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
-  calendarView: CalendarViewMode;
-  setCalendarView: (view: CalendarViewMode) => void;
-  addEvent: (eventData: Omit<CalendarEvent, 'id'>) => Promise<CalendarEvent>;
-  updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>;
-  deleteEvent: (id: string) => Promise<void>;
-  toggleEventCompleted: (id: string) => Promise<void>;
-  // User & Ranking props
-  userProfile: SupabaseProfile | null;
-  weekMinutes: number;
-}
 
 export const AppViews: React.FC<AppViewsProps> = React.memo(({
   currentView,

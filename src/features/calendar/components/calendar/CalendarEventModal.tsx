@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { CalendarEvent, Project, Subtask } from '@/features/core/types';
-import { CustomSelect, SelectOption } from '@/features/core/components/common/CustomSelect';
+import { SelectOption } from '@/features/core/components/common/CustomSelect';
+import { CalendarEventForm } from './CalendarEventForm';
 
 interface CalendarEventModalProps {
   isOpen: boolean;
@@ -95,6 +96,13 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
     onClose();
   };
 
+  const handleProjectChange = (pid: string) => {
+    setEventProjectId(pid);
+    const p = projects.find((proj) => proj.id === pid);
+    if (p && p.color) setEventColor(p.color);
+    setEventSubtaskId('');
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
@@ -105,150 +113,27 @@ export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-content">
-          <div>
-            <label className="setting-label">Título da Tarefa / Bloco</label>
-            <input
-              type="text"
-              placeholder="Ex: Resolver 20 questões de SQL, Leitura capítulo 4..."
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-              required
-              autoFocus
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0,0,0,0.25)',
-                border: '1px solid var(--border-glass-subtle)',
-                color: 'var(--text-primary)',
-                marginTop: '0.4rem',
-              }}
-            />
-          </div>
-
-          <div className="event-modal-datetime-grid">
-            <div>
-              <label className="setting-label">Data</label>
-              <input
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.6rem',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid var(--border-glass-subtle)',
-                  color: 'var(--text-primary)',
-                  marginTop: '0.4rem',
-                }}
-              />
-            </div>
-            <div>
-              <label className="setting-label">Início</label>
-              <input
-                type="time"
-                value={eventStartTime}
-                onChange={(e) => setEventStartTime(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.6rem',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid var(--border-glass-subtle)',
-                  color: 'var(--text-primary)',
-                  marginTop: '0.4rem',
-                }}
-              />
-            </div>
-            <div>
-              <label className="setting-label">Término</label>
-              <input
-                type="time"
-                value={eventEndTime}
-                onChange={(e) => setEventEndTime(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.6rem',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid var(--border-glass-subtle)',
-                  color: 'var(--text-primary)',
-                  marginTop: '0.4rem',
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="setting-label">Vincular a um Projeto</label>
-            <div style={{ marginTop: '0.4rem' }}>
-              <CustomSelect
-                value={eventProjectId}
-                options={projectOptions}
-                onChange={(pid) => {
-                  setEventProjectId(pid);
-                  const p = projects.find((proj) => proj.id === pid);
-                  if (p && p.color) setEventColor(p.color);
-                  setEventSubtaskId('');
-                }}
-              />
-            </div>
-          </div>
-
-          {eventProjectId && (
-            <div>
-              <label className="setting-label">Vincular a uma Subtask do Projeto</label>
-              <div style={{ marginTop: '0.4rem' }}>
-                <CustomSelect
-                  value={eventSubtaskId}
-                  options={subtaskOptions}
-                  onChange={(sid) => setEventSubtaskId(sid)}
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="setting-label">Observações / Detalhes</label>
-            <textarea
-              placeholder="Instruções para a sessão de foco..."
-              value={eventDescription}
-              onChange={(e) => setEventDescription(e.target.value)}
-              rows={2}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0,0,0,0.25)',
-                border: '1px solid var(--border-glass-subtle)',
-                color: 'var(--text-primary)',
-                marginTop: '0.4rem',
-              }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <button
-              type="button"
-              className="filter-chip"
-              onClick={onClose}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="main-start-btn"
-              style={{ padding: '0.65rem 1.5rem', fontSize: '0.9rem' }}
-            >
-              Agendar Bloco
-            </button>
-          </div>
-        </form>
+        <CalendarEventForm
+          eventTitle={eventTitle}
+          setEventTitle={setEventTitle}
+          eventDate={eventDate}
+          setEventDate={setEventDate}
+          eventStartTime={eventStartTime}
+          setEventStartTime={setEventStartTime}
+          eventEndTime={eventEndTime}
+          setEventEndTime={setEventEndTime}
+          eventProjectId={eventProjectId}
+          setEventProjectId={setEventProjectId}
+          eventSubtaskId={eventSubtaskId}
+          setEventSubtaskId={setEventSubtaskId}
+          eventDescription={eventDescription}
+          setEventDescription={setEventDescription}
+          projectOptions={projectOptions}
+          subtaskOptions={subtaskOptions}
+          onProjectChange={handleProjectChange}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+        />
       </div>
     </div>
   );

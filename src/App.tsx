@@ -9,12 +9,10 @@ import { useTimer } from '@/features/timer/hooks/useTimer';
 import { useKeyboardShortcuts } from '@/features/core/hooks/useKeyboardShortcuts';
 import { storageService } from '@/features/core/api/storage';
 import type { UserSettings, TimerMode } from '@/features/core/types';
-
 import { Header } from '@/features/core/components/Header';
 import { Sidebar } from '@/features/core/components/Sidebar';
 import { AppViews } from '@/features/core/components/AppViews';
 import { AppModals } from '@/features/core/components/AppModals';
-
 import { useAppNavigation } from '@/features/core/hooks/useAppNavigation';
 import { useAppAuthAndSync } from '@/features/core/hooks/useAppAuthAndSync';
 import { useAppTimerEvents } from '@/features/core/hooks/useAppTimerEvents';
