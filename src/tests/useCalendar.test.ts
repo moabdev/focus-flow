@@ -11,7 +11,7 @@ vi.mock('@/features/core/api/storage', () => ({
     saveCalendarEvent: vi.fn(() => Promise.resolve()),
     deleteCalendarEvent: vi.fn(() => Promise.resolve()),
   },
-  DEFAULT_CALENDAR_EVENTS: [{ id: 'def-1', title: 'Default Event', start_time: '2023-01-01T10:00:00Z', end_time: '2023-01-01T11:00:00Z', type: 'estudo', is_completed: false }]
+  DEFAULT_CALENDAR_EVENTS: [{ id: 'def-1', title: 'Default Event', start_time: '2023-01-01T10:00:00Z', end_time: '2023-01-01T11:00:00Z', is_completed: false }]
 }));
 
 vi.mock('@/features/core/api/syncService', () => ({
@@ -47,7 +47,6 @@ describe('useCalendar Hook', () => {
         title: 'Revisão Enem',
         start_time: '2023-05-10T14:00:00Z',
         end_time: '2023-05-10T16:00:00Z',
-        type: 'estudo',
         is_completed: false
       });
     });
@@ -70,7 +69,6 @@ describe('useCalendar Hook', () => {
         title: 'Original',
         start_time: '2023-05-10T14:00:00Z',
         end_time: '2023-05-10T16:00:00Z',
-        type: 'estudo',
         is_completed: false
       });
     });
@@ -94,7 +92,6 @@ describe('useCalendar Hook', () => {
         title: 'Tarefa Concluível',
         start_time: '2023-05-10T14:00:00Z',
         end_time: '2023-05-10T16:00:00Z',
-        type: 'trabalho',
         is_completed: false
       });
     });
@@ -117,7 +114,6 @@ describe('useCalendar Hook', () => {
         title: 'Hoje',
         start_time: '2023-06-15T14:00:00Z',
         end_time: '2023-06-15T16:00:00Z',
-        type: 'estudo',
         is_completed: false
       });
     });
@@ -127,7 +123,6 @@ describe('useCalendar Hook', () => {
         title: 'Amanhã',
         start_time: '2023-06-16T14:00:00Z',
         end_time: '2023-06-16T16:00:00Z',
-        type: 'estudo',
         is_completed: false
       });
     });
@@ -162,7 +157,6 @@ describe('useCalendar Hook', () => {
         title: 'Para Deletar',
         start_time: '2023-06-15T14:00:00Z',
         end_time: '2023-06-15T16:00:00Z',
-        type: 'estudo',
         is_completed: false
       });
     });

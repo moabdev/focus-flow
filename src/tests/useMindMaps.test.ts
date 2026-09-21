@@ -35,7 +35,7 @@ describe('useMindMaps Hook', () => {
   });
 
   it('deve selecionar um mapa e um nó ativo', () => {
-    const mockNode: MindMapNode = { id: 'n-1', text: 'Raiz', children: [], x: 0, y: 0, type: 'root' };
+    const mockNode: MindMapNode = { id: 'n-1', text: 'Raiz', x: 0, y: 0 } as MindMapNode;
     const mockMaps = [
       { id: 'm-1', title: 'Mapa', root_node_id: 'n-1', nodes: [mockNode] } as MindMap
     ];

@@ -27,10 +27,10 @@ describe('useFlashcards Hook', () => {
 
   it('deve carregar baralhos e cartas inicialmente', () => {
     const mockDecks: FlashcardDeck[] = [
-      { id: 'd-1', title: 'React', description: '', color: '#000', due_count: 5, created_at: '', updated_at: '' }
+      { id: 'd-1', title: 'React', description: '', color: '#000', icon: '🧠', due_count: 5, created_at: '', updated_at: '' }
     ];
     const mockCards: Flashcard[] = [
-      { id: 'c-1', deck_id: 'd-1', front: 'A', back: 'B', tags: [], created_at: '', updated_at: '' }
+      { id: 'c-1', deck_id: 'd-1', front: 'A', back: 'B', tags: [], created_at: '' } as unknown as Flashcard
     ];
     
     vi.mocked(storageFlashcardsService.getDecksWithStats).mockReturnValue(mockDecks);
@@ -99,7 +99,7 @@ describe('useFlashcards Hook', () => {
     
     let created: any;
     act(() => {
-      created = result.current.createDeck({ title: 'New', description: '', color: '' });
+      created = result.current.createDeck({ title: 'New', description: '', color: '', icon: '🧠' });
     });
     
     expect(storageFlashcardsService.createDeck).toHaveBeenCalled();
@@ -125,10 +125,10 @@ describe('useFlashcards Hook', () => {
     const { result } = renderHook(() => useFlashcards());
     
     act(() => {
-      result.current.recordReview('c-1', 4);
+      result.current.recordReview('c-1', 3);
     });
     
-    expect(storageFlashcardsService.recordReview).toHaveBeenCalledWith('c-1', 4);
+    expect(storageFlashcardsService.recordReview).toHaveBeenCalledWith('c-1', 3);
   });
 
   it('deve deletar deck', () => {
