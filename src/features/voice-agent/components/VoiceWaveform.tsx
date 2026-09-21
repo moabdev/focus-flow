@@ -41,23 +41,26 @@ export const VoiceWaveform: React.FC<VoiceWaveformProps> = ({ status, audioLevel
         return;
       }
 
+      const accentColor =
+        getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#ff2a5f';
+
       // Parâmetros de onda de acordo com o status
       let baseAmplitude = 6;
       let frequency = 0.04;
-      let strokeColor = '#e11d48';
+      let strokeColor = accentColor;
 
       if (status === 'listening') {
         baseAmplitude = Math.max(8, audioLevel * 24);
         frequency = 0.06;
-        strokeColor = '#3b82f6'; // Azul escuta
+        strokeColor = '#38bdf8'; // Azul safira/ciano escuta
       } else if (status === 'speaking') {
         baseAmplitude = 14 + Math.sin(phase * 2) * 6;
         frequency = 0.05;
-        strokeColor = '#e11d48'; // Rosa/Rubi fala
+        strokeColor = accentColor; // Cor do tema ativo
       } else if (status === 'thinking') {
         baseAmplitude = 6 + Math.sin(phase * 4) * 3;
         frequency = 0.08;
-        strokeColor = '#a855f7'; // Roxo processando
+        strokeColor = '#c084fc'; // Roxo processando
       } else if (status === 'error') {
         baseAmplitude = 4;
         frequency = 0.1;

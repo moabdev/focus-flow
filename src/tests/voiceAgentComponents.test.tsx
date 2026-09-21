@@ -79,7 +79,7 @@ describe('Voice Agent UI Components', () => {
       const onSendMessage = vi.fn().mockResolvedValue(undefined);
       render(<VoiceAgentWidget {...defaultProps} onSendMessage={onSendMessage} />);
 
-      const input = screen.getByPlaceholderText(/digite ou use a voz/i);
+      const input = screen.getByPlaceholderText(/digite/i);
       fireEvent.change(input, { target: { value: 'Criar tarefa Estudar' } });
 
       const form = input.closest('form');
