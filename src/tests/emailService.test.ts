@@ -41,6 +41,13 @@ describe('EmailService (Envio de Convites de Grupo com 1 Clique - Provedor Brevo
   });
 
   describe('2. Envio de Convite com 1 Clique (Modo Demonstração / Fallback)', () => {
+    beforeEach(() => {
+      vi.spyOn(emailService, 'getConfig').mockReturnValue({
+        apiKey: '',
+        senderEmail: '',
+        senderName: '',
+      });
+    });
     it('deve rejeitar envio quando o e-mail estiver em branco', async () => {
       const result = await emailService.sendGroupInvite({
         toEmail: '   ',

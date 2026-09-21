@@ -127,25 +127,35 @@ describe('Projetos, Subtasks e Time-Tracking Acumulado', () => {
     expect(storageService.getLocalCalendarEvents().length).toBe(0);
   });
 
-  it('deve persistir a exclusão de todos os projetos e não recriar os mocks ao reinicializar', async () => {
+  it('deve persistir a exclusão de todos os projetos', async () => {
     // 1. Inicializa os defaults
     storageService.initDefaults();
-    expect(storageService.getLocalProjects().length).toBeGreaterThan(0);
+    expect(storageService.getLocalProjects().length).toBe(0); // Não temos mais projetos de exemplo
     expect(storageService.isInitialized()).toBe(true);
 
-    // 2. Deleta todos os projetos
+    // 2. Cria um projeto manualmente para testar deleção
+    await storageService.saveProject({
+      id: 'proj-mock',
+      title: 'Mock Project',
+      color: '#ff2a5f',
+      total_elapsed_seconds: 0,
+      created_at: new Date().toISOString(),
+    });
+    expect(storageService.getLocalProjects().length).toBe(1);
+
+    // 3. Deleta todos os projetos
     const projects = storageService.getLocalProjects();
     for (const p of projects) {
       await storageService.deleteProject(p.id);
     }
 
-    // 3. Garante que a lista local está vazia
+    // Garante que a lista local está vazia
     expect(storageService.getLocalProjects().length).toBe(0);
 
     // 4. Simula recarregar a página (chama initDefaults novamente)
     storageService.initDefaults();
 
-    // 5. Os projetos mockados NÃO devem ter sido recriados!
+    // 5. Os projetos NÃO devem ter sido recriados
     expect(storageService.getLocalProjects().length).toBe(0);
     const fetched = await storageService.fetchProjects();
     expect(fetched.length).toBe(0);

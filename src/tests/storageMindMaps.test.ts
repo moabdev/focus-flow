@@ -9,11 +9,9 @@ describe('StorageMindMapsService', () => {
     service = new StorageMindMapsService();
   });
 
-  it('deve carregar os mapas mentais padrão quando inicializado pela primeira vez', () => {
+  it('deve iniciar com 0 mapas mentais (dados de exemplo removidos)', () => {
     const maps = service.getLocalMindMaps();
-    expect(maps.length).toBeGreaterThanOrEqual(1);
-    expect(maps[0].title).toBe('Arquitetura de Software Moderna');
-    expect(maps[0].nodes.length).toBeGreaterThan(5);
+    expect(maps.length).toBe(0);
   });
 
   it('deve criar um novo mapa mental com template em branco', () => {

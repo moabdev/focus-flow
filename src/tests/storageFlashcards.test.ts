@@ -9,10 +9,9 @@ describe('StorageFlashcardsService', () => {
     service = new StorageFlashcardsService();
   });
 
-  it('deve carregar os baralhos padrão quando inicializado pela primeira vez', () => {
+  it('deve iniciar com 0 baralhos (dados de exemplo removidos)', () => {
     const decks = service.getLocalDecks();
-    expect(decks.length).toBeGreaterThanOrEqual(3);
-    expect(decks[0].title).toBe('Engenharia de Software & Algoritmos');
+    expect(decks.length).toBe(0);
   });
 
   it('deve criar um novo baralho com sucesso', () => {
