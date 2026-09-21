@@ -1,9 +1,37 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { AppViewMode } from '@/features/core/types';
 
 export function useAppNavigation() {
-  const [currentView, setCurrentView] = useState<AppViewMode>('timer');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Derive currentView from location pathname
+  // e.g. "/projects/123" -> "projects"
+  // "/stats" -> "stats"
+  // "/" -> "timer"
+  const getPathSegment = (path: string): AppViewMode => {
+    const segment = path.split('/')[1] || 'timer';
+    // Validate if segment is a valid AppViewMode, otherwise default to 'timer'
+    const validViews = ['timer', 'projects', 'project-detail', 'calendar', 'stats', 'drafts', 'knowledge', 'flashcards', 'groups', 'settings', 'zen'];
+    return validViews.includes(segment) ? (segment as AppViewMode) : 'timer';
+  };
+
+  const currentView = getPathSegment(location.pathname);
+
+  const setCurrentView = useCallback((view: AppViewMode) => {
+    navigate(`/${view === 'project-detail' ? 'projects' : view}`);
+  }, [navigate]);
+
   const [selectedProjectDetailId, setSelectedProjectDetailId] = useState<string | null>(null);
+
+  // Parse project id from URL if on project-detail
+  useEffect(() => {
+    if (location.pathname.startsWith('/projects/')) {
+      const id = location.pathname.split('/')[2];
+      if (id) setSelectedProjectDetailId(id);
+    }
+  }, [location.pathname]);
 
   // Sidebar state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -32,13 +60,13 @@ export function useAppNavigation() {
 
   const handleOpenProjectDetail = useCallback((id: string) => {
     setSelectedProjectDetailId(id);
-    setCurrentView('project-detail');
-  }, []);
+    navigate(`/projects/${id}`);
+  }, [navigate]);
 
   const handleBackFromProjectDetail = useCallback(() => {
     setSelectedProjectDetailId(null);
-    setCurrentView('projects');
-  }, []);
+    navigate('/projects');
+  }, [navigate]);
 
   const handleOpenSettings = useCallback((tab: 'timer' | 'theme' | 'sounds' | 'cloud' | 'backup' = 'timer', playClick?: () => void) => {
     playClick?.();
@@ -52,8 +80,8 @@ export function useAppNavigation() {
     setIsZenModeOpen(false);
     setIsCommandPaletteOpen(false);
     setSelectedProjectDetailId(null);
-    setCurrentView('timer');
-  }, []);
+    navigate('/timer');
+  }, [navigate]);
 
   return {
     currentView, setCurrentView,

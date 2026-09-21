@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QuoteBanner } from '@/features/quotes/components/QuoteBanner';
 import { TimerCard } from '@/features/timer/components/TimerCard';
 import { ProjectManager } from '@/features/projects/components/ProjectManager';
@@ -26,8 +27,6 @@ const MindMapsView = lazy(() =>
 const StatsView = lazy(() =>
   import('@/features/stats/components/StatsView').then((m) => ({ default: m.StatsView }))
 );
-
-
 
 export const AppViews: React.FC<AppViewsProps> = React.memo(({
   currentView,
@@ -76,9 +75,11 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   const detailSubtasks = subtasks.filter((s) => s.project_id === selectedProjectDetailId);
 
   return (
-    <>
+    <Routes>
+      <Route path="/" element={<Navigate to="/timer" replace />} />
+      
       {/* Visão 1: Timer & Foco */}
-      {currentView === 'timer' && (
+      <Route path="/timer" element={
         <>
           <QuoteBanner
             quote={activeQuote}
@@ -135,10 +136,10 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             onOpenProjectDetail={onOpenProjectDetail}
           />
         </>
-      )}
+      } />
 
       {/* Visão 2: Projetos & Subtasks */}
-      {currentView === 'projects' && (
+      <Route path="/projects" element={
         <ProjectManager
           projects={projects}
           subtasks={subtasks}
@@ -156,29 +157,33 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
           onOpenTimerTab={() => setCurrentView('timer')}
           onOpenProjectDetail={onOpenProjectDetail}
         />
-      )}
+      } />
 
       {/* Visões Secundárias Carregadas Sob Demanda (Code Splitting) */}
-      <Suspense fallback={<ViewLoadingFallback />}>
-        {/* Visão 3: Página Individual de Detalhes do Projeto */}
-        {currentView === 'project-detail' && currentDetailProject && (
-          <ProjectDetailView
-            project={currentDetailProject}
-            subtasks={detailSubtasks}
-            activeSubtaskId={activeSubtaskId}
-            onSelectActiveSubtask={setActiveSubtaskId}
-            onBack={onBackFromProjectDetail}
-            onDeleteProject={deleteProject}
-            onCreateSubtask={onCreateSubtask}
-            onUpdateSubtask={onUpdateSubtask}
-            onDeleteSubtask={onDeleteSubtask}
-            onToggleSubtaskCompleted={onToggleSubtaskCompleted}
-            onOpenTimerTab={() => setCurrentView('timer')}
-          />
-        )}
+      <Route path="/projects/:id" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
+          {currentDetailProject ? (
+            <ProjectDetailView
+              project={currentDetailProject}
+              subtasks={detailSubtasks}
+              activeSubtaskId={activeSubtaskId}
+              onSelectActiveSubtask={setActiveSubtaskId}
+              onBack={onBackFromProjectDetail}
+              onDeleteProject={deleteProject}
+              onCreateSubtask={onCreateSubtask}
+              onUpdateSubtask={onUpdateSubtask}
+              onDeleteSubtask={onDeleteSubtask}
+              onToggleSubtaskCompleted={onToggleSubtaskCompleted}
+              onOpenTimerTab={() => setCurrentView('timer')}
+            />
+          ) : (
+            <Navigate to="/projects" replace />
+          )}
+        </Suspense>
+      } />
 
-        {/* Visão 4: Calendário & Time-Blocking */}
-        {currentView === 'calendar' && (
+      <Route path="/calendar" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <CalendarView
             events={events}
             projects={projects}
@@ -199,60 +204,69 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             lastGoogleSync={lastGoogleSync}
             onManualSync={onManualGoogleSync}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão 5: Grupos de Estudo & Chat */}
-        {currentView === 'groups' && (
+      <Route path="/groups" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <StudyGroupsView
             userProfile={userProfile}
             isUserStudying={timer.isRunning}
             activeTaskTitle={activeSubtask?.title}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão 6: Ranking Semanal de Foco */}
-        {currentView === 'ranking' && (
+      <Route path="/ranking" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <WeeklyLeaderboardView
             currentUserMinutes={weekMinutes}
             userProfile={userProfile}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão de Estatísticas (nova) */}
-        {currentView === 'stats' && (
+      <Route path="/stats" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <StatsView
             metrics={metrics}
             subtasks={subtasks}
             projects={projects}
             userName={userProfile?.full_name}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão 7: Rascunhos & Notas Rápidas */}
-        {currentView === 'drafts' && (
+      <Route path="/drafts" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <DraftsView
             projects={projects}
             subtasks={subtasks}
             onOpenTimerTab={() => setCurrentView('timer')}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão 8: Flashcards & Repetição Espaçada */}
-        {currentView === 'flashcards' && (
+      <Route path="/flashcards" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <FlashcardsView
             projects={projects}
             onOpenTimerTab={() => setCurrentView('timer')}
           />
-        )}
+        </Suspense>
+      } />
 
-        {/* Visão 9: Mapas Mentais Interativos */}
-        {currentView === 'mindmaps' && (
+      <Route path="/mindmaps" element={
+        <Suspense fallback={<ViewLoadingFallback />}>
           <MindMapsView
             projects={projects}
             onOpenTimerTab={() => setCurrentView('timer')}
           />
-        )}
-      </Suspense>
-    </>
+        </Suspense>
+      } />
+
+      {/* Fallback route */}
+      <Route path="*" element={<Navigate to="/timer" replace />} />
+    </Routes>
   );
 });
