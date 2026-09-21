@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2, AlertCircle, X } from 'lucide-react';
 
 export interface ConfirmModalProps {
@@ -57,7 +58,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop confirm-modal-backdrop"
       onClick={onCancel}
@@ -119,6 +120,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
