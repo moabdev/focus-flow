@@ -70,7 +70,7 @@ export function useTasks() {
     if (!title.trim()) return;
 
     const newTask: Task = {
-      id: `task-${Date.now()}`,
+      id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title: title.trim(),
       discipline: discipline.trim() || 'Geral',
       pomodoros_estimated: Math.max(1, estimated),
