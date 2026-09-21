@@ -67,7 +67,12 @@ O FocusFlow agora conta com o **"Flow"**, nosso Agente de IA, integrado de forma
 - Salas de estudo com código de convite, chat em tempo real e reações.
 
 ### 📊 Relatórios & Estatísticas
-- Heatmap Anual estilo GitHub, Leaderboard semanal e Exportação de Sessões (CSV/PDF).
+- Heatmap Anual estilo GitHub para visualização de consistência de estudos.
+- Leaderboard semanal e Exportação de Sessões (CSV/PDF).
+- Copilot Insights: Análises de rendimento geradas por Inteligência Artificial.
+
+### 📝 Scratchpad & Notas Rápidas
+- Área de rascunhos flutuante, integrada e disponível em todas as telas para anotações efêmeras.
 
 ---
 
