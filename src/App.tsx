@@ -33,6 +33,7 @@ export const App: React.FC = () => {
   const {
     events, selectedDate, setSelectedDate, calendarView, setCalendarView,
     addEvent, updateEvent, deleteEvent, toggleEventCompleted, clearEvents,
+    importGoogleEvents, bulkUpdateEvents,
   } = useCalendar();
 
   const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
@@ -206,6 +207,8 @@ export const App: React.FC = () => {
             updateEvent={updateEvent}
             deleteEvent={deleteEvent}
             toggleEventCompleted={toggleEventCompleted}
+            importGoogleEvents={importGoogleEvents}
+            bulkUpdateEvents={bulkUpdateEvents}
             userProfile={authAndSync.userProfile}
             weekMinutes={metrics.weekMinutes}
           />

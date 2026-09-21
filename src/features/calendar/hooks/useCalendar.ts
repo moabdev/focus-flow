@@ -97,6 +97,27 @@ export function useCalendar() {
     setEvents([]);
   }, []);
 
+  /**
+   * Imports a list of external events (e.g., from Google Calendar) into local state + storage.
+   * Only saves to localStorage; does NOT push to Supabase (they are read-only Google events).
+   */
+  const importGoogleEvents = useCallback(
+    (googleEvents: CalendarEvent[]) => {
+      const merged = [...events, ...googleEvents];
+      setEvents(merged);
+      storageService.saveLocalCalendarEvents(merged);
+    },
+    [events]
+  );
+
+  /**
+   * Replaces the events list in bulk (e.g., after exporting to Google and getting back updated google_event_id).
+   */
+  const bulkUpdateEvents = useCallback((updatedEvents: CalendarEvent[]) => {
+    setEvents(updatedEvents);
+    storageService.saveLocalCalendarEvents(updatedEvents);
+  }, []);
+
   return {
     events,
     selectedDate,
@@ -110,6 +131,8 @@ export function useCalendar() {
     toggleEventCompleted,
     clearEvents,
     refreshEvents,
+    importGoogleEvents,
+    bulkUpdateEvents,
   };
 }
 

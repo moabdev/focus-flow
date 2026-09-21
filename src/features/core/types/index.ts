@@ -72,6 +72,8 @@ export interface CalendarEvent {
   subtask_id?: string;
   color?: string;
   is_completed?: boolean;
+  google_event_id?: string; // ID do evento no Google Calendar (se sincronizado)
+  source?: 'local' | 'google'; // Origem do evento
 }
 
 export interface StudySession {

@@ -10,6 +10,7 @@ import { CalendarDayView } from './calendar/CalendarDayView';
 import { CalendarWeekView } from './calendar/CalendarWeekView';
 import { CalendarMonthView } from './calendar/CalendarMonthView';
 import { CalendarEventModal } from './calendar/CalendarEventModal';
+import { GoogleCalendarSyncPanel } from './calendar/GoogleCalendarSyncPanel';
 
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -25,6 +26,8 @@ interface CalendarViewProps {
   onToggleEventCompleted: (id: string) => Promise<void>;
   onSelectSubtaskForFocus: (subtaskId: string) => void;
   onOpenTimerTab?: () => void;
+  onImportGoogleEvents: (events: CalendarEvent[]) => void;
+  onBulkUpdateEvents: (events: CalendarEvent[]) => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -40,6 +43,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onToggleEventCompleted,
   onSelectSubtaskForFocus,
   onOpenTimerTab,
+  onImportGoogleEvents,
+  onBulkUpdateEvents,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalHour, setModalHour] = useState(9);
@@ -107,6 +112,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         >
           <Plus size={16} /> Novo Agendamento
         </button>
+
+        <GoogleCalendarSyncPanel
+          localEvents={events}
+          onImportEvents={onImportGoogleEvents}
+          onExportComplete={onBulkUpdateEvents}
+        />
       </div>
 
       {/* Controles de Navegação e Seletor de Visão (Dia / Semana / Mês) */}

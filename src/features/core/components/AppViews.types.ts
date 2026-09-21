@@ -72,6 +72,8 @@ export interface AppViewsProps {
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   toggleEventCompleted: (id: string) => Promise<void>;
+  importGoogleEvents: (events: CalendarEvent[]) => void;
+  bulkUpdateEvents: (events: CalendarEvent[]) => void;
   // User & Ranking props
   userProfile: SupabaseProfile | null;
   weekMinutes: number;

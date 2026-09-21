@@ -60,6 +60,8 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
   updateEvent,
   deleteEvent,
   toggleEventCompleted,
+  importGoogleEvents,
+  bulkUpdateEvents,
   userProfile,
   weekMinutes,
 }) => {
@@ -184,6 +186,8 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
             onToggleEventCompleted={toggleEventCompleted}
             onSelectSubtaskForFocus={(sId) => setActiveSubtaskId(sId)}
             onOpenTimerTab={() => setCurrentView('timer')}
+            onImportGoogleEvents={importGoogleEvents}
+            onBulkUpdateEvents={bulkUpdateEvents}
           />
         )}
 
