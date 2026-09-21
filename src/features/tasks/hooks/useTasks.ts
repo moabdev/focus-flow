@@ -3,35 +3,7 @@ import confetti from 'canvas-confetti';
 import { Task, PriorityLevel } from '@/features/core/types';
 import { storageService } from '@/features/core/api/storage';
 
-const DEFAULT_TASKS: Task[] = [
-  {
-    id: 't-1',
-    title: 'Engenharia de Dados: Modelagem e Pipelines SQL',
-    discipline: 'Engenharia de Dados',
-    pomodoros_estimated: 4,
-    pomodoros_completed: 2,
-    is_completed: false,
-    priority: 'alta',
-  },
-  {
-    id: 't-2',
-    title: 'Python, RAG & Agentes Autônomos com LangChain',
-    discipline: 'Inteligência Artificial',
-    pomodoros_estimated: 6,
-    pomodoros_completed: 1,
-    is_completed: false,
-    priority: 'alta',
-  },
-  {
-    id: 't-3',
-    title: 'Java Spring Boot: Endpoints REST e DTOs',
-    discipline: 'Backend Java',
-    pomodoros_estimated: 3,
-    pomodoros_completed: 3,
-    is_completed: true,
-    priority: 'media',
-  },
-];
+const DEFAULT_TASKS: Task[] = [];
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
