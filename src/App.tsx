@@ -16,6 +16,7 @@ import { AppModals } from '@/features/core/components/AppModals';
 import { useAppNavigation } from '@/features/core/hooks/useAppNavigation';
 import { useAppAuthAndSync } from '@/features/core/hooks/useAppAuthAndSync';
 import { useAppTimerEvents } from '@/features/core/hooks/useAppTimerEvents';
+import { VoiceAgentButton, VoiceAgentWidget, useVoiceAgent } from '@/features/voice-agent';
 
 export const App: React.FC = () => {
   const { colorMode, toggleColorMode, theme, setTheme, setIsTimerRunning } = useTheme();
@@ -120,6 +121,34 @@ export const App: React.FC = () => {
       setActiveSubtaskId(null);
     }
   }, [subtasks, setActiveSubtaskId]);
+
+  const voiceAgent = useVoiceAgent({
+    currentView: nav.currentView,
+    setCurrentView: nav.setCurrentView,
+    timer: timerWithFlush,
+    projects,
+    subtasks,
+    activeProject,
+    activeSubtask,
+    events,
+    onCreateSubtask: async (title, projectId, priority, estimated, dueDate) => {
+      const targetProjId = projectId || activeProject?.id || (projects[0]?.id || 'default');
+      return await createSubtask(targetProjId, title, undefined, estimated, priority, undefined, dueDate);
+    },
+    onToggleSubtaskCompleted: toggleSubtaskCompleted,
+    onDeleteSubtask: deleteSubtask,
+    onAddCalendarEvent: async (ev) => {
+      await addEvent({
+        title: ev.title,
+        start_time: ev.start_time,
+        end_time: ev.end_time,
+        description: ev.description,
+        project_id: activeProject?.id,
+        subtask_id: activeSubtask?.id,
+      });
+    },
+    onAddMantra: addMantra,
+  });
 
   return (
     <div className="app-shell">
@@ -249,6 +278,29 @@ export const App: React.FC = () => {
         onOpenStats={() => nav.setIsStatsOpen(true)}
         onToggleTheme={toggleColorMode}
         projects={projects}
+      />
+
+      {/* Voice Copilot Floating Agent */}
+      <VoiceAgentButton
+        status={voiceAgent.status}
+        isOpen={voiceAgent.isOpen}
+        onClick={() => voiceAgent.setIsOpen(!voiceAgent.isOpen)}
+      />
+
+      <VoiceAgentWidget
+        isOpen={voiceAgent.isOpen}
+        onClose={() => voiceAgent.setIsOpen(false)}
+        status={voiceAgent.status}
+        messages={voiceAgent.messages}
+        transcript={voiceAgent.transcript}
+        isMuted={voiceAgent.isMuted}
+        onToggleMute={() => voiceAgent.setIsMuted(!voiceAgent.isMuted)}
+        audioLevel={voiceAgent.audioLevel}
+        onStartListening={voiceAgent.startListening}
+        onStopListening={voiceAgent.stopListening}
+        onSendMessage={voiceAgent.sendMessage}
+        onClearHistory={voiceAgent.clearHistory}
+        errorMessage={voiceAgent.errorMessage}
       />
     </div>
   );

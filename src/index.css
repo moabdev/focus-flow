@@ -31,4 +31,5 @@
 @import './styles/heatmap.css';
 @import './styles/badges.css';
 @import './styles/scrollbar.css';
+@import './features/voice-agent/styles/voiceAgent.css';
 @import './styles/responsive.css';
