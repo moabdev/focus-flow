@@ -141,11 +141,21 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
         )}
       </div>
 
-      <div className="heatmap-scroll-area">
-        {/* Linha dos meses */}
-        <div className="heatmap-months-row">
-          <div className="heatmap-day-label-space" />
-          <div className="heatmap-months-track">
+      <div className="heatmap-scroll-area" style={{ display: 'flex', gap: '0.5rem' }}>
+        {/* Coluna Esquerda: Espaço vazio + Rótulos dos Dias */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="heatmap-day-label-space" style={{ height: '1.4rem' }} />
+          <div className="heatmap-day-labels">
+            <span>Dom</span>
+            <span>Ter</span>
+            <span>Qui</span>
+            <span>Sáb</span>
+          </div>
+        </div>
+
+        {/* Coluna Direita: Trilho dos Meses + Grid */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="heatmap-months-track" style={{ height: '1.4rem' }}>
             {monthLabels.map((m, i) => (
               <span
                 key={i}
@@ -155,16 +165,6 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
                 {m.label}
               </span>
             ))}
-          </div>
-        </div>
-
-        {/* Grid dos dias */}
-        <div className="heatmap-body">
-          <div className="heatmap-day-labels">
-            <span>Dom</span>
-            <span>Ter</span>
-            <span>Qui</span>
-            <span>Sáb</span>
           </div>
 
           <div className="heatmap-grid" role="grid" aria-label="Heatmap de Estudos Mensal">
