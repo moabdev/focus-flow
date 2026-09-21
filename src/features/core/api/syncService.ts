@@ -268,6 +268,80 @@ class SyncService {
         });
       }
 
+      // Flashcard Decks
+      const localDecks = storageService.flashcardsService.getLocalDecks();
+      for (const d of localDecks) {
+        await client.from('flashcard_decks').upsert({
+          id: d.id,
+          user_id: user.id,
+          title: d.title,
+          description: d.description || '',
+          color: d.color,
+          icon: d.icon,
+          project_id: d.project_id || null,
+          tags: d.tags || [],
+          card_count: d.card_count || 0,
+          due_count: d.due_count || 0,
+          created_at: d.created_at,
+          updated_at: d.updated_at,
+        });
+      }
+
+      // Flashcards
+      const localCards = storageService.flashcardsService.getLocalCards();
+      for (const c of localCards) {
+        await client.from('flashcards').upsert({
+          id: c.id,
+          deck_id: c.deck_id,
+          user_id: user.id,
+          front: c.front,
+          back: c.back,
+          hint: c.hint || '',
+          tags: c.tags || [],
+          repetition: c.repetition || 0,
+          interval_days: c.interval_days || 0,
+          ease_factor: c.ease_factor || 2.5,
+          due_date: c.due_date,
+          last_reviewed_at: c.last_reviewed_at || null,
+          lapses: c.lapses || 0,
+          created_at: c.created_at,
+        });
+      }
+
+      // Mind Maps
+      const localMindMaps = storageService.mindMapsService.getLocalMindMaps();
+      for (const m of localMindMaps) {
+        await client.from('mind_maps').upsert({
+          id: m.id,
+          user_id: user.id,
+          title: m.title,
+          description: m.description || '',
+          project_id: m.project_id || null,
+          root_node_id: m.root_node_id,
+          created_at: m.created_at,
+          updated_at: m.updated_at,
+        });
+
+        if (m.nodes && m.nodes.length > 0) {
+          for (const node of m.nodes) {
+            await client.from('mind_map_nodes').upsert({
+              id: node.id,
+              mind_map_id: m.id,
+              parent_id: node.parent_id || null,
+              text: node.text,
+              color: node.color || null,
+              icon: node.icon || null,
+              is_collapsed: node.is_collapsed || false,
+              x: node.x || null,
+              y: node.y || null,
+              project_id: node.project_id || null,
+              subtask_id: node.subtask_id || null,
+            });
+          }
+        }
+      }
+
+
       // -------------------------------------------------------------
       // FASE 2: PULL & MERGE (Buscar registros remotos e mesclar)
       // -------------------------------------------------------------
@@ -328,6 +402,53 @@ class SyncService {
       if (!errSessions && remoteSessions) {
         const mergedSessions = this.mergeById(localSessions, remoteSessions as StudySession[]);
         storageService.saveLocalSessions(mergedSessions);
+      }
+
+      // 6. Flashcard Decks
+      const { data: remoteDecks, error: errDecks } = await client
+        .from('flashcard_decks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (!errDecks && remoteDecks) {
+        const mergedDecks = this.mergeById(localDecks, remoteDecks as any[]);
+        storageService.flashcardsService.saveLocalDecks(mergedDecks);
+      }
+
+      // 7. Flashcards
+      const { data: remoteCards, error: errCards } = await client
+        .from('flashcards')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (!errCards && remoteCards) {
+        const mergedCards = this.mergeById(localCards, remoteCards as any[]);
+        storageService.flashcardsService.saveLocalCards(mergedCards);
+      }
+
+      // 8. Mind Maps
+      const { data: remoteMindMaps, error: errMindMaps } = await client
+        .from('mind_maps')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (!errMindMaps && remoteMindMaps) {
+        const { data: remoteNodes } = await client
+          .from('mind_map_nodes')
+          .select('*');
+
+        const remoteMindMapsWithNodes = remoteMindMaps.map(m => {
+          return {
+            ...m,
+            nodes: (remoteNodes || []).filter(n => n.mind_map_id === m.id)
+          };
+        });
+
+        const mergedMindMaps = this.mergeById(localMindMaps, remoteMindMapsWithNodes as any[]);
+        storageService.mindMapsService.saveLocalMindMaps(mergedMindMaps);
       }
 
       // -------------------------------------------------------------
