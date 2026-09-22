@@ -54,7 +54,7 @@ Não crie perguntas óbvias demais. Foco em retenção de conhecimento. Formate 
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents: notes,
       config: {
         systemInstruction,
@@ -125,7 +125,7 @@ Seja encorajador e prático. Retorne RIGIDAMENTE os dados no schema JSON solicit
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents: `Histórico resumido de sessões:\n${sessionHistorySummary}`,
       config: {
         systemInstruction,
@@ -206,7 +206,7 @@ Formate a saída rigidamente no schema JSON solicitado.`;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents: notes,
       config: {
         systemInstruction,
