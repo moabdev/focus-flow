@@ -115,40 +115,8 @@ export const Header: React.FC<HeaderProps> = React.memo(({
         </div>
       )}
 
-      {/* Direita: Ofensiva, Alternador Dark/Light e Perfil */}
+      {/* Direita: Perfil */}
       <div className="nav-actions">
-        {onOpenCommandPalette && (
-          <button
-            className="header-command-btn"
-            onClick={onOpenCommandPalette}
-            title="Abrir busca rápida e comandos (Ctrl+K)"
-            aria-label="Abrir busca rápida"
-          >
-            <Search size={14} />
-            <span className="header-command-btn-text">Buscar...</span>
-            <kbd className="header-command-kbd">Ctrl K</kbd>
-          </button>
-        )}
-
-        <button
-          className="streak-badge"
-          onClick={onOpenStats}
-          title="Ver estatísticas de estudo e ofensiva diária"
-        >
-          <Flame size={16} />
-          <span className="streak-badge-count">{streakDays}</span>
-          <span className="streak-badge-label">{streakDays === 1 ? 'Dia' : 'Dias'}</span>
-        </button>
-
-        {/* Alternador Dark / Light Mode */}
-        <button
-          className="icon-btn"
-          onClick={onToggleColorMode}
-          title={`Alternar para modo ${colorMode === 'dark' ? 'Claro' : 'Escuro'}`}
-          aria-label="Alternar tema de cores"
-        >
-          {colorMode === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
 
         {/* Perfil do Usuário & Autenticação Google */}
         <HeaderUserMenu
