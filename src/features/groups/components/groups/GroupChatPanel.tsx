@@ -1,3 +1,4 @@
+import '../../styles/groups-chat.css';
 import React, { useState } from 'react';
 import { Users, Share2, Check, Trash2, LogOut, UserPlus, BookOpen, Mail, Edit3, Info } from 'lucide-react';
 import { StudyGroup, GroupMessage, GroupMember } from '@/features/core/types';
@@ -226,3 +227,4 @@ export const GroupChatPanel: React.FC<GroupChatPanelProps> = ({
     </div>
   );
 };
+

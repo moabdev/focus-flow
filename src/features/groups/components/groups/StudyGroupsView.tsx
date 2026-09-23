@@ -1,3 +1,4 @@
+import '../../styles/groups.css';
 import React from 'react';
 import { Users, Plus, Sparkles, KeyRound, UserMinus } from 'lucide-react';
 import { SupabaseProfile } from '@/features/core/types';
@@ -178,3 +179,4 @@ export const StudyGroupsView: React.FC<StudyGroupsViewProps> = ({ userProfile })
     </div>
   );
 };
+
