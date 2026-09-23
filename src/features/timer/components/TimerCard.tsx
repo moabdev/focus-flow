@@ -1,3 +1,4 @@
+import '../styles/timer.css';
 import React from 'react';
 import { Play, Pause, SkipForward, RotateCcw, Target, Clock } from 'lucide-react';
 import { TimerMode, Task, Subtask, Project } from '@/features/core/types';
@@ -190,3 +191,4 @@ export const TimerCard: React.FC<TimerCardProps> = React.memo(({
     </div>
   );
 });
+
