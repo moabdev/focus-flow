@@ -1,35 +1,9 @@
 /* ==============================================================================
    FocusFlow - Modular CSS Entry Point (Glassmorphism & Design System)
    ============================================================================== */
-
 @import './styles/variables.css';
 @import './styles/themes.css';
 @import './styles/base.css';
-@import './styles/layout.css';
-@import './styles/sidebar.css';
-@import './styles/sidebar-widgets.css';
-@import './styles/header.css';
-@import './styles/header-menus.css';
-@import './styles/timer.css';
-@import './styles/tasks.css';
-@import './styles/modals.css';
-@import './styles/projects.css';
-@import './styles/subtasks.css';
-@import './styles/notion.css';
-@import './styles/calendar.css';
-@import './styles/calendar-views.css';
-@import './styles/project-detail.css';
-@import './styles/groups.css';
-@import './styles/groups-chat.css';
-@import './styles/ranking.css';
-@import './styles/drafts.css';
-@import './styles/flashcards.css';
-@import './styles/mindmaps.css';
-@import './styles/custom-select.css';
-@import './styles/toasts.css';
-@import './styles/command-palette.css';
-@import './styles/heatmap.css';
-@import './styles/badges.css';
-@import './styles/scrollbar.css';
 @import './features/voice-agent/styles/voiceAgent.css';
+@import './styles/scrollbar.css';
 @import './styles/responsive.css';
