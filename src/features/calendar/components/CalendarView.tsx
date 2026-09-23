@@ -1,3 +1,5 @@
+import '../styles/calendar.css';
+import '../styles/calendar-views.css';
 import React, { useState, useMemo } from 'react';
 import {
   Calendar as CalendarIcon,
@@ -244,3 +246,4 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     </div>
   );
 };
+
