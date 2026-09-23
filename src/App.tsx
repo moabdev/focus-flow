@@ -1,164 +1,34 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { useTheme } from '@/features/core/hooks/useTheme';
-import { useAudio } from '@/features/timer/hooks/useAudio';
-import { useProjects } from '@/features/projects/hooks/useProjects';
-import { useCalendar } from '@/features/calendar/hooks/useCalendar';
-import { useQuotes } from '@/features/quotes/hooks/useQuotes';
-import { useStats } from '@/features/stats/hooks/useStats';
-import { useTimer } from '@/features/timer/hooks/useTimer';
-import { useKeyboardShortcuts } from '@/features/core/hooks/useKeyboardShortcuts';
-import { storageService } from '@/features/core/api/storage';
-import type { UserSettings, TimerMode } from '@/features/core/types';
+import React from 'react';
 import { Header } from '@/features/core/components/Header';
 import { Sidebar } from '@/features/core/components/Sidebar';
 import { AppViews } from '@/features/core/components/AppViews';
 import { AppModals } from '@/features/core/components/AppModals';
-import { useAppNavigation } from '@/features/core/hooks/useAppNavigation';
-import { useAppAuthAndSync } from '@/features/core/hooks/useAppAuthAndSync';
-import { useAppTimerEvents } from '@/features/core/hooks/useAppTimerEvents';
-import { VoiceAgentButton, VoiceAgentWidget, useVoiceAgent } from '@/features/voice-agent';
+import { VoiceAgentButton, VoiceAgentWidget } from '@/features/voice-agent';
+import { useAppController } from '@/features/core/hooks/useAppController';
 
 export const App: React.FC = () => {
-  const { colorMode, toggleColorMode, theme, setTheme, setIsTimerRunning } = useTheme();
-  const { ambient, setAmbient, ambientVolume, setAmbientVolume, playAlarm, playClick } = useAudio();
-  const [settings, setSettings] = useState<UserSettings>(() => storageService.getSettings());
-
-  const nav = useAppNavigation();
-
   const {
-    projects, subtasks, activeSubtask, activeSubtaskId, setActiveSubtaskId, activeProject,
-    createProject, updateProject, deleteProject, createSubtask, updateSubtask, deleteSubtask, toggleSubtaskCompleted,
-    addTimeSpent, incrementPomodoro, clearProjects,
-  } = useProjects();
-
-  const {
-    events, selectedDate, setSelectedDate, calendarView, setCalendarView,
-    addEvent, updateEvent, deleteEvent, toggleEventCompleted, clearEvents,
-    importGoogleEvents, bulkUpdateEvents,
-    googleSyncStatus, lastGoogleSync, pullFromGoogle,
-    outlookSyncStatus, lastOutlookSync, pullFromOutlook,
-    availableOutlookCalendars, selectedOutlookCalendars, toggleOutlookCalendarSelection,
-  } = useCalendar();
-
-  const { activeQuote, getRandomQuote, addMantra, clearMantras, isRotating } = useQuotes();
-  const { metrics, addCompletedSession, clearStats } = useStats();
-
-  const timerEvents = useAppTimerEvents({
-    activeSubtaskId, activeSubtask, subtasks, metrics,
-    addTimeSpent, incrementPomodoro, addCompletedSession
-  });
-
-  const timer = useTimer({
-    settings,
-    onPomodoroComplete: timerEvents.handlePomodoroComplete,
-    playAlarm,
-    setIsTimerRunningTheme: setIsTimerRunning,
-    onTickSecond: timerEvents.handleTickSecond,
-    activeTaskTitle: activeSubtask?.title,
-  });
-
-  const authAndSync = useAppAuthAndSync({
-    playClick,
-    clearProjects, clearEvents, clearStats, clearMantras,
-    resetNavigation: nav.resetNavigation,
-    resetTimer: () => timer.reset()
-  });
-
-  useKeyboardShortcuts({
-    onToggleTimer: () => {
-      timerEvents.flushPendingTime();
-      timer.toggle();
-    },
-    onSkipTimer: () => {
-      timerEvents.flushPendingTime();
-      timer.skip();
-    },
-    onResetTimer: () => {
-      timerEvents.flushPendingTime();
-      timer.reset();
-    },
-    onToggleZenMode: () => nav.setIsZenModeOpen((prev) => !prev),
-    onToggleCommandPalette: () => nav.setIsCommandPaletteOpen((prev) => !prev),
-    onCloseModals: () => {
-      nav.setIsZenModeOpen(false);
-      nav.setIsSettingsOpen(false);
-      nav.setIsScratchpadOpen(false);
-      nav.setIsCommandPaletteOpen(false);
-    },
-    playClick,
-  });
-
-  const timerWithFlush = useMemo(() => ({
-    ...timer,
-    toggle: () => {
-      timerEvents.flushPendingTime();
-      timer.toggle();
-    },
-    skip: () => {
-      timerEvents.flushPendingTime();
-      timer.skip();
-    },
-    reset: () => {
-      timerEvents.flushPendingTime();
-      timer.reset();
-    },
-    changeMode: (newMode: TimerMode) => {
-      timerEvents.flushPendingTime();
-      timer.changeMode(newMode);
-    },
-  }), [timer, timerEvents]);
-
-  const handleUpdateSettings = useCallback((newSettings: UserSettings) => {
-    setSettings(newSettings);
-    storageService.saveSettings(newSettings);
-    if (newSettings.theme !== theme) setTheme(newSettings.theme);
-  }, [theme, setTheme]);
-
-  const handleSelectProject = useCallback((pId: string | 'todos') => {
-    if (pId !== 'todos') {
-      const firstSub = subtasks.find((s) => s.project_id === pId);
-      if (firstSub) setActiveSubtaskId(firstSub.id);
-    } else {
-      setActiveSubtaskId(null);
-    }
-  }, [subtasks, setActiveSubtaskId]);
-
-  const voiceAgent = useVoiceAgent({
-    currentView: nav.currentView,
-    setCurrentView: nav.setCurrentView,
-    timer: timerWithFlush,
-    projects,
-    subtasks,
-    activeProject,
-    activeSubtask,
-    events,
-    onCreateSubtask: async (title, projectId, priority, estimated, dueDate) => {
-      const targetProjId = projectId || activeProject?.id || (projects[0]?.id || 'default');
-      return await createSubtask(targetProjId, title, undefined, estimated, priority, undefined, dueDate);
-    },
-    onToggleSubtaskCompleted: toggleSubtaskCompleted,
-    onDeleteSubtask: deleteSubtask,
-    onAddCalendarEvent: async (ev) => {
-      await addEvent({
-        title: ev.title,
-        start_time: ev.start_time,
-        end_time: ev.end_time,
-        description: ev.description,
-        project_id: activeProject?.id,
-        subtask_id: activeSubtask?.id,
-      });
-    },
-    onAddMantra: addMantra,
-  });
+    colorMode, toggleColorMode,
+    ambient, setAmbient, ambientVolume, setAmbientVolume, playClick, playAlarm,
+    settings, handleUpdateSettings,
+    nav, handleSelectProject,
+    projectsHook,
+    calendarHook,
+    quotesHook,
+    statsHook,
+    timerWithFlush,
+    authAndSync,
+    voiceAgent
+  } = useAppController();
 
   return (
     <div className="app-shell">
       <Sidebar
         currentView={nav.currentView}
         onChangeView={nav.setCurrentView}
-        streakDays={metrics.streak.currentStreak}
-        projects={projects}
-        selectedProjectId={activeProject?.id || 'todos'}
+        streakDays={statsHook.metrics.streak.currentStreak}
+        projects={projectsHook.projects}
+        selectedProjectId={projectsHook.activeProject?.id || 'todos'}
         onSelectProject={handleSelectProject}
         onOpenProjectDetail={nav.handleOpenProjectDetail}
         onCreateProject={() => nav.setCurrentView('projects')}
@@ -183,7 +53,7 @@ export const App: React.FC = () => {
 
       <div className={`app-main-layout ${nav.isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <Header
-          streakDays={metrics.streak.currentStreak}
+          streakDays={statsHook.metrics.streak.currentStreak}
           colorMode={colorMode}
           onToggleColorMode={toggleColorMode}
           userProfile={authAndSync.userProfile}
@@ -194,10 +64,10 @@ export const App: React.FC = () => {
           onOpenCommandPalette={() => nav.setIsCommandPaletteOpen(true)}
           currentView={nav.currentView}
           onOpenMobileSidebar={() => nav.setIsMobileSidebarOpen(true)}
-          isTimerRunning={timer.isRunning}
-          timerFormattedTime={timer.formattedTime}
-          activeTaskTitle={activeSubtask?.title}
-          activeProjectTitle={activeProject?.title}
+          isTimerRunning={timerWithFlush.isRunning}
+          timerFormattedTime={timerWithFlush.formattedTime}
+          activeTaskTitle={projectsHook.activeSubtask?.title}
+          activeProjectTitle={projectsHook.activeProject?.title}
           onOpenTimerTab={() => nav.setCurrentView('timer')}
           syncInfo={authAndSync.syncInfo}
           onManualSync={authAndSync.handleManualSync}
@@ -207,51 +77,51 @@ export const App: React.FC = () => {
           <AppViews
             currentView={nav.currentView}
             setCurrentView={nav.setCurrentView}
-            activeQuote={activeQuote}
-            getRandomQuote={getRandomQuote}
-            addMantra={addMantra}
-            isRotating={isRotating}
+            activeQuote={quotesHook.activeQuote}
+            getRandomQuote={quotesHook.getRandomQuote}
+            addMantra={quotesHook.addMantra}
+            isRotating={quotesHook.isRotating}
             timer={timerWithFlush}
-            activeSubtask={activeSubtask}
-            activeProject={activeProject}
+            activeSubtask={projectsHook.activeSubtask}
+            activeProject={projectsHook.activeProject}
             playClick={playClick}
-            projects={projects}
-            subtasks={subtasks}
-            activeSubtaskId={activeSubtaskId}
-            setActiveSubtaskId={setActiveSubtaskId}
+            projects={projectsHook.projects}
+            subtasks={projectsHook.subtasks}
+            activeSubtaskId={projectsHook.activeSubtaskId}
+            setActiveSubtaskId={projectsHook.setActiveSubtaskId}
             selectedProjectDetailId={nav.selectedProjectDetailId}
             onOpenProjectDetail={nav.handleOpenProjectDetail}
             onBackFromProjectDetail={nav.handleBackFromProjectDetail}
-            createProject={createProject}
-            updateProject={updateProject}
-            deleteProject={deleteProject}
-            onCreateSubtask={createSubtask}
-            onUpdateSubtask={updateSubtask}
-            onDeleteSubtask={deleteSubtask}
-            onToggleSubtaskCompleted={toggleSubtaskCompleted}
-            events={events}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            calendarView={calendarView}
-            setCalendarView={setCalendarView}
-            addEvent={addEvent}
-            updateEvent={updateEvent}
-            deleteEvent={deleteEvent}
-            toggleEventCompleted={toggleEventCompleted}
-            importGoogleEvents={importGoogleEvents}
-            bulkUpdateEvents={bulkUpdateEvents}
-            googleSyncStatus={googleSyncStatus}
-            lastGoogleSync={lastGoogleSync}
-            onManualGoogleSync={pullFromGoogle}
-            outlookSyncStatus={outlookSyncStatus}
-            lastOutlookSync={lastOutlookSync}
-            onManualOutlookSync={pullFromOutlook}
-            availableOutlookCalendars={availableOutlookCalendars}
-            selectedOutlookCalendars={selectedOutlookCalendars}
-            toggleOutlookCalendarSelection={toggleOutlookCalendarSelection}
+            createProject={projectsHook.createProject}
+            updateProject={projectsHook.updateProject}
+            deleteProject={projectsHook.deleteProject}
+            onCreateSubtask={projectsHook.createSubtask}
+            onUpdateSubtask={projectsHook.updateSubtask}
+            onDeleteSubtask={projectsHook.deleteSubtask}
+            onToggleSubtaskCompleted={projectsHook.toggleSubtaskCompleted}
+            events={calendarHook.events}
+            selectedDate={calendarHook.selectedDate}
+            setSelectedDate={calendarHook.setSelectedDate}
+            calendarView={calendarHook.calendarView}
+            setCalendarView={calendarHook.setCalendarView}
+            addEvent={calendarHook.addEvent}
+            updateEvent={calendarHook.updateEvent}
+            deleteEvent={calendarHook.deleteEvent}
+            toggleEventCompleted={calendarHook.toggleEventCompleted}
+            importGoogleEvents={calendarHook.importGoogleEvents}
+            bulkUpdateEvents={calendarHook.bulkUpdateEvents}
+            googleSyncStatus={calendarHook.googleSyncStatus}
+            lastGoogleSync={calendarHook.lastGoogleSync}
+            onManualGoogleSync={calendarHook.pullFromGoogle}
+            outlookSyncStatus={calendarHook.outlookSyncStatus}
+            lastOutlookSync={calendarHook.lastOutlookSync}
+            onManualOutlookSync={calendarHook.pullFromOutlook}
+            availableOutlookCalendars={calendarHook.availableOutlookCalendars}
+            selectedOutlookCalendars={calendarHook.selectedOutlookCalendars}
+            toggleOutlookCalendarSelection={calendarHook.toggleOutlookCalendarSelection}
             userProfile={authAndSync.userProfile}
-            weekMinutes={metrics.weekMinutes}
-            metrics={metrics}
+            weekMinutes={statsHook.metrics.weekMinutes}
+            metrics={statsHook.metrics}
           />
         </main>
       </div>
@@ -269,8 +139,8 @@ export const App: React.FC = () => {
         isZenModeOpen={nav.isZenModeOpen}
         onCloseZenMode={() => nav.setIsZenModeOpen(false)}
         timer={timerWithFlush}
-        activeSubtask={activeSubtask}
-        activeQuote={activeQuote}
+        activeSubtask={projectsHook.activeSubtask}
+        activeQuote={quotesHook.activeQuote}
         ambient={ambient}
         onToggleAmbient={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')}
         isCommandPaletteOpen={nav.isCommandPaletteOpen}
@@ -282,10 +152,9 @@ export const App: React.FC = () => {
         onOpenSettings={(tab) => nav.handleOpenSettings(tab, playClick)}
         onOpenStats={() => nav.setCurrentView('stats')}
         onToggleTheme={toggleColorMode}
-        projects={projects}
+        projects={projectsHook.projects}
       />
 
-      {/* Voice Copilot Floating Agent */}
       <VoiceAgentButton
         status={voiceAgent.status}
         isOpen={voiceAgent.isOpen}
