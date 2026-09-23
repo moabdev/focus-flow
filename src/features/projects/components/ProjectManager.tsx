@@ -1,3 +1,4 @@
+import '../styles/projects.css';
 import React, { useState } from 'react';
 import { Plus, FolderPlus, Sparkles } from 'lucide-react';
 import { Project, Subtask, PriorityLevel } from '@/features/core/types';
@@ -204,3 +205,4 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({
     </div>
   );
 };
+

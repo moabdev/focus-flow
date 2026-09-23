@@ -1,3 +1,4 @@
+import '../../styles/project-detail.css';
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Search } from 'lucide-react';
 import { Project, Subtask, PriorityLevel } from '@/features/core/types';
@@ -202,3 +203,4 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
     </div>
   );
 };
+

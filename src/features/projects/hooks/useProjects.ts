@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import confetti from 'canvas-confetti';
-import { Project, Subtask, PriorityLevel } from '@/features/core/types';
+import { Project, Subtask } from '@/features/core/types';
 import { storageService } from '@/features/core/api/storage';
 import { syncService } from '@/features/core/api/syncService';
+import { useProjectsActions } from './useProjectsActions';
+import { useSubtasksActions } from './useSubtasksActions';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -24,7 +25,6 @@ export function useProjects() {
     });
   }, []);
 
-  // Escuta atualizações de sincronização em nuvem
   useEffect(() => {
     const unsubscribe = syncService.onDataSynced(() => {
       refreshProjects();
@@ -32,7 +32,6 @@ export function useProjects() {
     return () => unsubscribe();
   }, [refreshProjects]);
 
-  // Carrega projetos e subtasks no início
   useEffect(() => {
     Promise.all([
       storageService.fetchProjects(),
@@ -86,47 +85,19 @@ export function useProjects() {
     return Array.from(set);
   }, [subtasks]);
 
-  // Operações com Projetos
-  const createProject = useCallback(
-    async (data: {
-      title: string;
-      description?: string;
-      start_date?: string;
-      end_date?: string;
-      color?: string;
-      icon?: string;
-    }) => {
-      const newProject: Project = {
-        id: `proj-${Date.now()}`,
-        title: data.title.trim(),
-        description: data.description?.trim() || '',
-        start_date: data.start_date || undefined,
-        end_date: data.end_date || undefined,
-        color: data.color || '#ff2a5f',
-        icon: data.icon || '📁',
-        total_elapsed_seconds: 0,
-        created_at: new Date().toISOString(),
-      };
-      const updated = [newProject, ...projects];
-      setProjects(updated);
-      await storageService.saveProject(newProject);
-      return newProject;
-    },
-    [projects]
-  );
+  const { createProject, updateProject } = useProjectsActions({
+    projects,
+    setProjects,
+    selectedProjectId,
+    setSelectedProjectId,
+  });
 
-  const updateProject = useCallback(
-    async (id: string, updates: Partial<Project>) => {
-      const index = projects.findIndex((p) => p.id === id);
-      if (index === -1) return;
-      const updatedProject = { ...projects[index], ...updates };
-      const updatedList = [...projects];
-      updatedList[index] = updatedProject;
-      setProjects(updatedList);
-      await storageService.saveProject(updatedProject);
-    },
-    [projects]
-  );
+  const { createSubtask, updateSubtask, toggleSubtaskCompleted, incrementPomodoro } = useSubtasksActions({
+    subtasks,
+    setSubtasks,
+    activeSubtaskId,
+    setActiveSubtaskId,
+  });
 
   const deleteProject = useCallback(
     async (id: string) => {
@@ -145,54 +116,6 @@ export function useProjects() {
     [projects, subtasks, selectedProjectId, activeSubtask]
   );
 
-  // Operações com Subtasks
-  const createSubtask = useCallback(
-    async (
-      projectId: string,
-      title: string,
-      discipline: string = 'Geral',
-      estimated: number = 1,
-      priority: PriorityLevel = 'media',
-      notes: string = '',
-      due_date?: string
-    ) => {
-      if (!title.trim()) return null;
-      const newSubtask: Subtask = {
-        id: `sub-${Date.now()}`,
-        project_id: projectId,
-        title: title.trim(),
-        discipline: discipline.trim() || 'Geral',
-        pomodoros_estimated: Math.max(1, estimated),
-        pomodoros_completed: 0,
-        elapsed_seconds: 0,
-        is_completed: false,
-        priority,
-        notes: notes.trim(),
-        due_date,
-        created_at: new Date().toISOString(),
-      };
-      const updated = [newSubtask, ...subtasks];
-      setSubtasks(updated);
-      if (!activeSubtaskId) setActiveSubtaskId(newSubtask.id);
-      await storageService.saveSubtask(newSubtask);
-      return newSubtask;
-    },
-    [subtasks, activeSubtaskId]
-  );
-
-  const updateSubtask = useCallback(
-    async (id: string, updates: Partial<Subtask>) => {
-      const index = subtasks.findIndex((s) => s.id === id);
-      if (index === -1) return;
-      const updatedSubtask = { ...subtasks[index], ...updates };
-      const updatedList = [...subtasks];
-      updatedList[index] = updatedSubtask;
-      setSubtasks(updatedList);
-      await storageService.saveSubtask(updatedSubtask);
-    },
-    [subtasks]
-  );
-
   const deleteSubtask = useCallback(
     async (id: string) => {
       const updated = subtasks.filter((s) => s.id !== id);
@@ -204,28 +127,6 @@ export function useProjects() {
       await storageService.deleteSubtask(id);
     },
     [subtasks, activeSubtaskId]
-  );
-
-  const toggleSubtaskCompleted = useCallback(
-    async (id: string) => {
-      const target = subtasks.find((s) => s.id === id);
-      if (!target) return;
-      const nextCompleted = !target.is_completed;
-      const updatedSubtask: Subtask = { ...target, is_completed: nextCompleted };
-
-      if (nextCompleted) {
-        try {
-          confetti({ particleCount: 55, spread: 60, origin: { y: 0.7 } });
-        } catch {
-          // ignora caso não suporte canvas
-        }
-      }
-
-      const updatedList = subtasks.map((s) => (s.id === id ? updatedSubtask : s));
-      setSubtasks(updatedList);
-      await storageService.saveSubtask(updatedSubtask);
-    },
-    [subtasks]
   );
 
   const addTimeSpent = useCallback(
@@ -240,21 +141,6 @@ export function useProjects() {
       }
     },
     []
-  );
-
-  const incrementPomodoro = useCallback(
-    async (subtaskId: string) => {
-      const target = subtasks.find((s) => s.id === subtaskId);
-      if (!target) return;
-      const updatedSubtask: Subtask = {
-        ...target,
-        pomodoros_completed: target.pomodoros_completed + 1,
-      };
-      const updatedList = subtasks.map((s) => (s.id === subtaskId ? updatedSubtask : s));
-      setSubtasks(updatedList);
-      await storageService.saveSubtask(updatedSubtask);
-    },
-    [subtasks]
   );
 
   const filteredSubtasks = useMemo(() => {

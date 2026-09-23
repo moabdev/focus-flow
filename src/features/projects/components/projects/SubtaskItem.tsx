@@ -1,3 +1,4 @@
+import '../../../tasks/styles/subtasks.css';
 import React, { useMemo } from 'react';
 import { Check, Play, FileText, Trash2, Clock, Calendar, Tag } from 'lucide-react';
 import { Subtask } from '@/features/core/types';
@@ -191,3 +192,4 @@ export const SubtaskItem: React.FC<SubtaskItemProps> = React.memo(({
     </div>
   );
 });
+
