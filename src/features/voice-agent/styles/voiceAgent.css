@@ -173,6 +173,19 @@
   flex-shrink: 0;
 }
 
+.voice-widget-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.voice-widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .voice-widget-avatar {
   width: 38px;
   height: 38px;

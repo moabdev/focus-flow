@@ -95,7 +95,7 @@ export const VoiceAgentWidget: React.FC<VoiceAgentWidgetProps> = ({
     <div className="voice-widget-card" role="dialog" aria-label="Flow Voice Copilot">
       {/* Header Superior */}
       <div className="voice-widget-header">
-        <div className="flex items-center gap-2.5">
+        <div className="voice-widget-title-wrapper">
           <div className="voice-widget-avatar">
             <Sparkles className="w-5 h-5" />
           </div>
@@ -119,7 +119,7 @@ export const VoiceAgentWidget: React.FC<VoiceAgentWidgetProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5 flex-shrink-0">
+        <div className="voice-widget-actions">
           <button
             type="button"
             onClick={onToggleMute}

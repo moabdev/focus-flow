@@ -40,6 +40,7 @@ describe('Voice Agent Service (voiceAgentService)', () => {
     pendingTasksCount: 3,
     completedTasksCount: 2,
     todayEventsCount: 1,
+    todayEventsDetails: '"Reunião" às 14:00',
     availableProjects: [{ id: 'p1', title: 'Frontend' }],
     recentSubtasks: [{ id: 's1', title: 'Hooks', is_completed: false, projectName: 'Frontend' }],
   };

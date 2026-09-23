@@ -7,6 +7,7 @@ import * as ToastContext from '@/features/core/contexts/ToastContext';
 vi.mock('@/services/ai/voiceAgentService', () => {
   return {
     BrowserSpeechRecognition: vi.fn().mockImplementation(() => ({
+      isSupported: vi.fn().mockReturnValue(true),
       start: vi.fn(),
       stop: vi.fn(),
       onStart: vi.fn(),
@@ -15,6 +16,7 @@ vi.mock('@/services/ai/voiceAgentService', () => {
       onError: vi.fn(),
     })),
     BrowserSpeechSynthesis: vi.fn().mockImplementation(() => ({
+      isSupported: vi.fn().mockReturnValue(true),
       speak: vi.fn(),
       stop: vi.fn(),
       onStart: vi.fn(),
