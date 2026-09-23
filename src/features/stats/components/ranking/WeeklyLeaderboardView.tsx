@@ -1,3 +1,4 @@
+import '../../styles/ranking.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, Flame, Play, Clock, Sparkles } from 'lucide-react';
 import { LeaderboardUser } from '@/features/core/types';
@@ -230,3 +231,4 @@ export const WeeklyLeaderboardView: React.FC<WeeklyLeaderboardViewProps> = ({
     </div>
   );
 };
+

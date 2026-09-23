@@ -1,3 +1,4 @@
+import '../../styles/badges.css';
 import React from 'react';
 import { Trophy, CheckCircle2, Lock } from 'lucide-react';
 import { AchievementBadge } from '@/features/core/types';
@@ -72,3 +73,4 @@ export const BadgesGallery: React.FC<BadgesGalleryProps> = ({ badges }) => {
     </div>
   );
 };
+

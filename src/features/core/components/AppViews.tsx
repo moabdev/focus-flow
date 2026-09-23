@@ -1,3 +1,4 @@
+import '../styles/layout.css';
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QuoteBanner } from '@/features/quotes/components/QuoteBanner';
@@ -282,3 +283,4 @@ export const AppViews: React.FC<AppViewsProps> = React.memo(({
     </Routes>
   );
 });
+

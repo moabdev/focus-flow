@@ -1,3 +1,5 @@
+import '../styles/modals.css';
+import '../styles/custom-select.css';
 import React, { Suspense, lazy } from 'react';
 import { UserSettings, SupabaseProfile, Subtask, AmbientSound, StudyMetrics, Quote, AppViewMode, Project, StudyGroup } from '@/features/core/types';
 import { storageGroupsService } from '@/features/groups/api/storageGroups';
@@ -145,3 +147,4 @@ export const AppModals: React.FC<AppModalsProps> = React.memo(({
     </>
   );
 });
+

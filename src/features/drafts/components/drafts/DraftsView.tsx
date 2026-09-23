@@ -1,3 +1,4 @@
+import '../../styles/drafts.css';
 import React from 'react';
 import { FileText, LayoutGrid, Columns, Plus, Trash2 } from 'lucide-react';
 import { Project, Subtask } from '@/features/core/types';
@@ -195,3 +196,4 @@ export const DraftsView: React.FC<DraftsViewProps> = ({ projects = [], subtasks 
     </div>
   );
 };
+

@@ -1,3 +1,5 @@
+import '../styles/header.css';
+import '../styles/header-menus.css';
 import React from 'react';
 import {
   Flame,
@@ -131,3 +133,4 @@ export const Header: React.FC<HeaderProps> = React.memo(({
     </header>
   );
 });
+

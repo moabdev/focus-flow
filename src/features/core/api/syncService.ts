@@ -1,15 +1,13 @@
 import { supabaseService } from '@/features/core/api/supabase';
 import { storageService } from '@/features/core/api/storage';
-import {
-  CloudSyncStatus,
-  CloudSyncInfo,
-  SupabaseProfile,
-  Project,
-  Subtask,
-  CalendarEvent,
-  QuickNote,
-  StudySession,
-} from '@/features/core/types';
+import { CloudSyncStatus, CloudSyncInfo, SupabaseProfile } from '@/features/core/types';
+
+import { pushProjects, pullProjects, pushSubtasks, pullSubtasks } from '@/features/projects/api/syncProjectsWorker';
+import { pushCalendarEvents, pullCalendarEvents } from '@/features/calendar/api/syncCalendarWorker';
+import { pushQuickNotes, pullQuickNotes } from '@/features/core/api/syncNotesWorker';
+import { pushSessions, pullSessions } from '@/features/timer/api/syncSessionsWorker';
+import { pushFlashcards, pullFlashcards } from '@/features/flashcards/api/syncFlashcardsWorker';
+import { pushMindMaps, pullMindMaps } from '@/features/mindmaps/api/syncMindMapsWorker';
 
 class SyncService {
   private status: CloudSyncStatus = 'idle';
@@ -192,264 +190,24 @@ class SyncService {
       // -------------------------------------------------------------
       // FASE 1: PUSH (Enviar dados locais para o Supabase)
       // -------------------------------------------------------------
-      const localProjects = storageService.getLocalProjects();
-      for (const p of localProjects) {
-        await client.from('projects').upsert({
-          id: p.id,
-          user_id: user.id,
-          title: p.title,
-          description: p.description || '',
-          start_date: p.start_date || null,
-          end_date: p.end_date || null,
-          color: p.color,
-          icon: p.icon || '📁',
-          total_elapsed_seconds: p.total_elapsed_seconds || 0,
-        });
-      }
-
-      const localSubtasks = storageService.getLocalSubtasks();
-      for (const s of localSubtasks) {
-        await client.from('subtasks').upsert({
-          id: s.id,
-          project_id: s.project_id,
-          user_id: user.id,
-          title: s.title,
-          discipline: s.discipline || 'Geral',
-          priority: s.priority,
-          pomodoros_estimated: s.pomodoros_estimated,
-          pomodoros_completed: s.pomodoros_completed,
-          elapsed_seconds: s.elapsed_seconds || 0,
-          is_completed: s.is_completed,
-          notes: s.notes || '',
-          due_date: s.due_date || null,
-        });
-      }
-
-      const localEvents = storageService.getLocalCalendarEvents();
-      for (const e of localEvents) {
-        await client.from('calendar_events').upsert({
-          id: e.id,
-          user_id: user.id,
-          title: e.title,
-          description: e.description || '',
-          start_time: e.start_time,
-          end_time: e.end_time,
-          project_id: e.project_id || null,
-          subtask_id: e.subtask_id || null,
-          color: e.color || '#ff2a5f',
-          is_completed: !!e.is_completed,
-        });
-      }
-
-      const localNotes = storageService.getQuickNotes();
-      for (const n of localNotes) {
-        await client.from('quick_notes').upsert({
-          id: n.id,
-          user_id: user.id,
-          title: n.title || 'Nova Anotação',
-          content: n.content || '',
-          project_id: n.project_id || null,
-          subtask_id: n.subtask_id || null,
-          created_at: n.created_at,
-          updated_at: n.updated_at,
-        });
-      }
-
-      const localSessions = storageService.getLocalSessions();
-      for (const s of localSessions) {
-        await client.from('study_sessions').upsert({
-          id: s.id,
-          user_id: user.id,
-          discipline: s.discipline,
-          project_id: s.project_id || null,
-          subtask_id: s.subtask_id || null,
-          duration_minutes: s.duration_minutes,
-          completed_at: s.completed_at,
-        });
-      }
-
-      // Flashcard Decks
-      const localDecks = storageService.flashcardsService.getLocalDecks();
-      for (const d of localDecks) {
-        await client.from('flashcard_decks').upsert({
-          id: d.id,
-          user_id: user.id,
-          title: d.title,
-          description: d.description || '',
-          color: d.color,
-          icon: d.icon,
-          project_id: d.project_id || null,
-          tags: d.tags || [],
-          card_count: d.card_count || 0,
-          due_count: d.due_count || 0,
-          created_at: d.created_at,
-          updated_at: d.updated_at,
-        });
-      }
-
-      // Flashcards
-      const localCards = storageService.flashcardsService.getLocalCards();
-      for (const c of localCards) {
-        await client.from('flashcards').upsert({
-          id: c.id,
-          deck_id: c.deck_id,
-          user_id: user.id,
-          front: c.front,
-          back: c.back,
-          hint: c.hint || '',
-          tags: c.tags || [],
-          repetition: c.repetition || 0,
-          interval_days: c.interval_days || 0,
-          ease_factor: c.ease_factor || 2.5,
-          due_date: c.due_date,
-          last_reviewed_at: c.last_reviewed_at || null,
-          lapses: c.lapses || 0,
-          created_at: c.created_at,
-        });
-      }
-
-      // Mind Maps
-      const localMindMaps = storageService.mindMapsService.getLocalMindMaps();
-      for (const m of localMindMaps) {
-        await client.from('mind_maps').upsert({
-          id: m.id,
-          user_id: user.id,
-          title: m.title,
-          description: m.description || '',
-          project_id: m.project_id || null,
-          root_node_id: m.root_node_id,
-          created_at: m.created_at,
-          updated_at: m.updated_at,
-        });
-
-        if (m.nodes && m.nodes.length > 0) {
-          for (const node of m.nodes) {
-            await client.from('mind_map_nodes').upsert({
-              id: node.id,
-              mind_map_id: m.id,
-              parent_id: node.parent_id || null,
-              text: node.text,
-              color: node.color || null,
-              icon: node.icon || null,
-              is_collapsed: node.is_collapsed || false,
-              x: node.x || null,
-              y: node.y || null,
-              project_id: node.project_id || null,
-              subtask_id: node.subtask_id || null,
-            });
-          }
-        }
-      }
-
+      await pushProjects(client, user.id, storageService.getLocalProjects());
+      await pushSubtasks(client, user.id, storageService.getLocalSubtasks());
+      await pushCalendarEvents(client, user.id, storageService.getLocalCalendarEvents());
+      await pushQuickNotes(client, user.id, storageService.getQuickNotes());
+      await pushSessions(client, user.id, storageService.getLocalSessions());
+      await pushFlashcards(client, user.id);
+      await pushMindMaps(client, user.id);
 
       // -------------------------------------------------------------
       // FASE 2: PULL & MERGE (Buscar registros remotos e mesclar)
       // -------------------------------------------------------------
-      // 1. Projetos
-      const { data: remoteProjects, error: errProjects } = await client
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!errProjects && remoteProjects) {
-        const mergedProjects = this.mergeById(localProjects, remoteProjects as Project[]);
-        storageService.saveLocalProjects(mergedProjects);
-      }
-
-      // 2. Subtarefas
-      const { data: remoteSubtasks, error: errSubtasks } = await client
-        .from('subtasks')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (!errSubtasks && remoteSubtasks) {
-        const mergedSubtasks = this.mergeById(localSubtasks, remoteSubtasks as Subtask[]);
-        storageService.saveLocalSubtasks(mergedSubtasks);
-      }
-
-      // 3. Calendário
-      const { data: remoteEvents, error: errEvents } = await client
-        .from('calendar_events')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('start_time', { ascending: true });
-
-      if (!errEvents && remoteEvents) {
-        const mergedEvents = this.mergeById(localEvents, remoteEvents as CalendarEvent[]);
-        storageService.saveLocalCalendarEvents(mergedEvents);
-      }
-
-      // 4. Notas Rápidas
-      const { data: remoteNotes, error: errNotes } = await client
-        .from('quick_notes')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (!errNotes && remoteNotes) {
-        const mergedNotes = this.mergeById(localNotes, remoteNotes as QuickNote[]);
-        storageService.saveQuickNotes(mergedNotes);
-      }
-
-      // 5. Sessões de Estudo
-      const { data: remoteSessions, error: errSessions } = await client
-        .from('study_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('completed_at', { ascending: false });
-
-      if (!errSessions && remoteSessions) {
-        const mergedSessions = this.mergeById(localSessions, remoteSessions as StudySession[]);
-        storageService.saveLocalSessions(mergedSessions);
-      }
-
-      // 6. Flashcard Decks
-      const { data: remoteDecks, error: errDecks } = await client
-        .from('flashcard_decks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (!errDecks && remoteDecks) {
-        const mergedDecks = this.mergeById(localDecks, remoteDecks as any[]);
-        storageService.flashcardsService.saveLocalDecks(mergedDecks);
-      }
-
-      // 7. Flashcards
-      const { data: remoteCards, error: errCards } = await client
-        .from('flashcards')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!errCards && remoteCards) {
-        const mergedCards = this.mergeById(localCards, remoteCards as any[]);
-        storageService.flashcardsService.saveLocalCards(mergedCards);
-      }
-
-      // 8. Mind Maps
-      const { data: remoteMindMaps, error: errMindMaps } = await client
-        .from('mind_maps')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (!errMindMaps && remoteMindMaps) {
-        const { data: remoteNodes } = await client
-          .from('mind_map_nodes')
-          .select('*');
-
-        const remoteMindMapsWithNodes = remoteMindMaps.map(m => {
-          return {
-            ...m,
-            nodes: (remoteNodes || []).filter(n => n.mind_map_id === m.id)
-          };
-        });
-
-        const mergedMindMaps = this.mergeById(localMindMaps, remoteMindMapsWithNodes as any[]);
-        storageService.mindMapsService.saveLocalMindMaps(mergedMindMaps);
-      }
+      await pullProjects(client, user.id, storageService.getLocalProjects());
+      await pullSubtasks(client, user.id, storageService.getLocalSubtasks());
+      await pullCalendarEvents(client, user.id, storageService.getLocalCalendarEvents());
+      await pullQuickNotes(client, user.id, storageService.getQuickNotes());
+      await pullSessions(client, user.id, storageService.getLocalSessions());
+      await pullFlashcards(client, user.id);
+      await pullMindMaps(client, user.id);
 
       // -------------------------------------------------------------
       // FASE 3: NOTIFICAR HOOKS E ATUALIZAR STATUS
@@ -466,18 +224,6 @@ class SyncService {
     }
   }
 
-  /**
-   * Fusão inteligente de coleções baseada em ID:
-   * Preserva itens locais já existentes e incorpora novos itens remotos.
-   */
-  private mergeById<T extends { id: string }>(localList: T[], remoteList: T[]): T[] {
-    const map = new Map<string, T>();
-    // Itens remotos como base
-    remoteList.forEach((item) => map.set(item.id, item));
-    // Itens locais mesclados / sobrescrevendo se mais recentes
-    localList.forEach((item) => map.set(item.id, item));
-    return Array.from(map.values());
-  }
 }
 
 export const syncService = new SyncService();

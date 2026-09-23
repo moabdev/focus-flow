@@ -1,3 +1,4 @@
+import '../styles/tasks.css';
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Task, PriorityLevel } from '@/features/core/types';
@@ -134,3 +135,4 @@ export const TaskList: React.FC<TaskListProps> = ({
     </section>
   );
 };
+

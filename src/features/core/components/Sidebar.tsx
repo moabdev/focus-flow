@@ -1,3 +1,5 @@
+import '../styles/sidebar.css';
+import '../styles/sidebar-widgets.css';
 import React, { useState } from 'react';
 import {
   Flame,
@@ -208,3 +210,4 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(({
     </>
   );
 });
+

@@ -1,3 +1,4 @@
+import '../../styles/command-palette.css';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ArrowRight } from 'lucide-react';
 import { AppViewMode, Project, StudyGroup } from '@/features/core/types';
@@ -197,3 +198,4 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     </div>
   );
 };
+

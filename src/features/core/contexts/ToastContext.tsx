@@ -1,3 +1,4 @@
+import '../styles/toasts.css';
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -97,3 +98,4 @@ export function useToast(): ToastContextData {
   }
   return context;
 }
+

@@ -1,3 +1,4 @@
+import '../../styles/flashcards.css';
 import React, { useMemo } from 'react';
 import { Layers, Plus, Search, Filter } from 'lucide-react';
 import { Project, FlashcardDeck } from '@/features/core/types';
@@ -160,3 +161,4 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
     </div>
   );
 };
+

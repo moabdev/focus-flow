@@ -1,0 +1,370 @@
+/* ==============================================================================
+   FocusFlow - Estilos do Sistema de Mapas Mentais (Canvas Vetorial Interativo)
+   ============================================================================== */
+
+.mindmaps-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  height: calc(100vh - 120px);
+  min-height: 600px;
+  position: relative;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Header & Barra Superior */
+.mindmaps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.mindmaps-title-group h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mindmaps-title-group p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0.2rem 0 0 0;
+}
+
+.mindmap-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Área do Canvas Interativo */
+.mindmap-canvas-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid var(--border-color);
+  user-select: none;
+  cursor: grab;
+}
+
+.mindmap-canvas-container:active {
+  cursor: grabbing;
+}
+
+/* Barra de Ferramentas Flutuante de Zoom e Controle */
+.mindmap-floating-toolbar {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  z-index: 50;
+}
+
+.mindmap-toolbar-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mindmap-toolbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mindmap-zoom-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 44px;
+  text-align: center;
+}
+
+.mindmap-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 0.2rem;
+}
+
+/* Dica de Atalhos Flutuante */
+.mindmap-shortcuts-legend {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(var(--bg-surface-rgb, 20, 20, 30), 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  backdrop-filter: blur(10px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mindmap-shortcuts-legend kbd {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Camada SVG Transformada para Pan e Zoom */
+.mindmap-viewport {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.mindmap-svg-layer {
+  position: absolute;
+  width: 6000px;
+  height: 6000px;
+  left: -2000px;
+  top: -2000px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.mindmap-branch-curve {
+  fill: none;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+.mindmap-branch-curve.highlighted {
+  stroke-width: 3.5px;
+  filter: drop-shadow(0 0 6px var(--accent-primary));
+}
+
+/* Nós do Mapa Mental */
+.mindmap-nodes-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mindmap-node-card {
+  position: absolute;
+  pointer-events: auto;
+  border-radius: 12px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 0.6rem 0.9rem;
+  min-width: 140px;
+  max-width: 260px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  backdrop-filter: blur(12px);
+}
+
+.mindmap-node-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.mindmap-node-card.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(255, 42, 95, 0.25), 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mindmap-node-card.root-node {
+  padding: 0.9rem 1.25rem;
+  min-width: 200px;
+  border-width: 2px;
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(255, 42, 95, 0.08) 100%);
+}
+
+.mindmap-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.mindmap-node-text-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.mindmap-node-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mindmap-node-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.root-node .mindmap-node-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* Edição Inline de Texto */
+.mindmap-node-input {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--accent-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  outline: none;
+}
+
+.mindmap-node-collapse-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mindmap-node-collapse-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.mindmap-node-notes-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+/* Painel Gaveta de Detalhes do Nó (Drawer) */
+.node-drawer-overlay {
+  position: relative;
+  width: 300px;
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.node-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.node-drawer-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.node-drawer-textarea {
+  width: 100%;
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.85rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.node-drawer-textarea:focus {
+  border-color: var(--accent-primary);
+}
+
+.node-drawer-colors-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.node-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.node-color-swatch:hover {
+  transform: scale(1.2);
+}
+
+.node-color-swatch.active {
+  border-color: white;
+  transform: scale(1.15);
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

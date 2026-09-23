@@ -1,3 +1,4 @@
+import '../../styles/heatmap.css';
 import React, { useMemo, useState } from 'react';
 import { StudySession } from '@/features/core/types';
 
@@ -196,3 +197,4 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({ sessions }) =>
     </div>
   );
 };
+

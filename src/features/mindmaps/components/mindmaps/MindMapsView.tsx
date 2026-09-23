@@ -1,3 +1,4 @@
+import '../../styles/mindmaps.css';
 import React, { useMemo } from 'react';
 import { GitFork, Plus, Search, Network } from 'lucide-react';
 import { Project } from '@/features/core/types';
@@ -119,3 +120,4 @@ export const MindMapsView: React.FC<MindMapsViewProps> = ({ projects }) => {
     </div>
   );
 };
+
